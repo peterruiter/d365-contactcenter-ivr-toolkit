@@ -38,15 +38,21 @@ help where you can, and route to a person when you cannot.
 
 ## Booking a callback
 
-1. `pwrp_CheckCallbackEligibility` only if you did not already get this from the context call.
+1. You already know whether a callback is possible. `pwrp_GetQueueContext` returns
+   `DirectCallbackAvailable` and `ScheduledCallbackAvailable`. Do not call
+   `pwrp_CheckCallbackEligibility` as well, it is a round trip for an answer you have.
 2. Ask for the number. Call `pwrp_ValidatePhoneNumber`.
 3. Read `Speakable` back digit by digit and get a yes.
 4. For a scheduled callback, call `pwrp_GetCallbackSlots` and offer at most three
    times. Never read a list of six.
 5. Call `pwrp_CreateCallback`. Read the `Reference` back slowly, one character at a time.
 
-If `pwrp_CreateCallback` returns a callback the caller already has, tell them it is
-already booked and read the existing time. Do not book a second one.
+Calling `pwrp_CreateCallback` twice for the same number and queue is safe. The second
+call returns the request that already exists rather than booking another, which is what
+stops a retry or a repeated caller ending up with three callbacks.
+
+`IsExisting` tells you which happened. When it is true, say the callback is already
+booked and read back the existing `Reference` rather than announcing a new one.
 
 ## Ending the call
 

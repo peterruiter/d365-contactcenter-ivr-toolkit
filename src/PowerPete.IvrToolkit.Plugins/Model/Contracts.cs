@@ -90,5 +90,15 @@ namespace PowerPete.IvrToolkit.Model
         public string Status { get; set; }
         public int Attempts { get; set; }
         public string Speakable { get; set; }
+
+        /// <summary>
+        /// True when Create returned a request that already existed instead of making one.
+        /// </summary>
+        /// <remarks>
+        /// Deduplication is deliberate, but it was invisible from outside, so an agent
+        /// could not tell a fresh booking from a repeat and had to read the reference back
+        /// as though it were new either way.
+        /// </remarks>
+        public bool IsExisting { get; set; }
     }
 }

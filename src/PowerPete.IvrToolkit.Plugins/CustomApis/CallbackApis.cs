@@ -78,6 +78,7 @@ namespace PowerPete.IvrToolkit.CustomApis
             request.SetOutput("Callback", JsonConvert.SerializeObject(record));
             request.SetOutput("CallbackId", record.CallbackId.ToString());
             request.SetOutput("Reference", record.Reference);
+            request.SetOutput("IsExisting", record.IsExisting);
             request.SetOutput("Status", record.Status);
             request.SetOutput("Speakable", record.Speakable);
         }

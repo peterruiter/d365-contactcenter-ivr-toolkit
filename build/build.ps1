@@ -6,8 +6,20 @@
     Run this before deploy.ps1. It restores, builds in Release, runs the unit tests,
     and packs the solution folder into managed and unmanaged zips under ./out.
 
+.NOTES
+    Keep -Version on the 1.0.x line for anything that will be updated in place.
+
+    Dataverse treats a plugin assembly's major and minor version as part of its identity.
+    Changing either is a different assembly, and updating the registered one is refused
+    with "Plugin Assembly fully qualified name has changed". Build and revision may move
+    freely, and moving them is what forces the sandbox to drop its cached copy.
+
+    So the assembly version is not the product version. The contract can be at 1.1.0 while
+    the assembly is at 1.0.6. Raise major or minor only when you intend to delete and
+    re-register, which means rebinding every Custom API.
+
 .EXAMPLE
-    ./build.ps1 -Version 1.0.3
+    ./build.ps1 -Version 1.0.6
 #>
 [CmdletBinding()]
 param(

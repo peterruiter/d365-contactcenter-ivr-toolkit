@@ -45,6 +45,8 @@ a recommended action in one round trip.
 | `QueueId` | String | Hold this in a variable and reuse it |
 | `IsOpen` | Boolean | |
 | `WaitBand` | String | `Short`, `Moderate`, `Long`, `VeryLong` |
+| `DirectCallbackAvailable` | Boolean | Offer a callback without a second lookup |
+| `ScheduledCallbackAvailable` | Boolean | Whether a specific time can be booked |
 | `RecommendedAction` | String | `Serve`, `OfferCallback`, `OfferVoicemail`, `AnnounceClosed`, `AnnounceOutage` |
 | `Speakable` | String | Read this |
 
@@ -145,7 +147,8 @@ cannot take the call. Use `RepresentativesAvailable`.
 
 **Outputs:** `DirectCallbackAvailable`, `ScheduledCallbackAvailable`, `AnyAvailable`
 
-Skip this if you already have it from `pwrp_GetQueueContext`.
+Skip this if you already have it from `pwrp_GetQueueContext`, which returns
+`DirectCallbackAvailable` and `ScheduledCallbackAvailable` directly.
 
 ---
 
@@ -175,7 +178,12 @@ phone. Six and the caller loses track.
 | `ConversationId` | No | Ties the callback to the conversation |
 | `ContextJson` | No | Anything the representative should see before dialling |
 
-**Outputs:** `Callback` (JSON), `CallbackId`, `Reference`, `Status`, `Speakable`
+**Outputs:** `Callback` (JSON), `CallbackId`, `Reference`, `IsExisting`, `Status`,
+`Speakable`
+
+`IsExisting` is true when the request already existed and was returned rather than
+created. Without it a repeat is indistinguishable from a fresh booking, and an agent
+cannot tell a caller they already have one.
 
 Idempotent per queue and number. A repeat call while a callback is open returns the
 existing one rather than creating a duplicate. Voice agents retry on timeouts, and

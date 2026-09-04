@@ -133,6 +133,7 @@ namespace PowerPete.IvrToolkit.Callback
             if (existing != null)
             {
                 _tracing.Trace("[pwrp] duplicate callback suppressed for {0}", phone.E164);
+                existing.IsExisting = true;
                 return existing;
             }
 

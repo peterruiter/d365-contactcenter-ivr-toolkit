@@ -595,6 +595,16 @@
           "x-ms-summary": "WaitBand",
           "description": "Short, Moderate, Long or VeryLong."
         },
+        "DirectCallbackAvailable": {
+          "type": "boolean",
+          "x-ms-summary": "DirectCallbackAvailable",
+          "description": "Whether a callback can be offered now. Saves a second call to CheckCallbackEligibility."
+        },
+        "ScheduledCallbackAvailable": {
+          "type": "boolean",
+          "x-ms-summary": "ScheduledCallbackAvailable",
+          "description": "Whether a specific time can be booked."
+        },
         "RecommendedAction": {
           "type": "string",
           "x-ms-summary": "RecommendedAction",
@@ -894,6 +904,11 @@
           "type": "string",
           "x-ms-summary": "Reference",
           "description": "Six characters, chosen to be unambiguous over the phone."
+        },
+        "IsExisting": {
+          "type": "boolean",
+          "x-ms-summary": "IsExisting",
+          "description": "True when the request already existed and was returned rather than created."
         },
         "Status": {
           "type": "string",

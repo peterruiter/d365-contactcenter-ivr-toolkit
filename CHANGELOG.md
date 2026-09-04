@@ -9,6 +9,20 @@ Semantic versioning. The Custom API contract is stable within a major version.
 | Internal fix, same contract | Patch |
 | Removed or renamed output, changed enum, changed meaning | Major |
 
+## [1.1.0]
+
+### Added
+
+- `pwrp_GetQueueContext` returns `DirectCallbackAvailable` and `ScheduledCallbackAvailable`
+  as outputs. They were already computed and sat inside the `Context` payload, where an
+  agent could only reach them by parsing a string, so offering a callback cost a second
+  call to `pwrp_CheckCallbackEligibility` on the most latency sensitive path in the toolkit
+- `pwrp_CreateCallback` returns `IsExisting`, true when a request already existed and was
+  returned rather than created. Deduplication was deliberate but invisible, so an agent
+  could not tell a repeat from a fresh booking
+
+Both are additive. An agent built against 1.0.x keeps working.
+
 ## [1.0.4]
 
 First release verified against a live Dynamics 365 Contact Center environment. Every

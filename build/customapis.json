@@ -126,6 +126,16 @@
           "description": "Short, Moderate, Long or VeryLong."
         },
         {
+          "name": "DirectCallbackAvailable",
+          "type": "Boolean",
+          "description": "Whether a callback can be offered now. Saves a second call to CheckCallbackEligibility."
+        },
+        {
+          "name": "ScheduledCallbackAvailable",
+          "type": "Boolean",
+          "description": "Whether a specific time can be booked."
+        },
+        {
           "name": "RecommendedAction",
           "type": "String",
           "description": "Serve, OfferCallback, OfferVoicemail, AnnounceClosed or AnnounceOutage."
@@ -422,6 +432,11 @@
           "name": "Reference",
           "type": "String",
           "description": "Six characters, chosen to be unambiguous over the phone."
+        },
+        {
+          "name": "IsExisting",
+          "type": "Boolean",
+          "description": "True when the request already existed and was returned rather than created."
         },
         {
           "name": "Status",

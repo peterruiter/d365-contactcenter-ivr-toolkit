@@ -88,6 +88,11 @@ namespace PowerPete.IvrToolkit.CustomApis
             request.SetOutput("QueueId", queue.QueueId.ToString());
             request.SetOutput("IsOpen", context.OpenState.IsOpen);
             request.SetOutput("WaitBand", context.Metrics.WaitBand);
+            // Promoted out of the Context payload. An agent binds to outputs, and having
+            // to parse a JSON string mid call was costing a second round trip to
+            // CheckCallbackEligibility on the most latency sensitive path there is.
+            request.SetOutput("DirectCallbackAvailable", context.DirectCallbackAvailable);
+            request.SetOutput("ScheduledCallbackAvailable", context.ScheduledCallbackAvailable);
             request.SetOutput("RecommendedAction", context.RecommendedAction);
             request.SetOutput("Speakable", context.Speakable);
         }

@@ -62,10 +62,22 @@ if ($existing.Count -gt 0) {
     # patching content alone leaves it running the previous build even though the row is
     # correct. Build and revision may change on an update; major and minor may not, those
     # need a new registration.
-    Invoke-Dataverse -Method PATCH -Path "/api/data/v9.2/pluginassemblies($assemblyId)" -SolutionName $SolutionName -Body @{
-        content = $content
-        version = $name.Version.ToString()
-    } | Out-Null
+    try {
+        Invoke-Dataverse -Method PATCH -Path "/api/data/v9.2/pluginassemblies($assemblyId)" -SolutionName $SolutionName -Body @{
+            content = $content
+            version = $name.Version.ToString()
+        } | Out-Null
+    }
+    catch {
+        if ($_.Exception.Message -match "fully qualified name has changed") {
+            throw "$($_.Exception.Message)`n`n" +
+                "The registered assembly is $($existing[0].version) and this build is $($name.Version). " +
+                "Dataverse treats major and minor as part of the assembly identity, so only build and " +
+                "revision may change on an update. Rebuild on the same major.minor, for example " +
+                "./build/build.ps1 -Version $(($existing[0].version -split '\.')[0]).$(($existing[0].version -split '\.')[1]).$([int](($existing[0].version -split '\.')[2]) + 1)"
+        }
+        throw
+    }
 
     Write-Host "  = assembly updated in place at $($name.Version)" -ForegroundColor DarkGray
     if ($existing[0].version -eq $name.Version.ToString()) {

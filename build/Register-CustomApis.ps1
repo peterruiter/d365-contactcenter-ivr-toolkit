@@ -112,6 +112,24 @@ function Set-ApiChild {
         -Body $Body -SolutionName $solution | Out-Null
 }
 
+# --- Validate the contract before touching the environment --------------------
+# A parameter or property description over 100 characters is rejected, and the failure
+# lands halfway through registration with some APIs updated and the rest not. Cheaper to
+# find here.
+$tooLong = @()
+foreach ($api in $definition.apis) {
+    foreach ($field in (@($api.inputs) + @($api.outputs) + @($definition.sharedOutputs))) {
+        if ($field -and $field.description -and $field.description.Length -gt 100) {
+            $tooLong += "$($api.name).$($field.name) is $($field.description.Length) characters"
+        }
+    }
+}
+if ($tooLong.Count -gt 0) {
+    Write-Host "Descriptions over the 100 character limit:" -ForegroundColor Yellow
+    $tooLong | Sort-Object -Unique | ForEach-Object { Write-Host "  $_" -ForegroundColor Yellow }
+    throw "Shorten them in customapis.json. Nothing was registered."
+}
+
 # --- Resolve plugin type ids from the registered assembly ---------------------
 Write-Host "Resolving plugin types from $($definition.assembly)" -ForegroundColor Cyan
 
