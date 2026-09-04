@@ -1,0 +1,8 @@
+<customapiresponseproperty uniquename="ChannelType">
+  <displayname default="ChannelType">
+    <label description="ChannelType" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>ChannelType</name>
+  <type>10</type>
+</customapiresponseproperty>

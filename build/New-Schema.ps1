@@ -27,18 +27,51 @@ param(
 $ErrorActionPreference = "Stop"
 $schema = Get-Content $SchemaFile -Raw | ConvertFrom-Json
 $prefix = $schema.publisherPrefix
+$orgUrl = $EnvironmentUrl.TrimEnd('/')
 
-& pac auth create --environment $EnvironmentUrl --name pwrp-schema 2>$null
-& pac auth select --name pwrp-schema
+. "$PSScriptRoot/Common.ps1"
 
+# No pac commands are used below. "pac env http" is not a real command in any published
+# CLI version, so every metadata call goes straight to the Dataverse Web API with a token
+# of its own. Common.ps1 caches that token, so the sign in prompt is a first run thing.
+$accessToken = Get-DataverseToken -Resource $orgUrl
+
+$baseHeaders = @{
+    Authorization      = "Bearer $accessToken"
+    "OData-MaxVersion" = "4.0"
+    "OData-Version"    = "4.0"
+    Accept             = "application/json"
+    "Content-Type"     = "application/json; charset=utf-8"
+}
+
+# MSCRM.SolutionUniqueName is only valid on calls that create a solution component.
+# Sending it on an ordinary read fails the whole request, so it is added per call.
 function Send-Metadata {
-    param([string]$Method, [string]$Path, $Body)
-    $args = @("env", "http", "--method", $Method, "--url", $Path,
-              "--headers", "MSCRM.SolutionUniqueName=$SolutionName")
-    if ($Body) { $args += @("--body", ($Body | ConvertTo-Json -Depth 15 -Compress)) }
-    $raw = & pac @args 2>&1
-    if ($LASTEXITCODE -ne 0) { throw "$Method $Path failed`n$raw" }
-    if ($raw) { try { return $raw | ConvertFrom-Json } catch { return $null } }
+    param([string]$Method, [string]$Path, $Body, [int]$Attempts = 5)
+    $uri = "$orgUrl$Path"
+    $headers = $baseHeaders.Clone()
+    $headers["MSCRM.SolutionUniqueName"] = $SolutionName
+
+    for ($attempt = 1; ; $attempt++) {
+        try {
+            if ($Body) {
+                return Invoke-RestMethod -Method $Method -Uri $uri -Headers $headers -Body ($Body | ConvertTo-Json -Depth 15 -Compress)
+            }
+            return Invoke-RestMethod -Method $Method -Uri $uri -Headers $headers
+        }
+        catch {
+            $detail = $_.ErrorDetails.Message
+            # A table created seconds ago is not in the metadata cache yet, so the first
+            # thing that references it, a lookup above all, fails. It is a race, not a bad
+            # request, so back off and try again rather than losing the whole run.
+            if ($attempt -lt $Attempts -and $detail -match "MetadataCache") {
+                Write-Host "         ... metadata cache catching up, retry $attempt" -ForegroundColor DarkGray
+                Start-Sleep -Seconds (5 * $attempt)
+                continue
+            }
+            throw "$Method $Path failed`n$detail"
+        }
+    }
 }
 
 function New-Label {
@@ -48,11 +81,92 @@ function New-Label {
 
 function Test-TableExists {
     param([string]$LogicalName)
-    $raw = & pac env http --method GET --url "/api/data/v9.2/EntityDefinitions(LogicalName='$LogicalName')?`$select=LogicalName" 2>&1
-    return $LASTEXITCODE -eq 0
+    try {
+        Invoke-RestMethod -Method GET -Headers $baseHeaders `
+            -Uri "$orgUrl/api/data/v9.2/EntityDefinitions(LogicalName='$LogicalName')?`$select=LogicalName" | Out-Null
+        return $true
+    }
+    catch {
+        return $false
+    }
+}
+
+# Lookups create a relationship, and a second attempt fails on the navigation property
+# name rather than being ignored. Checking first is what makes a re-run resumable.
+function Test-ColumnExists {
+    param([string]$Table, [string]$LogicalName)
+    try {
+        Invoke-RestMethod -Method GET -Headers $baseHeaders `
+            -Uri "$orgUrl/api/data/v9.2/EntityDefinitions(LogicalName='$Table')/Attributes(LogicalName='$($LogicalName.ToLowerInvariant())')?`$select=LogicalName" | Out-Null
+        return $true
+    }
+    catch {
+        return $false
+    }
+}
+
+function Find-Record {
+    param([string]$EntitySet, [string]$IdField, [string]$Filter)
+    $uri = "$orgUrl/api/data/v9.2/$EntitySet" + '?$select=' + $IdField + '&$filter=' + $Filter
+    $resp = Invoke-RestMethod -Method GET -Uri $uri -Headers $baseHeaders
+    if ($resp.value.Count -gt 0) { return $resp.value[0].$IdField }
+    return $null
+}
+
+function New-Record {
+    param([string]$EntitySet, $Body)
+    $uri = "$orgUrl/api/data/v9.2/$EntitySet"
+    $headers = $baseHeaders.Clone()
+    $headers["Prefer"] = "return=representation"
+    try {
+        return Invoke-RestMethod -Method POST -Uri $uri -Headers $headers -Body ($Body | ConvertTo-Json -Depth 10 -Compress)
+    }
+    catch {
+        throw "POST /$EntitySet failed`n$($_.ErrorDetails.Message)"
+    }
+}
+
+# --- Publisher and solution ---------------------------------------------------
+# Every component below is filed into the solution named by MSCRM.SolutionUniqueName,
+# and Dataverse rejects the call outright when that solution does not exist. Nothing
+# else in the repo creates it, so bootstrapping it belongs here.
+Write-Host "`nPublisher and solution" -ForegroundColor Cyan
+
+$publisherUniqueName = if ($schema.publisherUniqueName) { $schema.publisherUniqueName } else { ($schema.publisherName -replace '\s', '').ToLowerInvariant() }
+$optionValuePrefix = if ($schema.publisherOptionValuePrefix) { $schema.publisherOptionValuePrefix } else { 10000 }
+
+$publisherId = Find-Record -EntitySet "publishers" -IdField "publisherid" -Filter "uniquename eq '$publisherUniqueName'"
+if ($publisherId) {
+    Write-Host "  = publisher $publisherUniqueName exists" -ForegroundColor DarkGray
+}
+else {
+    $created = New-Record -EntitySet "publishers" -Body @{
+        uniquename                     = $publisherUniqueName
+        friendlyname                   = $schema.publisherName
+        customizationprefix            = $prefix
+        customizationoptionvalueprefix = $optionValuePrefix
+    }
+    $publisherId = $created.publisherid
+    Write-Host "  + publisher $publisherUniqueName ($prefix)" -ForegroundColor DarkGray
+}
+
+$solutionId = Find-Record -EntitySet "solutions" -IdField "solutionid" -Filter "uniquename eq '$SolutionName'"
+if ($solutionId) {
+    Write-Host "  = solution $SolutionName exists" -ForegroundColor DarkGray
+}
+else {
+    New-Record -EntitySet "solutions" -Body @{
+        uniquename            = $SolutionName
+        friendlyname          = if ($schema.solutionFriendlyName) { $schema.solutionFriendlyName } else { $SolutionName }
+        version               = if ($schema.solutionVersion) { $schema.solutionVersion } else { "1.0.0.0" }
+        "publisherid@odata.bind" = "/publishers($publisherId)"
+    } | Out-Null
+    Write-Host "  + solution $SolutionName" -ForegroundColor DarkGray
 }
 
 # --- Tables -------------------------------------------------------------------
+$failures = @()
+
 foreach ($table in $schema.tables) {
     if (Test-TableExists -LogicalName $table.logicalName) {
         Write-Host "[skip]   $($table.logicalName) already exists" -ForegroundColor DarkGray
@@ -87,12 +201,45 @@ foreach ($table in $schema.tables) {
         $path = "/api/data/v9.2/EntityDefinitions(LogicalName='$($table.logicalName)')/Attributes"
         $required = if ($column.required) { "ApplicationRequired" } else { "None" }
 
+        if (Test-ColumnExists -Table $table.logicalName -LogicalName $column.name) {
+            Write-Host "         = $($column.name) exists" -ForegroundColor DarkGray
+            continue
+        }
+
         $body = @{
             SchemaName    = $column.name
             DisplayName   = (New-Label $column.displayName)
             RequiredLevel = @{ Value = $required }
         }
         if ($column.description) { $body.Description = (New-Label $column.description) }
+
+        # Lookups are relationships, not attributes, so they go to a different endpoint.
+        # Handled before the switch because "continue" inside a PowerShell switch continues
+        # the switch rather than the loop, which would fall through to the attribute POST.
+        if ($column.type -eq "Lookup") {
+            try {
+                Send-Metadata -Method POST -Path "/api/data/v9.2/RelationshipDefinitions" -Body @{
+                    "@odata.type"          = "Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata"
+                    SchemaName             = "$($prefix)_$($column.target)_$($table.logicalName)_$($column.name)"
+                    ReferencedEntity       = $column.target
+                    ReferencingEntity      = $table.logicalName
+                    CascadeConfiguration   = @{ Assign = "NoCascade"; Delete = "RemoveLink"; Merge = "NoCascade"; Reparent = "NoCascade"; Share = "NoCascade"; Unshare = "NoCascade" }
+                    Lookup = @{
+                        "@odata.type"  = "Microsoft.Dynamics.CRM.LookupAttributeMetadata"
+                        SchemaName     = $column.name
+                        DisplayName    = (New-Label $column.displayName)
+                        RequiredLevel  = @{ Value = $required }
+                    }
+                } | Out-Null
+                Write-Host "         + $($column.name) (lookup -> $($column.target))" -ForegroundColor DarkGray
+            }
+            catch {
+                $reason = if ($_.Exception.Message -match '"message":\s*"([^"]+)"') { $Matches[1] } else { $_.Exception.Message }
+                Write-Host "         ! $($column.name): $reason" -ForegroundColor Yellow
+                $failures += "$($table.logicalName).$($column.name): $reason"
+            }
+            continue
+        }
 
         switch ($column.type) {
             "String" {
@@ -135,24 +282,6 @@ foreach ($table in $schema.tables) {
                 }
                 if ($null -ne $column.defaultValue) { $body.DefaultFormValue = $column.defaultValue }
             }
-            "Lookup" {
-                # Lookups are relationships, not attributes. Different endpoint.
-                Write-Host "         lookup $($column.name) -> $($column.target)" -ForegroundColor DarkGray
-                Send-Metadata -Method POST -Path "/api/data/v9.2/RelationshipDefinitions" -Body @{
-                    "@odata.type"          = "Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata"
-                    SchemaName             = "$($prefix)_$($column.target)_$($table.logicalName)_$($column.name)"
-                    ReferencedEntity       = $column.target
-                    ReferencingEntity      = $table.logicalName
-                    CascadeConfiguration   = @{ Assign = "NoCascade"; Delete = "RemoveLink"; Merge = "NoCascade"; Reparent = "NoCascade"; Share = "NoCascade"; Unshare = "NoCascade" }
-                    Lookup = @{
-                        "@odata.type"  = "Microsoft.Dynamics.CRM.LookupAttributeMetadata"
-                        SchemaName     = $column.name
-                        DisplayName    = (New-Label $column.displayName)
-                        RequiredLevel  = @{ Value = $required }
-                    }
-                } | Out-Null
-                continue
-            }
             default { throw "Unknown column type $($column.type) on $($column.name)" }
         }
 
@@ -161,7 +290,11 @@ foreach ($table in $schema.tables) {
             Write-Host "         + $($column.name)" -ForegroundColor DarkGray
         }
         catch {
-            Write-Host "         = $($column.name) (exists or failed, see log)" -ForegroundColor DarkGray
+            # Existing columns are filtered out above, so anything landing here is a real
+            # failure. Collected rather than thrown so one bad column does not cost the run.
+            $reason = if ($_.Exception.Message -match '"message":\s*"([^"]+)"') { $Matches[1] } else { $_.Exception.Message }
+            Write-Host "         ! $($column.name): $reason" -ForegroundColor Yellow
+            $failures += "$($table.logicalName).$($column.name): $reason"
         }
     }
 }
@@ -187,18 +320,17 @@ foreach ($variable in $schema.environmentVariables) {
 
 # --- Security role ------------------------------------------------------------
 if (-not $SkipSecurityRole) {
-    Write-Host "`nSecurity role" -ForegroundColor Cyan
-    Write-Host @"
-  Create the role '$($schema.securityRole.name)' manually, or with the Power Platform
-  admin centre. Role privilege assignment through the Web API needs privilege ids that
-  differ per environment, so scripting it is more fragile than doing it once by hand.
+    Write-Host ""
+    & "$PSScriptRoot/New-SecurityRole.ps1" -EnvironmentUrl $EnvironmentUrl -SchemaFile $SchemaFile -SolutionName $SolutionName
+}
 
-  Required privileges are listed in solution/README.md and schema.json.
-  Do not substitute System Administrator.
-"@ -ForegroundColor Yellow
+if ($failures.Count -gt 0) {
+    Write-Host "`n$($failures.Count) column(s) failed:" -ForegroundColor Yellow
+    $failures | ForEach-Object { Write-Host "  $_" -ForegroundColor Yellow }
+    Write-Host "Fix the cause and run this script again. Existing components are skipped." -ForegroundColor Yellow
 }
 
 Write-Host "`nSchema created. Next:" -ForegroundColor Green
-Write-Host "  1. Create the security role and the model driven app" -ForegroundColor Gray
+Write-Host "  1. Create the model driven app" -ForegroundColor Gray
 Write-Host "  2. Add the plugin assembly to the solution" -ForegroundColor Gray
 Write-Host "  3. pac solution export + unpack into ./solution, then commit" -ForegroundColor Gray

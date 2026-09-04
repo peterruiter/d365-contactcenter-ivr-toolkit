@@ -1,0 +1,11 @@
+<customapiresponseproperty uniquename="ErrorMessage">
+  <description default="Human readable detail. Do not read this to a caller.">
+    <label description="Human readable detail. Do not read this to a caller." languagecode="1033" />
+  </description>
+  <displayname default="ErrorMessage">
+    <label description="ErrorMessage" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>ErrorMessage</name>
+  <type>10</type>
+</customapiresponseproperty>

@@ -1,0 +1,18 @@
+<customapi uniquename="pwrp_CheckCallbackEligibility">
+  <allowedcustomprocessingsteptype>0</allowedcustomprocessingsteptype>
+  <bindingtype>0</bindingtype>
+  <description default="Whether direct callback, scheduled callback or neither is available for a queue. Call before offering a callback.">
+    <label description="Whether direct callback, scheduled callback or neither is available for a queue. Call before offering a callback." languagecode="1033" />
+  </description>
+  <displayname default="Check callback eligibility">
+    <label description="Check callback eligibility" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isfunction>1</isfunction>
+  <isprivate>0</isprivate>
+  <name>pwrp_CheckCallbackEligibility</name>
+  <plugintypeid>
+    <plugintypeexportkey>c47eee07-43a8-f111-b8de-000d3ade3584</plugintypeexportkey>
+  </plugintypeid>
+  <workflowsdkstepenabled>0</workflowsdkstepenabled>
+</customapi>

@@ -18,20 +18,22 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+. "$PSScriptRoot/Common.ps1"
+Connect-Dataverse -EnvironmentUrl $EnvironmentUrl
 
 $filter = if ($All) { "" } else { "&`$filter=msdyn_queuetype eq 192350002" }
-$queues = (& pac env http --method GET --url "/api/data/v9.2/queues?`$select=queueid,name$filter" | ConvertFrom-Json).value
+$queues = (Invoke-Dataverse -Method GET -Path "/api/data/v9.2/queues?`$select=queueid,name$filter").value
 
 Write-Host "Found $($queues.Count) queues" -ForegroundColor Cyan
 
 foreach ($queue in $queues) {
-    $existing = (& pac env http --method GET --url "/api/data/v9.2/pwrp_queueprofiles?`$filter=_pwrp_queueid_value eq $($queue.queueid)" | ConvertFrom-Json).value
+    $existing = (Invoke-Dataverse -Method GET -Path "/api/data/v9.2/pwrp_queueprofiles?`$filter=_pwrp_queueid_value eq $($queue.queueid)").value
     if ($existing.Count -gt 0) {
         Write-Host "  skip $($queue.name), profile exists" -ForegroundColor Gray
         continue
     }
 
-    & pac env http --method POST --url "/api/data/v9.2/pwrp_queueprofiles" --body (@{
+    Invoke-Dataverse -Method POST -Path "/api/data/v9.2/pwrp_queueprofiles" -Body @{
         pwrp_name                     = $queue.name
         pwrp_speakablename            = $queue.name
         pwrp_hourssource              = 1      # native operating hours
@@ -39,7 +41,7 @@ foreach ($queue in $queues) {
         pwrp_scheduledcallbackenabled = $false
         pwrp_slotcapacity             = 5
         "pwrp_queueid@odata.bind"     = "/queues($($queue.queueid))"
-    } | ConvertTo-Json -Compress) | Out-Null
+    } | Out-Null
 
     Write-Host "  created profile for $($queue.name)" -ForegroundColor Green
 }

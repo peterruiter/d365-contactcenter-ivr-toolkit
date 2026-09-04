@@ -1,0 +1,18 @@
+<customapi uniquename="pwrp_GetQueueMetrics">
+  <allowedcustomprocessingsteptype>0</allowedcustomprocessingsteptype>
+  <bindingtype>0</bindingtype>
+  <description default="Live queue state: callers waiting, longest wait, average wait, representatives available and an estimated wait. Give callers WaitBand, not the raw numbers.">
+    <label description="Live queue state: callers waiting, longest wait, average wait, representatives available and an estimated wait. Give callers WaitBand, not the raw numbers." languagecode="1033" />
+  </description>
+  <displayname default="Get queue metrics">
+    <label description="Get queue metrics" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isfunction>1</isfunction>
+  <isprivate>0</isprivate>
+  <name>pwrp_GetQueueMetrics</name>
+  <plugintypeid>
+    <plugintypeexportkey>7e762806-43a8-f111-b8dd-70a8a58097f6</plugintypeexportkey>
+  </plugintypeid>
+  <workflowsdkstepenabled>0</workflowsdkstepenabled>
+</customapi>

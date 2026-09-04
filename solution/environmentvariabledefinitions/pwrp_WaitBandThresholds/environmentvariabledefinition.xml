@@ -1,0 +1,11 @@
+<environmentvariabledefinition schemaname="pwrp_WaitBandThresholds">
+  <defaultvalue>60,180,420</defaultvalue>
+  <displayname default="Wait band thresholds (s)">
+    <label description="Wait band thresholds (s)" languagecode="1033" />
+  </displayname>
+  <introducedversion>1.0.0.0</introducedversion>
+  <iscustomizable>1</iscustomizable>
+  <isrequired>0</isrequired>
+  <secretstore>0</secretstore>
+  <type>100000000</type>
+</environmentvariabledefinition>

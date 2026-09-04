@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<savedqueries xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <savedquery>
+    <IsCustomizable>1</IsCustomizable>
+    <CanBeDeleted>0</CanBeDeleted>
+    <isquickfindquery>0</isquickfindquery>
+    <isprivate>0</isprivate>
+    <isdefault>1</isdefault>
+    <savedqueryid>{31042735-b0ae-404d-94b7-c45247faead0}</savedqueryid>
+    <layoutxml>
+      <grid name="pwrp_broadcastmessages" jump="pwrp_name" select="1" icon="1" preview="1">
+        <row name="pwrp_broadcastmessage" id="pwrp_broadcastmessageid">
+          <cell name="pwrp_name" width="300" />
+          <cell name="createdon" width="125" />
+        </row>
+      </grid>
+    </layoutxml>
+    <querytype>2</querytype>
+    <fetchxml>
+      <fetch version="1.0" mapping="logical">
+        <entity name="pwrp_broadcastmessage">
+          <attribute name="pwrp_broadcastmessageid" />
+          <attribute name="pwrp_name" />
+          <attribute name="createdon" />
+          <order attribute="pwrp_name" descending="false" />
+          <filter type="and">
+            <condition attribute="statecode" operator="eq" value="0" />
+          </filter>
+        </entity>
+      </fetch>
+    </fetchxml>
+    <IntroducedVersion>1.0.0.0</IntroducedVersion>
+    <LocalizedNames>
+      <LocalizedName description="Broadcast message Associated View" languagecode="1033" />
+    </LocalizedNames>
+  </savedquery>
+</savedqueries>

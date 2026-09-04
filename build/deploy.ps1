@@ -25,8 +25,8 @@ $zip = "$PSScriptRoot/../out/PowerPeteIvrToolkitCore_$($Version)_$type.zip"
 if (-not (Test-Path $zip)) { throw "Artefact not found: $zip. Run build.ps1 first." }
 
 Write-Host "Connecting to $EnvironmentUrl" -ForegroundColor Cyan
-& pac auth create --environment $EnvironmentUrl --name pwrp-deploy 2>$null
-& pac auth select --name pwrp-deploy
+. "$PSScriptRoot/Common.ps1"
+Connect-Pac -EnvironmentUrl $EnvironmentUrl -ProfileName "pwrp-deploy"
 
 Write-Host "Importing $type solution" -ForegroundColor Cyan
 & pac solution import --path $zip --activate-plugins --force-overwrite --publish-changes

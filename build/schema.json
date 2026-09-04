@@ -1,7 +1,11 @@
 {
   "publisherPrefix": "pwrp",
   "publisherName": "Power Pete",
+  "publisherUniqueName": "powerpete",
+  "publisherOptionValuePrefix": 10000,
   "solutionUniqueName": "PowerPeteIvrToolkitCore",
+  "solutionFriendlyName": "Contact Center IVR Toolkit",
+  "solutionVersion": "1.0.0.0",
   "tables": [
     {
       "logicalName": "pwrp_queueprofile",

@@ -1,0 +1,12 @@
+<customapirequestparameter uniquename="MaxResults">
+  <description default="Defaults to 6.">
+    <label description="Defaults to 6." languagecode="1033" />
+  </description>
+  <displayname default="MaxResults">
+    <label description="MaxResults" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isoptional>1</isoptional>
+  <name>MaxResults</name>
+  <type>7</type>
+</customapirequestparameter>

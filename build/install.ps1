@@ -40,9 +40,9 @@ Write-Host "`nStep 1 of 6: checking prerequisites" -ForegroundColor Cyan
 $pac = Get-Command pac -ErrorAction SilentlyContinue
 if (-not $pac) { throw "Power Platform CLI not found. Install it with: dotnet tool install --global Microsoft.PowerApps.CLI.Tool" }
 
-& pac auth create --environment $EnvironmentUrl --name pwrp-install 2>$null
-& pac auth select --name pwrp-install
-if ($LASTEXITCODE -ne 0) { throw "Could not authenticate to $EnvironmentUrl" }
+. "$PSScriptRoot/Common.ps1"
+Connect-Pac -EnvironmentUrl $EnvironmentUrl -ProfileName "pwrp-install"
+Connect-Dataverse -EnvironmentUrl $EnvironmentUrl
 
 # --- Import ------------------------------------------------------------------
 Write-Host "`nStep 2 of 6: importing the solution" -ForegroundColor Cyan
@@ -90,10 +90,10 @@ $variables = @{
 foreach ($key in $variables.Keys) {
     if ($variables[$key]) {
         Write-Host "  setting $key" -ForegroundColor Gray
-        & pac env http --method POST --url "/api/data/v9.2/environmentvariablevalues" --body (@{
+        Invoke-Dataverse -Method POST -Path "/api/data/v9.2/environmentvariablevalues" -Body @{
             value = $variables[$key]
             "EnvironmentVariableDefinitionId@odata.bind" = "/environmentvariabledefinitions(schemaname='$key')"
-        } | ConvertTo-Json -Compress) | Out-Null
+        } | Out-Null
     }
 }
 

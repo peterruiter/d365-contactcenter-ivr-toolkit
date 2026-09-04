@@ -17,7 +17,10 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$response = & pac env http --method GET --url "/api/data/v9.2/pwrp_HealthCheck" | ConvertFrom-Json
+. "$PSScriptRoot/Common.ps1"
+Connect-Dataverse -EnvironmentUrl $EnvironmentUrl
+
+$response = Invoke-Dataverse -Method GET -Path "/api/data/v9.2/pwrp_HealthCheck"
 $checks = $response.Checks | ConvertFrom-Json
 
 foreach ($check in $checks) {

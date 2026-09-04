@@ -1,0 +1,9 @@
+<customapirequestparameter uniquename="ContextJson">
+  <displayname default="ContextJson">
+    <label description="ContextJson" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isoptional>1</isoptional>
+  <name>ContextJson</name>
+  <type>10</type>
+</customapirequestparameter>

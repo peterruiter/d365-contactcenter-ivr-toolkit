@@ -1,0 +1,11 @@
+<customapiresponseproperty uniquename="Success">
+  <description default="False means the call was handled but could not be completed. Read ErrorCode.">
+    <label description="False means the call was handled but could not be completed. Read ErrorCode." languagecode="1033" />
+  </description>
+  <displayname default="Success">
+    <label description="Success" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>Success</name>
+  <type>0</type>
+</customapiresponseproperty>

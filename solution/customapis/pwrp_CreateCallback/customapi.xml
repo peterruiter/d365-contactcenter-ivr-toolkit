@@ -1,0 +1,18 @@
+<customapi uniquename="pwrp_CreateCallback">
+  <allowedcustomprocessingsteptype>0</allowedcustomprocessingsteptype>
+  <bindingtype>0</bindingtype>
+  <description default="Books a callback. Mode Direct queues it for the next free representative. Mode Scheduled books a specific slot. Repeated calls for the same number and queue return the existing request rather than creating a duplicate.">
+    <label description="Books a callback. Mode Direct queues it for the next free representative. Mode Scheduled books a specific slot. Repeated calls for the same number and queue return the existing request rather than creating a duplicate." languagecode="1033" />
+  </description>
+  <displayname default="Create callback">
+    <label description="Create callback" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isfunction>0</isfunction>
+  <isprivate>0</isprivate>
+  <name>pwrp_CreateCallback</name>
+  <plugintypeid>
+    <plugintypeexportkey>c67eee07-43a8-f111-b8de-000d3ade3584</plugintypeexportkey>
+  </plugintypeid>
+  <workflowsdkstepenabled>0</workflowsdkstepenabled>
+</customapi>

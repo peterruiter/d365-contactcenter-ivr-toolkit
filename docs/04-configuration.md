@@ -71,9 +71,26 @@ you should have configured.
 
 Pick a source per queue.
 
-**Native operating hours** (`pwrp_hourssource = 1`) reads the calendar the client
-already maintains in the admin centre. Right answer when hours are already there.
-Reads internal platform schema, so it can break on a release wave.
+**Native operating hours** (`pwrp_hourssource = 1`) reads the calendar already maintained
+in the admin centre. Right answer when hours are already there. Reads internal platform
+schema, so it can break on a release wave.
+
+The queue reaches its hours through a native lookup, so nothing needs configuring beyond
+setting the operating hours on the queue itself. Confirmed against a real environment on
+2026-09-04:
+
+| Step | Column | Type |
+|---|---|---|
+| Queue to operating hours | `queue.msdyn_operatinghourid` | Lookup |
+| Operating hours to calendar | `msdyn_operatinghour.msdyn_calendarid` | **String** holding a GUID, not a lookup |
+| Calendar to its rules | `calendar_calendar_rules` relationship | `calendarrule` cannot be queried directly |
+
+Two traps worth knowing if this ever needs revisiting. `msdyn_calendarid` is text, so
+reading it as an `EntityReference` throws. And `calendarrule` rejects `RetrieveMultiple`
+outright, so its rows only come back as a related collection on the calendar.
+
+If a release wave moves any of this, switch the affected queues to config hours below and
+fix `Hours/OperatingHoursProvider.cs`. Nothing else reads this model.
 
 **Toolkit config** (`pwrp_hourssource = 2`) reads `pwrp_queuehours` and `pwrp_holiday`.
 More setup, immune to schema drift, easy for a client admin to edit.

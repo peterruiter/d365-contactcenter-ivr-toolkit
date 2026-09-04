@@ -1,0 +1,11 @@
+<environmentvariabledefinition schemaname="pwrp_EnableScheduledCallback">
+  <defaultvalue>false</defaultvalue>
+  <displayname default="Enable scheduled callback">
+    <label description="Enable scheduled callback" languagecode="1033" />
+  </displayname>
+  <introducedversion>1.0.0.0</introducedversion>
+  <iscustomizable>1</iscustomizable>
+  <isrequired>0</isrequired>
+  <secretstore>0</secretstore>
+  <type>100000002</type>
+</environmentvariabledefinition>

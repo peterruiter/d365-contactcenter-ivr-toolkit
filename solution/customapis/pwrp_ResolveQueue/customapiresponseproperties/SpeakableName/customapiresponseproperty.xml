@@ -1,0 +1,8 @@
+<customapiresponseproperty uniquename="SpeakableName">
+  <displayname default="SpeakableName">
+    <label description="SpeakableName" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>SpeakableName</name>
+  <type>10</type>
+</customapiresponseproperty>

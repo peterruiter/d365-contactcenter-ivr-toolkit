@@ -1,0 +1,12 @@
+<customapirequestparameter uniquename="Outcome">
+  <description default="Connected, NoAnswer, Voicemail, Dialling, Cancelled or Failed.">
+    <label description="Connected, NoAnswer, Voicemail, Dialling, Cancelled or Failed." languagecode="1033" />
+  </description>
+  <displayname default="Outcome">
+    <label description="Outcome" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isoptional>0</isoptional>
+  <name>Outcome</name>
+  <type>10</type>
+</customapirequestparameter>

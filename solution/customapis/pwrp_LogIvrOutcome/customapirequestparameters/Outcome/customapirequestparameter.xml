@@ -1,0 +1,12 @@
+<customapirequestparameter uniquename="Outcome">
+  <description default="Contained, Escalated, CallbackBooked, Abandoned or ClosedAnnouncement.">
+    <label description="Contained, Escalated, CallbackBooked, Abandoned or ClosedAnnouncement." languagecode="1033" />
+  </description>
+  <displayname default="Outcome">
+    <label description="Outcome" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isoptional>0</isoptional>
+  <name>Outcome</name>
+  <type>10</type>
+</customapirequestparameter>

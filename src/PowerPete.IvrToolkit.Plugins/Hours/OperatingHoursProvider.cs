@@ -5,6 +5,7 @@ using PowerPete.IvrToolkit.Common;
 using PowerPete.IvrToolkit.Model;
 using PowerPete.IvrToolkit.Speech;
 using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Sdk.Query;
 
 namespace PowerPete.IvrToolkit.Hours
@@ -69,26 +70,31 @@ namespace PowerPete.IvrToolkit.Hours
             return result;
         }
 
+        /// <summary>
+        /// Walks queue to operating hours to calendar.
+        /// </summary>
+        /// <remarks>
+        /// Confirmed against a real environment, 2026-09-04:
+        ///   queue.msdyn_operatinghourid   Lookup to msdyn_operatinghour
+        ///   msdyn_operatinghour.msdyn_calendarid   String, not a lookup, holding a GUID
+        /// There is no queue lookup on msdyn_operatinghour, so this has to start at the
+        /// queue and read forwards. The calendar id being text is the surprise: reading it
+        /// as an EntityReference throws rather than returning null.
+        /// </remarks>
         private Guid? FindCalendar(Guid queueId)
         {
-            var query = new QueryExpression("msdyn_operatinghour")
+            var queue = _service.Retrieve("queue", queueId, new ColumnSet("msdyn_operatinghourid"));
+            var operatingHours = queue.GetAttributeValue<EntityReference>("msdyn_operatinghourid");
+            if (operatingHours == null)
             {
-                ColumnSet = new ColumnSet("msdyn_calendarid"),
-                Criteria =
-                {
-                    Conditions =
-                    {
-                        new ConditionExpression("pwrp_relatedqueueid", ConditionOperator.Equal, queueId)
-                    }
-                },
-                TopCount = 1
-            };
+                return null;
+            }
 
-            // Queues expose operating hours through a lookup added by the Contact Center solution.
-            // The setup script maps that lookup name into pwrp_relatedqueueid on install so this
-            // query stays stable when the platform renames the relationship.
-            var found = _service.RetrieveMultiple(query).Entities.FirstOrDefault();
-            return found?.GetAttributeValue<EntityReference>("msdyn_calendarid")?.Id;
+            var hours = _service.Retrieve("msdyn_operatinghour", operatingHours.Id, new ColumnSet("msdyn_calendarid"));
+            var calendarId = hours.GetAttributeValue<string>("msdyn_calendarid");
+
+            Guid parsed;
+            return Guid.TryParse(calendarId, out parsed) ? parsed : (Guid?)null;
         }
 
         private class Rule
@@ -114,37 +120,110 @@ namespace PowerPete.IvrToolkit.Hours
             }
         }
 
-        private List<Rule> LoadRules(Guid calendarId)
+        /// <summary>
+        /// Loads the recurrence rules for a calendar.
+        /// </summary>
+        /// <remarks>
+        /// Confirmed against a real environment, 2026-09-04: calendarrule cannot be queried
+        /// directly. RetrieveMultiple on it fails with "does not support entities of type
+        /// calendarrule", so the rules come back as a related collection on the calendar
+        /// through the calendar_calendar_rules relationship instead.
+        ///
+        /// A pattern looks like FREQ=WEEKLY;INTERVAL=1;BYDAY=MO,TU,WE,TH,FR, and duration is
+        /// in minutes.
+        /// </remarks>
+        private List<Entity> LoadCalendarRules(Guid calendarId)
         {
-            var query = new QueryExpression("calendarrule")
+            var request = new RetrieveRequest
             {
-                ColumnSet = new ColumnSet("starttime", "duration", "pattern", "effectiveintervalstart", "effectiveintervalend", "innercalendarid", "timezonecode"),
-                Criteria = { Conditions = { new ConditionExpression("calendarid", ConditionOperator.Equal, calendarId) } }
+                Target = new EntityReference("calendar", calendarId),
+                ColumnSet = new ColumnSet("calendarid"),
+                RelatedEntitiesQuery = new RelationshipQueryCollection
+                {
+                    {
+                        new Relationship("calendar_calendar_rules"),
+                        new QueryExpression("calendarrule")
+                        {
+                            ColumnSet = new ColumnSet("starttime", "duration", "offset", "pattern", "effectiveintervalstart", "effectiveintervalend", "innercalendarid", "timezonecode")
+                        }
+                    }
+                }
             };
 
-            var rules = new List<Rule>();
-            foreach (var row in _service.RetrieveMultiple(query).Entities)
+            var calendar = ((RetrieveResponse)_service.Execute(request)).Entity;
+
+            if (calendar.RelatedEntities == null ||
+                !calendar.RelatedEntities.TryGetValue(new Relationship("calendar_calendar_rules"), out var ruleCollection))
             {
-                var rule = new Rule
-                {
-                    Start = row.GetAttributeValue<DateTime>("starttime").TimeOfDay,
-                    DurationMinutes = row.GetAttributeValue<int>("duration"),
-                    EffectiveFrom = row.GetAttributeValue<DateTime?>("effectiveintervalstart"),
-                    EffectiveTo = row.GetAttributeValue<DateTime?>("effectiveintervalend")
-                };
-
-                var pattern = row.GetAttributeValue<string>("pattern") ?? string.Empty;
-                rule.IsClosure = rule.DurationMinutes == 0;
-
-                foreach (var token in ParseByDay(pattern))
-                {
-                    rule.Days.Add(token);
-                }
-
-                rules.Add(rule);
+                _tracing.Trace("[pwrp] calendar {0} returned no rule collection", calendarId);
+                return new List<Entity>();
             }
 
-            _tracing.Trace("[pwrp] loaded {0} calendar rules", rules.Count);
+            return ruleCollection.Entities.ToList();
+        }
+
+        /// <summary>
+        /// Flattens the calendar into one rule per opening window per weekday pattern.
+        /// </summary>
+        /// <remarks>
+        /// The calendar is two levels deep, confirmed against a real environment 2026-09-04.
+        ///
+        /// The outer rule carries the recurrence and nothing about time of day. It has
+        /// duration 1440, a pattern such as FREQ=WEEKLY;INTERVAL=1;BYDAY=MO,TU,WE,TH,FR, the
+        /// effective interval, and innercalendarid.
+        ///
+        /// The inner calendar holds the actual window, as offset and duration in minutes
+        /// from midnight. 08:00 to 17:00 is offset 480, duration 540. Inner rules carry no
+        /// starttime and no pattern at all.
+        ///
+        /// Reading starttime and duration off the outer rule, as this did originally, yields
+        /// a window of midnight to midnight for every day the calendar is open.
+        /// </remarks>
+        private List<Rule> LoadRules(Guid calendarId)
+        {
+            var rules = new List<Rule>();
+
+            foreach (var outer in LoadCalendarRules(calendarId))
+            {
+                var days = new HashSet<DayOfWeek>(ParseByDay(outer.GetAttributeValue<string>("pattern") ?? string.Empty));
+                var effectiveFrom = outer.GetAttributeValue<DateTime?>("effectiveintervalstart");
+                var effectiveTo = outer.GetAttributeValue<DateTime?>("effectiveintervalend");
+                var inner = outer.GetAttributeValue<EntityReference>("innercalendarid");
+
+                if (inner != null)
+                {
+                    foreach (var window in LoadCalendarRules(inner.Id))
+                    {
+                        var minutes = window.GetAttributeValue<int>("duration");
+                        rules.Add(new Rule
+                        {
+                            Start = TimeSpan.FromMinutes(window.GetAttributeValue<int>("offset")),
+                            DurationMinutes = minutes,
+                            IsClosure = minutes == 0,
+                            EffectiveFrom = effectiveFrom,
+                            EffectiveTo = effectiveTo,
+                            Days = days
+                        });
+                    }
+
+                    continue;
+                }
+
+                // A rule with no inner calendar describes itself. Holiday closures arrive
+                // this way, with a duration of zero over an effective interval.
+                var outerMinutes = outer.GetAttributeValue<int>("duration");
+                rules.Add(new Rule
+                {
+                    Start = outer.GetAttributeValue<DateTime>("starttime").TimeOfDay,
+                    DurationMinutes = outerMinutes,
+                    IsClosure = outerMinutes == 0,
+                    EffectiveFrom = effectiveFrom,
+                    EffectiveTo = effectiveTo,
+                    Days = days
+                });
+            }
+
+            _tracing.Trace("[pwrp] loaded {0} opening windows for calendar {1}", rules.Count, calendarId);
             return rules;
         }
 

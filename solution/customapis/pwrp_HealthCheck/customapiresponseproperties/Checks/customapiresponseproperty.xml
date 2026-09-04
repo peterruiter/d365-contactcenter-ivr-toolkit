@@ -1,0 +1,8 @@
+<customapiresponseproperty uniquename="Checks">
+  <displayname default="Checks">
+    <label description="Checks" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>Checks</name>
+  <type>10</type>
+</customapiresponseproperty>

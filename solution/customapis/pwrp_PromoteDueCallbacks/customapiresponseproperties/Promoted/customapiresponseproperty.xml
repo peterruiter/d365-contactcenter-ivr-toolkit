@@ -1,0 +1,8 @@
+<customapiresponseproperty uniquename="Promoted">
+  <displayname default="Promoted">
+    <label description="Promoted" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>Promoted</name>
+  <type>7</type>
+</customapiresponseproperty>

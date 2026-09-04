@@ -1,0 +1,8 @@
+<customapiresponseproperty uniquename="Locale">
+  <displayname default="Locale">
+    <label description="Locale" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>Locale</name>
+  <type>10</type>
+</customapiresponseproperty>

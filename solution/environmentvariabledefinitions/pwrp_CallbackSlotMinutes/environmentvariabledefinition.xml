@@ -1,0 +1,11 @@
+<environmentvariabledefinition schemaname="pwrp_CallbackSlotMinutes">
+  <defaultvalue>30</defaultvalue>
+  <displayname default="Callback slot length (min)">
+    <label description="Callback slot length (min)" languagecode="1033" />
+  </displayname>
+  <introducedversion>1.0.0.0</introducedversion>
+  <iscustomizable>1</iscustomizable>
+  <isrequired>0</isrequired>
+  <secretstore>0</secretstore>
+  <type>100000001</type>
+</environmentvariabledefinition>

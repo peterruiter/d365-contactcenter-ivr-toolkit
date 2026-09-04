@@ -1,0 +1,8 @@
+<customapiresponseproperty uniquename="EstimatedWaitSeconds">
+  <displayname default="EstimatedWaitSeconds">
+    <label description="EstimatedWaitSeconds" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>EstimatedWaitSeconds</name>
+  <type>7</type>
+</customapiresponseproperty>

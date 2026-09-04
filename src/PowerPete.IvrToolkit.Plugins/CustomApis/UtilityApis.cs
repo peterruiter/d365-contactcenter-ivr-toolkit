@@ -150,9 +150,14 @@ namespace PowerPete.IvrToolkit.CustomApis
 
             Add("Queues discovered", queues.Count > 0, $"{queues.Count} active queues found.");
 
-            var withProfile = queues.Count(q => q.ProfileId.HasValue);
-            Add("Queue profiles", withProfile == queues.Count,
-                $"{withProfile} of {queues.Count} queues have a pwrp_queueprofile row.");
+            // Voice only. An organisation can have hundreds of entity and messaging queues
+            // that no IVR will ever route to, and demanding a profile on those turns this
+            // check into noise that gets ignored, which is worse than not checking.
+            var voice = queues.Where(q => string.Equals(q.ChannelType, "Voice", StringComparison.OrdinalIgnoreCase)).ToList();
+            var withProfile = voice.Count(q => q.ProfileId.HasValue);
+            Add("Queue profiles", voice.Count == 0 || withProfile == voice.Count,
+                $"{withProfile} of {voice.Count} voice queues have a pwrp_queueprofile row. " +
+                $"{queues.Count - voice.Count} non voice queues ignored.");
 
             Add("Metrics schema", TableExists(request.Service, "msdyn_queueextension"),
                 "msdyn_queueextension is readable. This table is internal to the platform and carries no API guarantee.");

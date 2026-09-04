@@ -1,0 +1,8 @@
+<customapiresponseproperty uniquename="E164">
+  <displayname default="E164">
+    <label description="E164" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>E164</name>
+  <type>10</type>
+</customapiresponseproperty>

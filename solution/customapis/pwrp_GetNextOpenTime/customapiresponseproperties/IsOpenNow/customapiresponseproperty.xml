@@ -1,0 +1,8 @@
+<customapiresponseproperty uniquename="IsOpenNow">
+  <displayname default="IsOpenNow">
+    <label description="IsOpenNow" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>IsOpenNow</name>
+  <type>0</type>
+</customapiresponseproperty>

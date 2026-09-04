@@ -1,0 +1,11 @@
+<customapiresponseproperty uniquename="Reference">
+  <description default="Six characters, chosen to be unambiguous over the phone.">
+    <label description="Six characters, chosen to be unambiguous over the phone." languagecode="1033" />
+  </description>
+  <displayname default="Reference">
+    <label description="Reference" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>Reference</name>
+  <type>10</type>
+</customapiresponseproperty>

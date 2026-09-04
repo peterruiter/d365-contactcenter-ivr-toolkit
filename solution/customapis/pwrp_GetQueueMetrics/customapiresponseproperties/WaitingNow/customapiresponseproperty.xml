@@ -1,0 +1,8 @@
+<customapiresponseproperty uniquename="WaitingNow">
+  <displayname default="WaitingNow">
+    <label description="WaitingNow" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>WaitingNow</name>
+  <type>7</type>
+</customapiresponseproperty>

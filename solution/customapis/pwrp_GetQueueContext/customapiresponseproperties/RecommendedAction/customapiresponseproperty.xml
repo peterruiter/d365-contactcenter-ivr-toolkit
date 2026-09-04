@@ -1,0 +1,11 @@
+<customapiresponseproperty uniquename="RecommendedAction">
+  <description default="Serve, OfferCallback, OfferVoicemail, AnnounceClosed or AnnounceOutage.">
+    <label description="Serve, OfferCallback, OfferVoicemail, AnnounceClosed or AnnounceOutage." languagecode="1033" />
+  </description>
+  <displayname default="RecommendedAction">
+    <label description="RecommendedAction" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>RecommendedAction</name>
+  <type>10</type>
+</customapiresponseproperty>

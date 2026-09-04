@@ -1,0 +1,18 @@
+<customapi uniquename="pwrp_RescheduleCallback">
+  <allowedcustomprocessingsteptype>0</allowedcustomprocessingsteptype>
+  <bindingtype>0</bindingtype>
+  <description default="Moves a scheduled callback to a different available slot.">
+    <label description="Moves a scheduled callback to a different available slot." languagecode="1033" />
+  </description>
+  <displayname default="Reschedule callback">
+    <label description="Reschedule callback" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isfunction>0</isfunction>
+  <isprivate>0</isprivate>
+  <name>pwrp_RescheduleCallback</name>
+  <plugintypeid>
+    <plugintypeexportkey>29782e05-43a8-f111-b8dd-7c1e52344f50</plugintypeexportkey>
+  </plugintypeid>
+  <workflowsdkstepenabled>0</workflowsdkstepenabled>
+</customapi>

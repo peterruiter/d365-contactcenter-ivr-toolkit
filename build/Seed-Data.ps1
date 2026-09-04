@@ -20,12 +20,14 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-& pac auth create --environment $EnvironmentUrl --name pwrp-seed 2>$null
-& pac auth select --name pwrp-seed
+. "$PSScriptRoot/Common.ps1"
+Connect-Dataverse -EnvironmentUrl $EnvironmentUrl
 
 function Send-Record {
     param([string]$Path, $Body)
-    & pac env http --method POST --url $Path --body ($Body | ConvertTo-Json -Depth 5 -Compress) 2>&1 | Out-Null
+    # Seeding is idempotent by intent, not by constraint, so a duplicate is not fatal.
+    try { Invoke-Dataverse -Method POST -Path $Path -Body $Body | Out-Null }
+    catch { Write-Host "  = $($_.Exception.Message)" -ForegroundColor DarkGray }
 }
 
 # Easter drives four movable Dutch holidays. Anonymous Gregorian algorithm.

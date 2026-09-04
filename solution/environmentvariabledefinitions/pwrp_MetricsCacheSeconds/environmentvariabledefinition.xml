@@ -1,0 +1,11 @@
+<environmentvariabledefinition schemaname="pwrp_MetricsCacheSeconds">
+  <defaultvalue>15</defaultvalue>
+  <displayname default="Metrics cache (s)">
+    <label description="Metrics cache (s)" languagecode="1033" />
+  </displayname>
+  <introducedversion>1.0.0.0</introducedversion>
+  <iscustomizable>1</iscustomizable>
+  <isrequired>0</isrequired>
+  <secretstore>0</secretstore>
+  <type>100000001</type>
+</environmentvariabledefinition>

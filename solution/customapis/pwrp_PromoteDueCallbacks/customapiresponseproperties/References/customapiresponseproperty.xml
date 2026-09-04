@@ -1,0 +1,8 @@
+<customapiresponseproperty uniquename="References">
+  <displayname default="References">
+    <label description="References" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>References</name>
+  <type>10</type>
+</customapiresponseproperty>

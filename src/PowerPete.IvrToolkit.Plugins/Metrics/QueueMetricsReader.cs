@@ -18,10 +18,36 @@ namespace PowerPete.IvrToolkit.Metrics
     /// break is a single-file fix. If the reader throws, the toolkit returns
     /// METRICS_UNAVAILABLE and the agent falls back to a generic wait message rather than
     /// failing the call.
+    ///
+    /// Verified against a real environment, 2026-09-04. On msdyn_queueextension:
+    ///   msdyn_queueid                 Lookup, the queue link. NOT msdyn_queue, which does
+    ///                                 not exist and was what made every read fail
+    ///   msdyn_endtime                 DateTime
+    ///   msdyn_waitstartedon           DateTime
+    ///   msdyn_firstwaittimeinseconds  Integer
+    ///   msdyn_agentacceptedon         DateTime
+    /// msdyn_sourcequeue and msdyn_targetqueue also exist, and are about transfers rather
+    /// than where a segment is waiting now. Do not substitute one for msdyn_queueid.
+    ///
+    /// The conversation link is msdyn_conversationid to activityid. msdyn_ocliveworkitem is
+    /// an activity table, so its primary key is activityid, and msdyn_ocliveworkitemid is a
+    /// string field that is not the key. msdyn_liveworkitemid does not exist at all.
+    ///
+    /// Presence text is msdyn_presencestatustext, not msdyn_presencetext.
+    ///
+    /// Still unverified: everything above was checked while msdyn_queueextension was empty.
+    /// Shapes are right, but no row has been read. Run this again against a queue with
+    /// live traffic before trusting a number it returns.
     /// </summary>
     public class QueueMetricsReader
     {
         private const int OpenConversationStatus = 1;
+
+        // Verified 2026-09-04 against msdyn_basepresencestatus: Available 192360000,
+        // Busy 192360001, Busy DND 192360002, Away 192360003, Offline 192360004.
+        // Note the 19236 prefix. This was guessed as 192350000, which is the queue type
+        // range, so every representative counted as unavailable.
+        private const int AvailablePresence = 192360000;
 
         private readonly IOrganizationService _service;
         private readonly ConfigReader _config;
@@ -76,13 +102,13 @@ namespace PowerPete.IvrToolkit.Metrics
                 {
                     Conditions =
                     {
-                        new ConditionExpression("msdyn_queue", ConditionOperator.Equal, queueId),
+                        new ConditionExpression("msdyn_queueid", ConditionOperator.Equal, queueId),
                         new ConditionExpression("msdyn_endtime", ConditionOperator.Null)
                     }
                 }
             };
 
-            var conversation = query.AddLink("msdyn_ocliveworkitem", "msdyn_liveworkitemid", "msdyn_ocliveworkitemid");
+            var conversation = query.AddLink("msdyn_ocliveworkitem", "msdyn_conversationid", "activityid");
             conversation.EntityAlias = "c";
             conversation.LinkCriteria.AddCondition("statuscode", ConditionOperator.Equal, OpenConversationStatus);
             conversation.LinkCriteria.AddCondition("msdyn_isoutbound", ConditionOperator.Equal, false);
@@ -116,7 +142,7 @@ namespace PowerPete.IvrToolkit.Metrics
                 {
                     Conditions =
                     {
-                        new ConditionExpression("msdyn_queue", ConditionOperator.Equal, queueId),
+                        new ConditionExpression("msdyn_queueid", ConditionOperator.Equal, queueId),
                         new ConditionExpression("msdyn_agentacceptedon", ConditionOperator.NotNull),
                         new ConditionExpression("msdyn_agentacceptedon", ConditionOperator.OnOrAfter, DateTime.UtcNow.AddMinutes(-windowMinutes))
                     }
@@ -161,7 +187,7 @@ namespace PowerPete.IvrToolkit.Metrics
 
             var presence = query.AddLink("msdyn_presence", "msdyn_presenceid", "msdyn_presenceid", JoinOperator.LeftOuter);
             presence.EntityAlias = "p";
-            presence.Columns = new ColumnSet("msdyn_basepresencestatus", "msdyn_presencetext");
+            presence.Columns = new ColumnSet("msdyn_basepresencestatus", "msdyn_presencestatustext");
 
             var rows = _service.RetrieveMultiple(query).Entities;
             metrics.RepresentativesOnline = rows.Count;
@@ -172,8 +198,7 @@ namespace PowerPete.IvrToolkit.Metrics
                 {
                     return false;
                 }
-                // 192350000 = Available in the base presence option set.
-                return (aliased.Value as OptionSetValue)?.Value == 192350000;
+                return (aliased.Value as OptionSetValue)?.Value == AvailablePresence;
             });
 
             metrics.AvailableCapacityUnits = metrics.RepresentativesAvailable;

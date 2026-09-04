@@ -12,7 +12,9 @@ generated from a development environment, not written by hand.
 # 1. Create the schema, environment variables and choices
 ./build/New-Schema.ps1 -EnvironmentUrl https://mydev.crm4.dynamics.com
 
-# 2. Create the security role and model driven app by hand (see below)
+# 2. Create the model driven app by hand (see below)
+#    New-Schema.ps1 already created the security role. To redo just that:
+#    ./build/New-SecurityRole.ps1 -EnvironmentUrl https://mydev.crm4.dynamics.com
 
 # 3. Build and import the plugin assembly, then register the Custom APIs
 ./build/build.ps1
@@ -58,8 +60,14 @@ The metadata API does not create these. Add them in the maker portal.
 **Power Pete IVR Reader**, assigned to the application user the agent authenticates as.
 Privileges are listed in `build/schema.json` under `securityRole`.
 
-Create it by hand. Role privilege assignment through the Web API needs privilege ids
-that differ per environment, so scripting it is more fragile than a one-off.
+`New-Schema.ps1` creates it, or run `build/New-SecurityRole.ps1` on its own. Privilege ids
+differ per environment, so they are read from entity metadata at run time rather than
+hard coded. The privilege set is replaced on every run, so the role always matches
+`schema.json`.
+
+Scripting it also reaches tables the role editor will not show you: `queuemembership` is
+an intersect entity, `msdyn_ocliveworkitem` is not surfaced, and `environmentvariablevalue`
+is not where you would look for it.
 
 Do not substitute System Administrator. The toolkit is built to run on this role and the
 health check assumes it.

@@ -1,0 +1,12 @@
+<customapirequestparameter uniquename="Days">
+  <description default="1 to 14. Defaults to 3.">
+    <label description="1 to 14. Defaults to 3." languagecode="1033" />
+  </description>
+  <displayname default="Days">
+    <label description="Days" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isoptional>1</isoptional>
+  <name>Days</name>
+  <type>7</type>
+</customapirequestparameter>

@@ -1,0 +1,18 @@
+<customapi uniquename="pwrp_GetNextOpenTime">
+  <allowedcustomprocessingsteptype>0</allowedcustomprocessingsteptype>
+  <bindingtype>0</bindingtype>
+  <description default="When the queue opens next, with a phrase the agent can read out.">
+    <label description="When the queue opens next, with a phrase the agent can read out." languagecode="1033" />
+  </description>
+  <displayname default="Get next open time">
+    <label description="Get next open time" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isfunction>1</isfunction>
+  <isprivate>0</isprivate>
+  <name>pwrp_GetNextOpenTime</name>
+  <plugintypeid>
+    <plugintypeexportkey>7b3b0304-43a8-f111-b8de-70a8a52adfbd</plugintypeexportkey>
+  </plugintypeid>
+  <workflowsdkstepenabled>0</workflowsdkstepenabled>
+</customapi>

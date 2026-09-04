@@ -1,0 +1,8 @@
+<customapiresponseproperty uniquename="Passed">
+  <displayname default="Passed">
+    <label description="Passed" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>Passed</name>
+  <type>0</type>
+</customapiresponseproperty>

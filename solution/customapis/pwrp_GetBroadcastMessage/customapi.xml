@@ -1,0 +1,18 @@
+<customapi uniquename="pwrp_GetBroadcastMessage">
+  <allowedcustomprocessingsteptype>0</allowedcustomprocessingsteptype>
+  <bindingtype>0</bindingtype>
+  <description default="Returns an active outage or announcement message for a queue, if an administrator has published one.">
+    <label description="Returns an active outage or announcement message for a queue, if an administrator has published one." languagecode="1033" />
+  </description>
+  <displayname default="Get broadcast message">
+    <label description="Get broadcast message" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isfunction>1</isfunction>
+  <isprivate>0</isprivate>
+  <name>pwrp_GetBroadcastMessage</name>
+  <plugintypeid>
+    <plugintypeexportkey>9090640a-43a8-f111-b8de-70a8a52adfbd</plugintypeexportkey>
+  </plugintypeid>
+  <workflowsdkstepenabled>0</workflowsdkstepenabled>
+</customapi>

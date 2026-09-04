@@ -1,0 +1,8 @@
+<customapiresponseproperty uniquename="AverageWaitSeconds">
+  <displayname default="AverageWaitSeconds">
+    <label description="AverageWaitSeconds" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>AverageWaitSeconds</name>
+  <type>7</type>
+</customapiresponseproperty>

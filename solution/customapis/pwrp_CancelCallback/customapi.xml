@@ -1,0 +1,18 @@
+<customapi uniquename="pwrp_CancelCallback">
+  <allowedcustomprocessingsteptype>0</allowedcustomprocessingsteptype>
+  <bindingtype>0</bindingtype>
+  <description default="Cancels an open callback request.">
+    <label description="Cancels an open callback request." languagecode="1033" />
+  </description>
+  <displayname default="Cancel callback">
+    <label description="Cancel callback" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isfunction>0</isfunction>
+  <isprivate>0</isprivate>
+  <name>pwrp_CancelCallback</name>
+  <plugintypeid>
+    <plugintypeexportkey>c97eee07-43a8-f111-b8de-000d3ade3584</plugintypeexportkey>
+  </plugintypeid>
+  <workflowsdkstepenabled>0</workflowsdkstepenabled>
+</customapi>

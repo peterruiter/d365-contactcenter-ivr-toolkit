@@ -1,0 +1,8 @@
+<customapiresponseproperty uniquename="QueueId">
+  <displayname default="QueueId">
+    <label description="QueueId" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>QueueId</name>
+  <type>10</type>
+</customapiresponseproperty>

@@ -1,0 +1,18 @@
+<customapi uniquename="pwrp_LogIvrOutcome">
+  <allowedcustomprocessingsteptype>0</allowedcustomprocessingsteptype>
+  <bindingtype>0</bindingtype>
+  <description default="Records what the agent did so containment and deflection can be reported. Call once at the end of every conversation.">
+    <label description="Records what the agent did so containment and deflection can be reported. Call once at the end of every conversation." languagecode="1033" />
+  </description>
+  <displayname default="Log IVR outcome">
+    <label description="Log IVR outcome" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isfunction>0</isfunction>
+  <isprivate>0</isprivate>
+  <name>pwrp_LogIvrOutcome</name>
+  <plugintypeid>
+    <plugintypeexportkey>cf7eee07-43a8-f111-b8de-000d3ade3584</plugintypeexportkey>
+  </plugintypeid>
+  <workflowsdkstepenabled>0</workflowsdkstepenabled>
+</customapi>

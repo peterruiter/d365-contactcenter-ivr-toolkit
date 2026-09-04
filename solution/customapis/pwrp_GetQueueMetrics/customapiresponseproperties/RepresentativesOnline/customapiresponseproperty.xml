@@ -1,0 +1,8 @@
+<customapiresponseproperty uniquename="RepresentativesOnline">
+  <displayname default="RepresentativesOnline">
+    <label description="RepresentativesOnline" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>RepresentativesOnline</name>
+  <type>7</type>
+</customapiresponseproperty>

@@ -1,0 +1,12 @@
+<customapirequestparameter uniquename="ChannelType">
+  <description default="Voice, Messaging or Record. Leave empty for all.">
+    <label description="Voice, Messaging or Record. Leave empty for all." languagecode="1033" />
+  </description>
+  <displayname default="ChannelType">
+    <label description="ChannelType" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isoptional>1</isoptional>
+  <name>ChannelType</name>
+  <type>10</type>
+</customapirequestparameter>

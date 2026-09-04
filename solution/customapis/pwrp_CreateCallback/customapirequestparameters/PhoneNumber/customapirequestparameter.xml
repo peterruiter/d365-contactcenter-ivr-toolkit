@@ -1,0 +1,12 @@
+<customapirequestparameter uniquename="PhoneNumber">
+  <description default="Any format. Normalised to E.164.">
+    <label description="Any format. Normalised to E.164." languagecode="1033" />
+  </description>
+  <displayname default="PhoneNumber">
+    <label description="PhoneNumber" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isoptional>0</isoptional>
+  <name>PhoneNumber</name>
+  <type>10</type>
+</customapirequestparameter>

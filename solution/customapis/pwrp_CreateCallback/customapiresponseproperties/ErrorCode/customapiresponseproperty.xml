@@ -1,0 +1,11 @@
+<customapiresponseproperty uniquename="ErrorCode">
+  <description default="Stable error code. Branch on this, never on ErrorMessage.">
+    <label description="Stable error code. Branch on this, never on ErrorMessage." languagecode="1033" />
+  </description>
+  <displayname default="ErrorCode">
+    <label description="ErrorCode" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>ErrorCode</name>
+  <type>10</type>
+</customapiresponseproperty>

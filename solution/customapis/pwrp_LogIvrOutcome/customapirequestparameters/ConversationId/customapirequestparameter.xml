@@ -1,0 +1,9 @@
+<customapirequestparameter uniquename="ConversationId">
+  <displayname default="ConversationId">
+    <label description="ConversationId" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isoptional>1</isoptional>
+  <name>ConversationId</name>
+  <type>10</type>
+</customapirequestparameter>

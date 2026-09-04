@@ -179,6 +179,12 @@ namespace PowerPete.IvrToolkit.Queues
             return entity.Contains(key) && entity[key] is AliasedValue aliased && aliased.Value is T typed ? typed : default(T);
         }
 
+        /// <summary>Maps msdyn_queuetype to the channel names the contract uses.</summary>
+        /// <remarks>
+        /// Values confirmed against a real environment, 2026-09-04. The platform labels
+        /// 192350001 "Entity"; the contract calls it "Record", which is the word an agent
+        /// author expects. Deliberate, and renaming it would be a breaking contract change.
+        /// </remarks>
         private static string MapChannel(OptionSetValue value)
         {
             if (value == null) return "Unknown";
@@ -200,7 +206,7 @@ namespace PowerPete.IvrToolkit.Queues
         }
 
         /// <summary>Levenshtein similarity as a percentage. Good enough, and it runs in microseconds.</summary>
-        internal static int Similarity(string left, string right)
+        public static int Similarity(string left, string right)
         {
             if (string.IsNullOrEmpty(left) || string.IsNullOrEmpty(right)) return 0;
             if (left == right) return 100;

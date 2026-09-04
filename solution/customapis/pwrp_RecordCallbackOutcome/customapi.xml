@@ -1,0 +1,18 @@
+<customapi uniquename="pwrp_RecordCallbackOutcome">
+  <allowedcustomprocessingsteptype>0</allowedcustomprocessingsteptype>
+  <bindingtype>0</bindingtype>
+  <description default="Records the result of a callback dial so the retry policy can act. Wire into the proactive engagement completion path.">
+    <label description="Records the result of a callback dial so the retry policy can act. Wire into the proactive engagement completion path." languagecode="1033" />
+  </description>
+  <displayname default="Record callback outcome">
+    <label description="Record callback outcome" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isfunction>0</isfunction>
+  <isprivate>1</isprivate>
+  <name>pwrp_RecordCallbackOutcome</name>
+  <plugintypeid>
+    <plugintypeexportkey>d07eee07-43a8-f111-b8de-000d3ade3584</plugintypeexportkey>
+  </plugintypeid>
+  <workflowsdkstepenabled>0</workflowsdkstepenabled>
+</customapi>

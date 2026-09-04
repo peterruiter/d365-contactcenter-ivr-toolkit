@@ -1,0 +1,8 @@
+<customapiresponseproperty uniquename="IsValid">
+  <displayname default="IsValid">
+    <label description="IsValid" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>IsValid</name>
+  <type>0</type>
+</customapiresponseproperty>

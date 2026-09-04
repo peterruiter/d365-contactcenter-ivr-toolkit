@@ -1,0 +1,9 @@
+<customapirequestparameter uniquename="CallbackId">
+  <displayname default="CallbackId">
+    <label description="CallbackId" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isoptional>0</isoptional>
+  <name>CallbackId</name>
+  <type>10</type>
+</customapirequestparameter>

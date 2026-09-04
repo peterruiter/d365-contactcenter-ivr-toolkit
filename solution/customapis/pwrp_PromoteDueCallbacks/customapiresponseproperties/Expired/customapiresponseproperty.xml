@@ -1,0 +1,8 @@
+<customapiresponseproperty uniquename="Expired">
+  <displayname default="Expired">
+    <label description="Expired" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>Expired</name>
+  <type>7</type>
+</customapiresponseproperty>

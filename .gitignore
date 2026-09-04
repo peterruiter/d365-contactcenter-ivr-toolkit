@@ -9,3 +9,4 @@ node_modules/
 CLAUDE.md
 HANDOVER.md
 .claude/
+.vscode/

@@ -1,0 +1,8 @@
+<customapiresponseproperty uniquename="WaitBand">
+  <displayname default="WaitBand">
+    <label description="WaitBand" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>WaitBand</name>
+  <type>10</type>
+</customapiresponseproperty>

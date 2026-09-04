@@ -1,0 +1,8 @@
+<customapiresponseproperty uniquename="Count">
+  <displayname default="Count">
+    <label description="Count" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>Count</name>
+  <type>7</type>
+</customapiresponseproperty>

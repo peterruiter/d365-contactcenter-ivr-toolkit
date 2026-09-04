@@ -1,0 +1,8 @@
+<customapiresponseproperty uniquename="Metrics">
+  <displayname default="Metrics">
+    <label description="Metrics" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>Metrics</name>
+  <type>10</type>
+</customapiresponseproperty>

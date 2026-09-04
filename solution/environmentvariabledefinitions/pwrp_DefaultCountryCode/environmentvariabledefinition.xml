@@ -1,0 +1,11 @@
+<environmentvariabledefinition schemaname="pwrp_DefaultCountryCode">
+  <defaultvalue>31</defaultvalue>
+  <displayname default="Default country code">
+    <label description="Default country code" languagecode="1033" />
+  </displayname>
+  <introducedversion>1.0.0.0</introducedversion>
+  <iscustomizable>1</iscustomizable>
+  <isrequired>0</isrequired>
+  <secretstore>0</secretstore>
+  <type>100000000</type>
+</environmentvariabledefinition>

@@ -1,0 +1,18 @@
+<customapi uniquename="pwrp_ValidatePhoneNumber">
+  <allowedcustomprocessingsteptype>0</allowedcustomprocessingsteptype>
+  <bindingtype>0</bindingtype>
+  <description default="Normalises a spoken or typed phone number to E.164 and returns a digit by digit spelling for confirmation.">
+    <label description="Normalises a spoken or typed phone number to E.164 and returns a digit by digit spelling for confirmation." languagecode="1033" />
+  </description>
+  <displayname default="Validate phone number">
+    <label description="Validate phone number" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isfunction>1</isfunction>
+  <isprivate>0</isprivate>
+  <name>pwrp_ValidatePhoneNumber</name>
+  <plugintypeid>
+    <plugintypeexportkey>c9690a05-43a8-f111-b8dd-7c1e52faad42</plugintypeexportkey>
+  </plugintypeid>
+  <workflowsdkstepenabled>0</workflowsdkstepenabled>
+</customapi>

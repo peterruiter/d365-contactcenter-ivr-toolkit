@@ -1,0 +1,18 @@
+<customapi uniquename="pwrp_GetQueues">
+  <allowedcustomprocessingsteptype>0</allowedcustomprocessingsteptype>
+  <bindingtype>0</bindingtype>
+  <description default="Lists active contact centre queues the agent can route to, optionally filtered by channel.">
+    <label description="Lists active contact centre queues the agent can route to, optionally filtered by channel." languagecode="1033" />
+  </description>
+  <displayname default="Get queues">
+    <label description="Get queues" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isfunction>1</isfunction>
+  <isprivate>0</isprivate>
+  <name>pwrp_GetQueues</name>
+  <plugintypeid>
+    <plugintypeexportkey>dd7ab501-43a8-f111-b8de-000d3ade3584</plugintypeexportkey>
+  </plugintypeid>
+  <workflowsdkstepenabled>0</workflowsdkstepenabled>
+</customapi>

@@ -1,0 +1,8 @@
+<customapiresponseproperty uniquename="Attempts">
+  <displayname default="Attempts">
+    <label description="Attempts" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>Attempts</name>
+  <type>7</type>
+</customapiresponseproperty>

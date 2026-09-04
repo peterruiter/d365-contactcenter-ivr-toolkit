@@ -1,0 +1,11 @@
+<customapiresponseproperty uniquename="Context">
+  <description default="Full JSON payload.">
+    <label description="Full JSON payload." languagecode="1033" />
+  </description>
+  <displayname default="Context">
+    <label description="Context" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>Context</name>
+  <type>10</type>
+</customapiresponseproperty>

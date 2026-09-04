@@ -1,0 +1,12 @@
+<customapirequestparameter uniquename="Queue">
+  <description default="Queue name, alias or id.">
+    <label description="Queue name, alias or id." languagecode="1033" />
+  </description>
+  <displayname default="Queue">
+    <label description="Queue" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isoptional>0</isoptional>
+  <name>Queue</name>
+  <type>10</type>
+</customapirequestparameter>

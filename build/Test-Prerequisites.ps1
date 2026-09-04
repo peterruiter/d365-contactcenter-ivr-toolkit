@@ -19,26 +19,31 @@ $ErrorActionPreference = "Continue"
 $required = @(
     @{ Table = "queues";                    Why = "Core queue metadata" }
     @{ Table = "msdyn_operatinghours";      Why = "Native opening hours. Optional if you use toolkit config hours" }
-    @{ Table = "calendarrules";             Why = "Opening hours recurrence" }
+    @{ Table = "calendars";                 Why = "Opening hours recurrence. calendarrule itself cannot be queried, its rules come back through the calendar_calendar_rules relationship" }
     @{ Table = "msdyn_queueextensions";     Why = "Live queue metrics. Internal platform table" }
     @{ Table = "msdyn_ocliveworkitems";     Why = "Conversation state for metrics" }
     @{ Table = "msdyn_agentstatushistories"; Why = "Representative presence" }
     @{ Table = "msdyn_liveworkstreams";     Why = "Workstream lookup" }
 )
 
-& pac auth create --environment $EnvironmentUrl --name pwrp-prereq 2>$null
-& pac auth select --name pwrp-prereq
+. "$PSScriptRoot/Common.ps1"
+Connect-Dataverse -EnvironmentUrl $EnvironmentUrl
 
+# These checks used to shell out to a native command inside a try/catch. A native command
+# returning a non-zero exit code does not throw, so the catch never ran and every table
+# reported PASS whether or not it existed. Invoke-Dataverse throws, so a failure is a
+# failure. If this file ever goes back to calling an executable, check $LASTEXITCODE.
 $failures = 0
 foreach ($check in $required) {
     try {
-        & pac env http --method GET --url "/api/data/v9.2/$($check.Table)?`$top=1" | Out-Null
+        Invoke-Dataverse -Method GET -Path "/api/data/v9.2/$($check.Table)?`$top=1" | Out-Null
         Write-Host "[PASS] $($check.Table)" -ForegroundColor Green
     }
     catch {
         $failures++
         Write-Host "[FAIL] $($check.Table)" -ForegroundColor Red
         Write-Host "       $($check.Why)" -ForegroundColor Gray
+        Write-Host "       $($_.Exception.Message)" -ForegroundColor DarkGray
     }
 }
 

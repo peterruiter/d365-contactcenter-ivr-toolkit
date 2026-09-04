@@ -1,0 +1,18 @@
+<customapi uniquename="pwrp_HealthCheck">
+  <allowedcustomprocessingsteptype>0</allowedcustomprocessingsteptype>
+  <bindingtype>0</bindingtype>
+  <description default="Validates the installation. Run after install and after every platform update.">
+    <label description="Validates the installation. Run after install and after every platform update." languagecode="1033" />
+  </description>
+  <displayname default="Health check">
+    <label description="Health check" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isfunction>1</isfunction>
+  <isprivate>0</isprivate>
+  <name>pwrp_HealthCheck</name>
+  <plugintypeid>
+    <plugintypeexportkey>38062605-43a8-f111-b8dd-000d3ade357e</plugintypeexportkey>
+  </plugintypeid>
+  <workflowsdkstepenabled>0</workflowsdkstepenabled>
+</customapi>

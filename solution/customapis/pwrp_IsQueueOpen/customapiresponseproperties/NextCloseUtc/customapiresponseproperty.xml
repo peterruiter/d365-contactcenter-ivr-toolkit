@@ -1,0 +1,8 @@
+<customapiresponseproperty uniquename="NextCloseUtc">
+  <displayname default="NextCloseUtc">
+    <label description="NextCloseUtc" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>NextCloseUtc</name>
+  <type>1</type>
+</customapiresponseproperty>

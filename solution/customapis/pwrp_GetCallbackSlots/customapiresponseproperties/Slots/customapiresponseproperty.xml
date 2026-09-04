@@ -1,0 +1,8 @@
+<customapiresponseproperty uniquename="Slots">
+  <displayname default="Slots">
+    <label description="Slots" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>Slots</name>
+  <type>10</type>
+</customapiresponseproperty>

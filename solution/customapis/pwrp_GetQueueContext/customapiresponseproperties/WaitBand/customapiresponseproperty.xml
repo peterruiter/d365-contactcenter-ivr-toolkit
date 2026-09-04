@@ -1,0 +1,11 @@
+<customapiresponseproperty uniquename="WaitBand">
+  <description default="Short, Moderate, Long or VeryLong.">
+    <label description="Short, Moderate, Long or VeryLong." languagecode="1033" />
+  </description>
+  <displayname default="WaitBand">
+    <label description="WaitBand" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>WaitBand</name>
+  <type>10</type>
+</customapiresponseproperty>

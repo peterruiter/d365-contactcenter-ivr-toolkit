@@ -1,0 +1,18 @@
+<customapi uniquename="pwrp_PromoteDueCallbacks">
+  <allowedcustomprocessingsteptype>0</allowedcustomprocessingsteptype>
+  <bindingtype>0</bindingtype>
+  <description default="Moves due scheduled callbacks into the outbound workstream, applies the retry policy and expires stale requests. Called by the Power Pete Promote Due Callbacks flow. Not for agents.">
+    <label description="Moves due scheduled callbacks into the outbound workstream, applies the retry policy and expires stale requests. Called by the Power Pete Promote Due Callbacks flow. Not for agents." languagecode="1033" />
+  </description>
+  <displayname default="Promote due callbacks">
+    <label description="Promote due callbacks" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isfunction>0</isfunction>
+  <isprivate>1</isprivate>
+  <name>pwrp_PromoteDueCallbacks</name>
+  <plugintypeid>
+    <plugintypeexportkey>9190640a-43a8-f111-b8de-70a8a52adfbd</plugintypeexportkey>
+  </plugintypeid>
+  <workflowsdkstepenabled>0</workflowsdkstepenabled>
+</customapi>

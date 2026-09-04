@@ -1,0 +1,8 @@
+<customapiresponseproperty uniquename="CallbackId">
+  <displayname default="CallbackId">
+    <label description="CallbackId" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>CallbackId</name>
+  <type>10</type>
+</customapiresponseproperty>

@@ -1,0 +1,18 @@
+<customapi uniquename="pwrp_IsQueueOpen">
+  <allowedcustomprocessingsteptype>0</allowedcustomprocessingsteptype>
+  <bindingtype>0</bindingtype>
+  <description default="Whether a queue is open now, or at a future moment. Use the future form to check a proposed callback time.">
+    <label description="Whether a queue is open now, or at a future moment. Use the future form to check a proposed callback time." languagecode="1033" />
+  </description>
+  <displayname default="Is queue open">
+    <label description="Is queue open" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isfunction>1</isfunction>
+  <isprivate>0</isprivate>
+  <name>pwrp_IsQueueOpen</name>
+  <plugintypeid>
+    <plugintypeexportkey>7a3b0304-43a8-f111-b8de-70a8a52adfbd</plugintypeexportkey>
+  </plugintypeid>
+  <workflowsdkstepenabled>0</workflowsdkstepenabled>
+</customapi>

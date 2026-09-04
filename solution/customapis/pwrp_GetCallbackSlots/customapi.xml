@@ -1,0 +1,18 @@
+<customapi uniquename="pwrp_GetCallbackSlots">
+  <allowedcustomprocessingsteptype>0</allowedcustomprocessingsteptype>
+  <bindingtype>0</bindingtype>
+  <description default="Bookable callback windows inside opening hours, with remaining capacity. Offer at most three over the phone.">
+    <label description="Bookable callback windows inside opening hours, with remaining capacity. Offer at most three over the phone." languagecode="1033" />
+  </description>
+  <displayname default="Get callback slots">
+    <label description="Get callback slots" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isfunction>1</isfunction>
+  <isprivate>0</isprivate>
+  <name>pwrp_GetCallbackSlots</name>
+  <plugintypeid>
+    <plugintypeexportkey>1c782e05-43a8-f111-b8dd-7c1e52344f50</plugintypeexportkey>
+  </plugintypeid>
+  <workflowsdkstepenabled>0</workflowsdkstepenabled>
+</customapi>

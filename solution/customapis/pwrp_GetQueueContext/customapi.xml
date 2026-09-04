@@ -1,0 +1,18 @@
+<customapi uniquename="pwrp_GetQueueContext">
+  <allowedcustomprocessingsteptype>0</allowedcustomprocessingsteptype>
+  <bindingtype>0</bindingtype>
+  <description default="Returns opening state, live wait band, outage message, callback availability and a recommended action in one call. Use this at the start of a voice conversation instead of several separate lookups.">
+    <label description="Returns opening state, live wait band, outage message, callback availability and a recommended action in one call. Use this at the start of a voice conversation instead of several separate lookups." languagecode="1033" />
+  </description>
+  <displayname default="Get queue context">
+    <label description="Get queue context" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isfunction>1</isfunction>
+  <isprivate>0</isprivate>
+  <name>pwrp_GetQueueContext</name>
+  <plugintypeid>
+    <plugintypeexportkey>75052605-43a8-f111-b8dd-000d3ade357e</plugintypeexportkey>
+  </plugintypeid>
+  <workflowsdkstepenabled>0</workflowsdkstepenabled>
+</customapi>

@@ -10,8 +10,9 @@
     Safe to run repeatedly. Existing APIs are patched in place, which preserves the bindings
     any Copilot Studio agent already has.
 
-    Run AFTER the solution import, because the script resolves each plugin type id from the
-    registered assembly.
+    Run AFTER the assembly is in the environment, because each API binds to a plugin type
+    resolved from it. That means after the solution import, or after Import-PluginAssembly.ps1
+    when bootstrapping a development environment that has no solution to import yet.
 
 .EXAMPLE
     ./Register-CustomApis.ps1 -EnvironmentUrl https://contoso.crm4.dynamics.com
@@ -36,30 +37,86 @@ $typeMap = @{
 $definition = Get-Content $DefinitionFile -Raw | ConvertFrom-Json
 $solution = $definition.solutionUniqueName
 
-function Invoke-Dataverse {
-    param([string]$Method, [string]$Path, $Body, [switch]$Quiet)
+. "$PSScriptRoot/Common.ps1"
+Connect-Dataverse -EnvironmentUrl $EnvironmentUrl
 
-    if ($WhatIf) {
+function Send-Api {
+    param([string]$Method, [string]$Path, $Body, [switch]$Representation)
+
+    # WhatIf suppresses writes only. Reads still run, so a dry run can tell you which APIs
+    # would be created against which plugin types rather than just echoing back the plan.
+    if ($WhatIf -and $Method -ne "GET") {
         Write-Host "      WhatIf: $Method $Path" -ForegroundColor DarkGray
         return $null
     }
 
-    $args = @("env", "http", "--method", $Method, "--url", $Path)
-    if ($Body) { $args += @("--body", ($Body | ConvertTo-Json -Depth 10 -Compress)) }
-    if ($Method -ne "GET") { $args += @("--headers", "MSCRM.SolutionUniqueName=$solution") }
+    if ($Method -eq "GET") { return Invoke-Dataverse -Method GET -Path $Path }
+    return Invoke-Dataverse -Method $Method -Path $Path -Body $Body -SolutionName $solution -Representation:$Representation
+}
 
-    $raw = & pac @args 2>&1
-    if ($LASTEXITCODE -ne 0 -and -not $Quiet) {
-        throw "Dataverse call failed: $Method $Path`n$raw"
+<#
+.SYNOPSIS
+    Creates or updates one request parameter or response property.
+
+.DESCRIPTION
+    Two things about uniquename, both confirmed against a real environment on 2026-09-04.
+
+    It is not an alternate key, so a child cannot be addressed as
+    customapirequestparameters(uniquename='...'). That returns "The key in the request URI
+    is not valid". Query by parent and name instead, then patch by id or create.
+
+    It also becomes the property name in the generated message, so it has to be the bare
+    name. An earlier version of this script wrote "<api>.<name>" to make the alternate key
+    work, and the API then failed to execute at all with "property names must not contain
+    any of the reserved characters ':', '.', '@'". Those rows are deleted and rewritten
+    here, because uniquename cannot be patched.
+
+    The parent binding and uniquename are only sent on create. Both are immutable.
+#>
+function Set-ApiChild {
+    param(
+        [string]$EntitySet,
+        [string]$IdField,
+        [string]$ApiName,
+        [string]$ChildName,
+        $Body
+    )
+
+    if ($WhatIf) {
+        Write-Host "      WhatIf: upsert $EntitySet $ChildName on $ApiName" -ForegroundColor DarkGray
+        return
     }
-    if ($raw) { try { return $raw | ConvertFrom-Json } catch { return $null } }
+
+    $apiId = $script:apiIds[$ApiName]
+    if (-not $apiId) { throw "No id known for $ApiName. It was neither found nor created." }
+
+    $found = (Invoke-Dataverse -Method GET -Path ("/api/data/v9.2/$EntitySet" +
+        "?`$select=$IdField,uniquename" +
+        "&`$filter=_customapiid_value eq $apiId and (uniquename eq '$ChildName' or uniquename eq '$ApiName.$ChildName')")).value
+
+    foreach ($stale in ($found | Where-Object { $_.uniquename -ne $ChildName })) {
+        Invoke-Dataverse -Method DELETE -Path "/api/data/v9.2/$EntitySet($($stale.$IdField))" | Out-Null
+        Write-Host "      - removed $($stale.uniquename)" -ForegroundColor DarkGray
+    }
+
+    $current = $found | Where-Object { $_.uniquename -eq $ChildName } | Select-Object -First 1
+    if ($current) {
+        Invoke-Dataverse -Method PATCH -Path "/api/data/v9.2/$EntitySet($($current.$IdField))" `
+            -Body $Body -SolutionName $solution | Out-Null
+        return
+    }
+
+    $Body.uniquename = $ChildName
+    $Body["CustomAPIId@odata.bind"] = "/customapis($apiId)"
+    Invoke-Dataverse -Method POST -Path "/api/data/v9.2/$EntitySet" `
+        -Body $Body -SolutionName $solution | Out-Null
 }
 
 # --- Resolve plugin type ids from the registered assembly ---------------------
 Write-Host "Resolving plugin types from $($definition.assembly)" -ForegroundColor Cyan
 
 $pluginTypes = @{}
-$response = Invoke-Dataverse -Method GET -Path "/api/data/v9.2/plugintypes?`$select=plugintypeid,typename&`$filter=startswith(typename,'PowerPete.IvrToolkit')"
+$response = Send-Api -Method GET -Path "/api/data/v9.2/plugintypes?`$select=plugintypeid,typename&`$filter=startswith(typename,'PowerPete.IvrToolkit')"
 foreach ($type in $response.value) { $pluginTypes[$type.typename] = $type.plugintypeid }
 
 if ($pluginTypes.Count -eq 0 -and -not $WhatIf) {
@@ -69,8 +126,12 @@ Write-Host "  found $($pluginTypes.Count) plugin types" -ForegroundColor Gray
 
 # --- Existing APIs, so we patch rather than duplicate -------------------------
 $existing = @{}
-$current = Invoke-Dataverse -Method GET -Path "/api/data/v9.2/customapis?`$select=customapiid,uniquename&`$filter=startswith(uniquename,'$($definition.publisherPrefix)_')"
-foreach ($api in $current.value) { $existing[$api.uniquename] = $api.customapiid }
+$script:apiIds = @{}
+$current = Send-Api -Method GET -Path "/api/data/v9.2/customapis?`$select=customapiid,uniquename&`$filter=startswith(uniquename,'$($definition.publisherPrefix)_')"
+foreach ($api in $current.value) {
+    $existing[$api.uniquename] = $api.customapiid
+    $script:apiIds[$api.uniquename] = $api.customapiid
+}
 
 # --- Push -------------------------------------------------------------------
 Write-Host "`nRegistering $($definition.apis.Count) custom APIs into $solution" -ForegroundColor Cyan
@@ -99,34 +160,35 @@ foreach ($api in $definition.apis) {
     }
 
     if ($isNew) {
-        Invoke-Dataverse -Method POST -Path "/api/data/v9.2/customapis" -Body $body | Out-Null
+        $created = Send-Api -Method POST -Path "/api/data/v9.2/customapis" -Body $body -Representation
+        if ($created) { $script:apiIds[$api.name] = $created.customapiid }
     }
     else {
         # Do not resend uniquename on a patch. It is immutable.
         $body.Remove("uniquename")
-        Invoke-Dataverse -Method PATCH -Path "/api/data/v9.2/customapis($($existing[$api.name]))" -Body $body | Out-Null
+        Send-Api -Method PATCH -Path "/api/data/v9.2/customapis($($existing[$api.name]))" -Body $body | Out-Null
     }
 
-    # Parameters are upserted by their alternate key, so reruns are safe.
-    foreach ($input in $api.inputs) {
-        Invoke-Dataverse -Method PATCH -Path "/api/data/v9.2/customapirequestparameters(uniquename='$($api.name).$($input.name)')" -Body @{
-            name                     = $input.name
-            displayname              = $input.name
-            description              = $input.description
-            type                     = $typeMap[$input.type]
-            isoptional               = -not [bool]$input.required
-            "CustomAPIId@odata.bind" = "/customapis(uniquename='$($api.name)')"
-        } | Out-Null
+    # Queried then created or patched, because uniquename is not an alternate key here.
+    foreach ($parameter in $api.inputs) {
+        Set-ApiChild -EntitySet "customapirequestparameters" -IdField "customapirequestparameterid" `
+            -ApiName $api.name -ChildName $parameter.name -Body @{
+                name        = $parameter.name
+                displayname = $parameter.name
+                description = $parameter.description
+                type        = $typeMap[$parameter.type]
+                isoptional  = -not [bool]$parameter.required
+            }
     }
 
     foreach ($output in (@($api.outputs) + @($definition.sharedOutputs))) {
-        Invoke-Dataverse -Method PATCH -Path "/api/data/v9.2/customapiresponseproperties(uniquename='$($api.name).$($output.name)')" -Body @{
-            name                     = $output.name
-            displayname              = $output.name
-            description              = $output.description
-            type                     = $typeMap[$output.type]
-            "CustomAPIId@odata.bind" = "/customapis(uniquename='$($api.name)')"
-        } | Out-Null
+        Set-ApiChild -EntitySet "customapiresponseproperties" -IdField "customapiresponsepropertyid" `
+            -ApiName $api.name -ChildName $output.name -Body @{
+                name        = $output.name
+                displayname = $output.name
+                description = $output.description
+                type        = $typeMap[$output.type]
+            }
     }
 }
 

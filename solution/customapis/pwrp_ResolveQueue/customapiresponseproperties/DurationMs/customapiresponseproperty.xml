@@ -1,0 +1,11 @@
+<customapiresponseproperty uniquename="DurationMs">
+  <description default="Server side execution time. Watch this against your latency budget.">
+    <label description="Server side execution time. Watch this against your latency budget." languagecode="1033" />
+  </description>
+  <displayname default="DurationMs">
+    <label description="DurationMs" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>DurationMs</name>
+  <type>7</type>
+</customapiresponseproperty>

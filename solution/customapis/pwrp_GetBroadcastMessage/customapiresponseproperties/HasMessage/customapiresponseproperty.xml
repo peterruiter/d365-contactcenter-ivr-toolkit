@@ -1,0 +1,8 @@
+<customapiresponseproperty uniquename="HasMessage">
+  <displayname default="HasMessage">
+    <label description="HasMessage" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>HasMessage</name>
+  <type>0</type>
+</customapiresponseproperty>

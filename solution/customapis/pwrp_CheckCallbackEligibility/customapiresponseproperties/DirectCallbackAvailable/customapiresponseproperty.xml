@@ -1,0 +1,8 @@
+<customapiresponseproperty uniquename="DirectCallbackAvailable">
+  <displayname default="DirectCallbackAvailable">
+    <label description="DirectCallbackAvailable" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>DirectCallbackAvailable</name>
+  <type>0</type>
+</customapiresponseproperty>

@@ -1,0 +1,11 @@
+<customapiresponseproperty uniquename="Queues">
+  <description default="JSON array of queues.">
+    <label description="JSON array of queues." languagecode="1033" />
+  </description>
+  <displayname default="Queues">
+    <label description="Queues" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>Queues</name>
+  <type>10</type>
+</customapiresponseproperty>

@@ -1,0 +1,12 @@
+<customapirequestparameter uniquename="Mode">
+  <description default="Direct or Scheduled. Defaults to Direct.">
+    <label description="Direct or Scheduled. Defaults to Direct." languagecode="1033" />
+  </description>
+  <displayname default="Mode">
+    <label description="Mode" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isoptional>1</isoptional>
+  <name>Mode</name>
+  <type>10</type>
+</customapirequestparameter>

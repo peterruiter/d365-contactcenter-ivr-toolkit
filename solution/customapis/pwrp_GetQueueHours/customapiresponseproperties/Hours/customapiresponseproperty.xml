@@ -1,0 +1,8 @@
+<customapiresponseproperty uniquename="Hours">
+  <displayname default="Hours">
+    <label description="Hours" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>Hours</name>
+  <type>10</type>
+</customapiresponseproperty>

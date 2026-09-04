@@ -1,0 +1,18 @@
+<customapi uniquename="pwrp_GetQueueHours">
+  <allowedcustomprocessingsteptype>0</allowedcustomprocessingsteptype>
+  <bindingtype>0</bindingtype>
+  <description default="Opening hours for a queue across a date range, holiday exceptions included.">
+    <label description="Opening hours for a queue across a date range, holiday exceptions included." languagecode="1033" />
+  </description>
+  <displayname default="Get queue hours">
+    <label description="Get queue hours" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isfunction>1</isfunction>
+  <isprivate>0</isprivate>
+  <name>pwrp_GetQueueHours</name>
+  <plugintypeid>
+    <plugintypeexportkey>1f8b4703-43a8-f111-b8dd-7c1e52875561</plugintypeexportkey>
+  </plugintypeid>
+  <workflowsdkstepenabled>0</workflowsdkstepenabled>
+</customapi>

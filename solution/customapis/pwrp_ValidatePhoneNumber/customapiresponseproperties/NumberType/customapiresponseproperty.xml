@@ -1,0 +1,8 @@
+<customapiresponseproperty uniquename="NumberType">
+  <displayname default="NumberType">
+    <label description="NumberType" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>NumberType</name>
+  <type>10</type>
+</customapiresponseproperty>

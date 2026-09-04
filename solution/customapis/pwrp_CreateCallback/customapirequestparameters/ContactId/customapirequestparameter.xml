@@ -1,0 +1,9 @@
+<customapirequestparameter uniquename="ContactId">
+  <displayname default="ContactId">
+    <label description="ContactId" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isoptional>1</isoptional>
+  <name>ContactId</name>
+  <type>10</type>
+</customapirequestparameter>

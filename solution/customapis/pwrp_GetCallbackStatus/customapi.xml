@@ -1,0 +1,18 @@
+<customapi uniquename="pwrp_GetCallbackStatus">
+  <allowedcustomprocessingsteptype>0</allowedcustomprocessingsteptype>
+  <bindingtype>0</bindingtype>
+  <description default="Looks up a callback by reference, phone number or id.">
+    <label description="Looks up a callback by reference, phone number or id." languagecode="1033" />
+  </description>
+  <displayname default="Get callback status">
+    <label description="Get callback status" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isfunction>1</isfunction>
+  <isprivate>0</isprivate>
+  <name>pwrp_GetCallbackStatus</name>
+  <plugintypeid>
+    <plugintypeexportkey>20782e05-43a8-f111-b8dd-7c1e52344f50</plugintypeexportkey>
+  </plugintypeid>
+  <workflowsdkstepenabled>0</workflowsdkstepenabled>
+</customapi>

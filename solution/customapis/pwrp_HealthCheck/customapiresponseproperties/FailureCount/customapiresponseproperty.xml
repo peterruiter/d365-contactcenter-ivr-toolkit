@@ -1,0 +1,8 @@
+<customapiresponseproperty uniquename="FailureCount">
+  <displayname default="FailureCount">
+    <label description="FailureCount" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>FailureCount</name>
+  <type>7</type>
+</customapiresponseproperty>

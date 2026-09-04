@@ -1,0 +1,8 @@
+<customapiresponseproperty uniquename="Retried">
+  <displayname default="Retried">
+    <label description="Retried" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>Retried</name>
+  <type>7</type>
+</customapiresponseproperty>

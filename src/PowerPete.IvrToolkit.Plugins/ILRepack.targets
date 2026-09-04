@@ -1,0 +1,28 @@
+<Project>
+
+  <!--
+    ILRepack.Lib.MSBuild.Task looks for this file. When it exists the package skips its own
+    default target, which is the point of putting the merge here.
+
+    That default merged every copy local reference into the primary output and dropped the
+    strong name doing it, producing a 2.5 MB unsigned assembly with Microsoft.Xrm.Sdk inside
+    it. The sandbox rejects an unsigned assembly, and merging the SDK breaks type identity
+    against the one the sandbox already loaded.
+
+    What a plugin assembly wants is the opposite: itself plus Newtonsoft, strong named,
+    with the SDK left as a reference. That is what this does.
+  -->
+  <Target Name="MergeDependencies" AfterTargets="Build" Condition="'$(Configuration)'=='Release'">
+    <ItemGroup>
+      <MergeAssemblies Include="$(OutputPath)Newtonsoft.Json.dll" />
+    </ItemGroup>
+    <ILRepack
+      Parallel="true"
+      InputAssemblies="$(OutputPath)$(AssemblyName).dll;@(MergeAssemblies)"
+      OutputFile="$(OutputPath)merged\$(AssemblyName).dll"
+      KeyFile="$(AssemblyOriginatorKeyFile)"
+      Internalize="true"
+      TargetKind="Dll" />
+  </Target>
+
+</Project>

@@ -1,0 +1,18 @@
+<customapi uniquename="pwrp_ResolveQueue">
+  <allowedcustomprocessingsteptype>0</allowedcustomprocessingsteptype>
+  <bindingtype>0</bindingtype>
+  <description default="Turns a spoken or typed queue name into a queue id using aliases and fuzzy matching. Call once, then reuse the id.">
+    <label description="Turns a spoken or typed queue name into a queue id using aliases and fuzzy matching. Call once, then reuse the id." languagecode="1033" />
+  </description>
+  <displayname default="Resolve queue">
+    <label description="Resolve queue" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isfunction>1</isfunction>
+  <isprivate>0</isprivate>
+  <name>pwrp_ResolveQueue</name>
+  <plugintypeid>
+    <plugintypeexportkey>128b4703-43a8-f111-b8dd-7c1e52875561</plugintypeexportkey>
+  </plugintypeid>
+  <workflowsdkstepenabled>0</workflowsdkstepenabled>
+</customapi>

@@ -105,11 +105,18 @@ namespace PowerPete.IvrToolkit.Common
             return Context.InputParameters.Contains(name) && Context.InputParameters[name] is bool value ? value : fallback;
         }
 
+        /// <summary>Reads an optional DateTime input, treating an unsupplied one as null.</summary>
+        /// <remarks>
+        /// An optional DateTime that the caller omitted does not arrive absent. Dataverse
+        /// puts default(DateTime) in the collection instead, so Contains returns true and a
+        /// "?? DateTime.UtcNow" fallback in the caller never fires. That is how GetQueueHours
+        /// came to answer for the week beginning 1 January 0001. Year one means unsupplied.
+        /// </remarks>
         public DateTime? GetDate(string name)
         {
             if (Context.InputParameters.Contains(name) && Context.InputParameters[name] is DateTime value)
             {
-                return value;
+                return value == DateTime.MinValue ? (DateTime?)null : value;
             }
             var raw = GetString(name);
             return DateTime.TryParse(raw, out var parsed) ? parsed : (DateTime?)null;

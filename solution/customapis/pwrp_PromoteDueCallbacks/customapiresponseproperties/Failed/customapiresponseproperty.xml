@@ -1,0 +1,8 @@
+<customapiresponseproperty uniquename="Failed">
+  <displayname default="Failed">
+    <label description="Failed" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>Failed</name>
+  <type>7</type>
+</customapiresponseproperty>

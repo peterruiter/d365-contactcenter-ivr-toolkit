@@ -20,21 +20,4 @@
   </ItemGroup>
 
 
-  <!--
-    Plugin assemblies are a single file. Newtonsoft is merged in rather than
-    referenced, because the sandbox loads one assembly and nothing else.
-  -->
-  <Target Name="MergeDependencies" AfterTargets="Build" Condition="'$(Configuration)'=='Release'">
-    <ItemGroup>
-      <MergeAssemblies Include="$(OutputPath)Newtonsoft.Json.dll" />
-    </ItemGroup>
-    <ILRepack
-      Parallel="true"
-      InputAssemblies="$(OutputPath)$(AssemblyName).dll;@(MergeAssemblies)"
-      OutputFile="$(OutputPath)merged\$(AssemblyName).dll"
-      KeyFile="$(AssemblyOriginatorKeyFile)"
-      Internalize="true"
-      TargetKind="Dll" />
-  </Target>
-
 </Project>

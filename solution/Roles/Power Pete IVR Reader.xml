@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Role id="{27e23113-3fa8-f111-b8de-000d3a694c2b}" name="Power Pete IVR Reader" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <IsCustomizable>1</IsCustomizable>
+  <IsAutoAssigned>0</IsAutoAssigned>
+  <Description>Minimum role for the application user a Copilot Studio agent authenticates as. Do not grant System Administrator instead.</Description>
+  <RolePrivileges>
+    <RolePrivilege name="prvCreatepwrp_callbackrequest" level="Global" />
+    <RolePrivilege name="prvCreatepwrp_ivroutcome" level="Global" />
+    <RolePrivilege name="prvCreateSharePointData" level="Global" />
+    <RolePrivilege name="prvReadActivity" level="Global" />
+    <RolePrivilege name="prvReadCalendar" level="Global" />
+    <RolePrivilege name="prvReadEnvironmentVariableDefinition" level="Global" />
+    <RolePrivilege name="prvReadmsdyn_agentstatushistory" level="Global" />
+    <RolePrivilege name="prvReadmsdyn_operatinghour" level="Global" />
+    <RolePrivilege name="prvReadmsdyn_presence" level="Global" />
+    <RolePrivilege name="prvReadmsdyn_queueextension" level="Global" />
+    <RolePrivilege name="prvReadpwrp_broadcastmessage" level="Global" />
+    <RolePrivilege name="prvReadpwrp_callbackrequest" level="Global" />
+    <RolePrivilege name="prvReadpwrp_holiday" level="Global" />
+    <RolePrivilege name="prvReadpwrp_ivroutcome" level="Global" />
+    <RolePrivilege name="prvReadpwrp_messagetemplate" level="Global" />
+    <RolePrivilege name="prvReadpwrp_queuealias" level="Global" />
+    <RolePrivilege name="prvReadpwrp_queuehours" level="Global" />
+    <RolePrivilege name="prvReadpwrp_queueprofile" level="Global" />
+    <RolePrivilege name="prvReadQueue" level="Global" />
+    <RolePrivilege name="prvReadSharePointData" level="Global" />
+    <RolePrivilege name="prvReadSharePointDocument" level="Global" />
+    <RolePrivilege name="prvReadUser" level="Global" />
+    <RolePrivilege name="prvWritepwrp_callbackrequest" level="Global" />
+    <RolePrivilege name="prvWriteSharePointData" level="Global" />
+  </RolePrivileges>
+</Role>
