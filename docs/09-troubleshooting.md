@@ -24,6 +24,22 @@ prerequisites before you look at the toolkit.
 provisioned, or a release wave has moved the table. See
 [ALM and support](10-alm-and-support.md).
 
+### "is missing prvReadPluginType privilege" or prvReadPluginAssembly
+
+The caller is an application user whose security role is short of two privileges. Nothing
+in the toolkit queries either table. The platform reads them when it resolves a Custom API
+to the code behind it, so without them no endpoint runs at all.
+
+Add `plugintype` and `pluginassembly` read to the role. They are in `build/schema.json`,
+so re-running `New-SecurityRole.ps1` is enough.
+
+The confusing part is that only some endpoints fail. Whichever call warms the metadata
+cache first succeeds and the rest do not, so the failure moves between runs. Nothing is
+special about the ones that pass.
+
+You will only ever see this as an application user. As an administrator everything works,
+which is why `Test-Endpoints.ps1` takes client credentials.
+
 ## Runtime
 
 ### `QUEUE_NOT_FOUND` on a name that obviously matches
@@ -51,6 +67,20 @@ fuzzy.
 No operating hours are linked to the queue, and the profile is set to native hours.
 Either link hours in the admin centre, or switch `pwrp_hourssource` to 2 and populate
 `pwrp_queuehours`.
+
+### Hours are wrong, or the queue looks open around the clock
+
+Opening times come from `ExpandCalendarRequest` rather than from reading calendar rules,
+so the platform applies the recurrence, the timezone and daylight saving. If the answer is
+wrong, the calendar is wrong, and the admin centre will show the same wrong hours.
+
+A queue reported as open midnight to midnight means the calendar's outer rule is being
+read instead of the inner one. That was a real defect, fixed on 2026-09-04. If it comes
+back after a release wave, switch the affected queues to config hours and raise it.
+
+Do not trust the operating hours record's name. One seen in testing was called
+"Mon-Fri 09:00-17:00" while its rule said all seven days from 08:00, and the toolkit
+correctly reported what the rule said.
 
 ### Hours are an hour out
 

@@ -65,12 +65,29 @@ Two rules:
 
 ## Authentication
 
-The agent authenticates as an application user. Assign it the **Power Pete IVR Reader**
-role from the solution. That role grants read on queues, hours, metrics tables and
-the toolkit config tables, plus create on callbacks and outcomes. Nothing else.
+The agent authenticates as an application user holding the **Power Pete IVR Reader**
+role. Create both with:
+
+```powershell
+./build/New-ApplicationUser.ps1 -EnvironmentUrl https://yourorg.crm4.dynamics.com
+```
+
+That role grants read on queues, hours, metrics tables and the toolkit config tables,
+create on callbacks and outcomes, and read on `plugintype` and `pluginassembly`. The last
+two are not obvious: the platform reads them to resolve a Custom API to its code, and
+without them no endpoint runs at all.
+
+Prove the role before wiring the agent, because as an administrator everything passes
+whether the role is right or not:
+
+```powershell
+./build/Test-Endpoints.ps1 -EnvironmentUrl https://yourorg.crm4.dynamics.com `
+    -TenantId <tenant> -ClientId <app> -ClientSecret <secret>
+```
 
 Do not give the agent System Administrator. The toolkit is designed to run on a
-minimal role and the health check verifies it.
+minimal role, and an administrator hides every privilege it is missing until a client
+environment finds it.
 
 ## Testing
 
@@ -78,7 +95,11 @@ Test with deliberately vague utterances, not clean ones. "Can I speak to someone
 my bill", not "billing queue". That is what exposes missing aliases.
 
 Watch the plugin trace log during testing. Every fuzzy match is an alias you should
-have configured.
+have configured, and the toolkit traces them under `[pwrp]`.
+
+Trace logging is off in a new environment. Turn it on first, in the Power Platform admin
+centre under the environment's settings, or nothing is recorded and a failure inside the
+metrics reader stays invisible by design.
 
 Test these specifically:
 

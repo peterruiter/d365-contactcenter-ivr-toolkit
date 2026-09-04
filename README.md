@@ -55,10 +55,18 @@ dotnet tool install --global Microsoft.PowerApps.CLI.Tool
 git clone <repo> && cd power-pete-ivr-toolkit
 ./build/Test-Prerequisites.ps1 -EnvironmentUrl https://yourorg.crm4.dynamics.com
 ./build/install.ps1
+
+# Then the identity your agent connects as, and proof its role is sufficient
+./build/New-ApplicationUser.ps1 -EnvironmentUrl https://yourorg.crm4.dynamics.com
+./build/Test-Endpoints.ps1 -EnvironmentUrl https://yourorg.crm4.dynamics.com `
+    -TenantId <tenant> -ClientId <app> -ClientSecret <secret>
 ```
 
 The installer prompts for locale, time zone, country code and wait band thresholds,
 imports the solution, registers the Custom APIs and runs a health check.
+
+Run the endpoint test with the application credentials rather than as yourself. An
+administrator passes every check whether the security role is right or not.
 
 ## Which integration route
 
@@ -93,10 +101,9 @@ connector/      Custom connector definition. Generated, do not hand edit
 docs/           Fourteen documents, listed above
 mcp/            Bicep and deployment notes for the optional MCP server
 samples/        Copilot Studio instructions and topic wiring
-solution/       Unpacked Dataverse solution and the promotion flow
+solution/       Unpacked Dataverse solution, the model driven app and the promotion flow
 src/            Plugin assembly, and the optional MCP server
 tests/          Unit tests for the parts that break in production
-.claude/        Claude Code settings and slash commands
 ```
 
 ## Generated artefacts
@@ -111,6 +118,15 @@ generate from it, so none of them can drift:
 | MCP tool catalogue | `ToolCatalog.cs`, at server startup |
 
 Change the contract, run the generators, commit.
+
+## State
+
+Built, deployed and exercised against a live Dynamics 365 Contact Center environment.
+Every read endpoint, direct callback and outcome logging return correct answers for a real
+voice queue, as the application user rather than as an administrator.
+
+Not yet proven: metrics against a queue with callers waiting, scheduled callback and its
+promotion flow, and a Copilot Studio agent calling any of it. See `CHANGELOG.md`.
 
 ## Versioning and support
 

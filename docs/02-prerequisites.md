@@ -23,6 +23,16 @@ Scheduled callback also needs:
 If you only need direct callback, skip that block. Direct callback is a queue overflow
 setting and needs nothing extra.
 
+## Building from source
+
+Only needed if you build the plugin rather than installing a released solution.
+
+| Requirement | Why |
+|---|---|
+| Visual Studio, or Build Tools for Visual Studio | The assembly merge signs the output, and signing is not supported under the cross platform build host. The .NET SDK alone is not enough |
+| .NET SDK | Builds the optional MCP server |
+| Python 3 | Regenerates the connector swagger from the contract |
+
 ## Permissions
 
 - **System Administrator** on the target Dataverse environment for the install. The

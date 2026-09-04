@@ -76,18 +76,25 @@ in the admin centre. Right answer when hours are already there. Reads internal p
 schema, so it can break on a release wave.
 
 The queue reaches its hours through a native lookup, so nothing needs configuring beyond
-setting the operating hours on the queue itself. Confirmed against a real environment on
+setting operating hours on the queue itself. Confirmed against a real environment on
 2026-09-04:
 
-| Step | Column | Type |
-|---|---|---|
-| Queue to operating hours | `queue.msdyn_operatinghourid` | Lookup |
-| Operating hours to calendar | `msdyn_operatinghour.msdyn_calendarid` | **String** holding a GUID, not a lookup |
-| Calendar to its rules | `calendar_calendar_rules` relationship | `calendarrule` cannot be queried directly |
+| Step | How |
+|---|---|
+| Queue to operating hours | `queue.msdyn_operatinghourid`, a lookup |
+| Operating hours to calendar | `msdyn_operatinghour.msdyn_calendarid`, a **string** holding a GUID, not a lookup |
+| Calendar to opening windows | `ExpandCalendarRequest`, which is supported |
 
-Two traps worth knowing if this ever needs revisiting. `msdyn_calendarid` is text, so
-reading it as an `EntityReference` throws. And `calendarrule` rejects `RetrieveMultiple`
-outright, so its rows only come back as a related collection on the calendar.
+The rules are not parsed by the toolkit. `ExpandCalendarRequest` asks the platform to
+expand them, and it returns concrete UTC blocks with the recurrence, the timezone and
+daylight saving already applied. That matters because the rules are not readable in any
+obvious way: the outer rule holds only the recurrence, the real times live on an inner
+calendar as an offset in minutes from midnight, and `calendarrule` rejects a direct query
+outright. Reading them by hand produced a queue that was open midnight to midnight.
+
+The trade is latency. Expanding a calendar takes around 400ms against roughly 150ms for
+reading rows, so a cold `GetQueueContext` sits near 450ms. Hours are cached for
+`pwrp_HoursCacheSeconds`, so this is a first call cost rather than a per call one.
 
 If a release wave moves any of this, switch the affected queues to config hours below and
 fix `Hours/OperatingHoursProvider.cs`. Nothing else reads this model.
