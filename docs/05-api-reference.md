@@ -1,6 +1,19 @@
 # API reference
 
-Every endpoint is an unbound Dataverse Custom API in the `pwrp_` namespace.
+Every endpoint is an unbound Dataverse Custom API in the `pwrp_` namespace, and every one
+is an **action**. Call it with a POST and a JSON body:
+
+```
+POST /api/data/v9.2/pwrp_GetQueueContext
+{ "Queue": "HR" }
+```
+
+The read endpoints were functions until 2.0.0, called as
+`GET /api/data/v9.2/pwrp_GetQueueContext(Queue='HR')`. A function is the honest
+description of a read, but Copilot Studio's Dataverse connector offers only actions in
+**Perform an unbound action**, so thirteen endpoints, including this one, could not be
+reached from the route this toolkit tells people to use. Being callable beat being
+correctly labelled.
 
 ## Shared outputs
 

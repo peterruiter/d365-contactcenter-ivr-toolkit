@@ -20,19 +20,19 @@
     "application/json"
   ],
   "paths": {
-    "/pwrp_GetQueues(ChannelType=@{encodeURIComponent(parameters('ChannelType'))})": {
-      "get": {
+    "/pwrp_GetQueues": {
+      "post": {
         "summary": "Get queues",
         "description": "Lists active contact centre queues the agent can route to, optionally filtered by channel.",
         "operationId": "GetQueues",
         "parameters": [
           {
-            "name": "ChannelType",
-            "in": "path",
+            "name": "body",
+            "in": "body",
             "required": true,
-            "type": "string",
-            "x-ms-summary": "ChannelType",
-            "description": "Voice, Messaging or Record. Leave empty for all."
+            "schema": {
+              "$ref": "#/definitions/GetQueuesRequest"
+            }
           }
         ],
         "responses": {
@@ -45,19 +45,19 @@
         }
       }
     },
-    "/pwrp_ResolveQueue(Queue=@{encodeURIComponent(parameters('Queue'))})": {
-      "get": {
+    "/pwrp_ResolveQueue": {
+      "post": {
         "summary": "Resolve queue",
         "description": "Turns a spoken or typed queue name into a queue id using aliases and fuzzy matching. Call once, then reuse the id.",
         "operationId": "ResolveQueue",
         "parameters": [
           {
-            "name": "Queue",
-            "in": "path",
+            "name": "body",
+            "in": "body",
             "required": true,
-            "type": "string",
-            "x-ms-summary": "Queue",
-            "description": "Queue name, alias or id."
+            "schema": {
+              "$ref": "#/definitions/ResolveQueueRequest"
+            }
           }
         ],
         "responses": {
@@ -70,19 +70,19 @@
         }
       }
     },
-    "/pwrp_GetQueueContext(Queue=@{encodeURIComponent(parameters('Queue'))})": {
-      "get": {
+    "/pwrp_GetQueueContext": {
+      "post": {
         "summary": "Get queue context",
         "description": "Returns opening state, live wait band, outage message, callback availability and a recommended action in one call. Use this at the start of a voice conversation instead of several separate lookups.",
         "operationId": "GetQueueContext",
         "parameters": [
           {
-            "name": "Queue",
-            "in": "path",
+            "name": "body",
+            "in": "body",
             "required": true,
-            "type": "string",
-            "x-ms-summary": "Queue",
-            "description": "Queue name, alias or id."
+            "schema": {
+              "$ref": "#/definitions/GetQueueContextRequest"
+            }
           }
         ],
         "responses": {
@@ -95,34 +95,19 @@
         }
       }
     },
-    "/pwrp_GetQueueHours(Queue=@{encodeURIComponent(parameters('Queue'))},FromDate=@{encodeURIComponent(parameters('FromDate'))},Days=@{encodeURIComponent(parameters('Days'))})": {
-      "get": {
+    "/pwrp_GetQueueHours": {
+      "post": {
         "summary": "Get queue hours",
         "description": "Opening hours for a queue across a date range, holiday exceptions included.",
         "operationId": "GetQueueHours",
         "parameters": [
           {
-            "name": "Queue",
-            "in": "path",
+            "name": "body",
+            "in": "body",
             "required": true,
-            "type": "string",
-            "x-ms-summary": "Queue"
-          },
-          {
-            "name": "FromDate",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "x-ms-summary": "FromDate",
-            "description": "Defaults to today."
-          },
-          {
-            "name": "Days",
-            "in": "path",
-            "required": true,
-            "type": "integer",
-            "x-ms-summary": "Days",
-            "description": "1 to 31. Defaults to 1."
+            "schema": {
+              "$ref": "#/definitions/GetQueueHoursRequest"
+            }
           }
         ],
         "responses": {
@@ -135,26 +120,19 @@
         }
       }
     },
-    "/pwrp_IsQueueOpen(Queue=@{encodeURIComponent(parameters('Queue'))},AtUtc=@{encodeURIComponent(parameters('AtUtc'))})": {
-      "get": {
+    "/pwrp_IsQueueOpen": {
+      "post": {
         "summary": "Is queue open",
         "description": "Whether a queue is open now, or at a future moment. Use the future form to check a proposed callback time.",
         "operationId": "IsQueueOpen",
         "parameters": [
           {
-            "name": "Queue",
-            "in": "path",
+            "name": "body",
+            "in": "body",
             "required": true,
-            "type": "string",
-            "x-ms-summary": "Queue"
-          },
-          {
-            "name": "AtUtc",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "x-ms-summary": "AtUtc",
-            "description": "Defaults to now."
+            "schema": {
+              "$ref": "#/definitions/IsQueueOpenRequest"
+            }
           }
         ],
         "responses": {
@@ -167,18 +145,19 @@
         }
       }
     },
-    "/pwrp_GetNextOpenTime(Queue=@{encodeURIComponent(parameters('Queue'))})": {
-      "get": {
+    "/pwrp_GetNextOpenTime": {
+      "post": {
         "summary": "Get next open time",
         "description": "When the queue opens next, with a phrase the agent can read out.",
         "operationId": "GetNextOpenTime",
         "parameters": [
           {
-            "name": "Queue",
-            "in": "path",
+            "name": "body",
+            "in": "body",
             "required": true,
-            "type": "string",
-            "x-ms-summary": "Queue"
+            "schema": {
+              "$ref": "#/definitions/GetNextOpenTimeRequest"
+            }
           }
         ],
         "responses": {
@@ -191,18 +170,19 @@
         }
       }
     },
-    "/pwrp_GetQueueMetrics(Queue=@{encodeURIComponent(parameters('Queue'))})": {
-      "get": {
+    "/pwrp_GetQueueMetrics": {
+      "post": {
         "summary": "Get queue metrics",
         "description": "Live queue state: callers waiting, longest wait, average wait, representatives available and an estimated wait. Give callers WaitBand, not the raw numbers.",
         "operationId": "GetQueueMetrics",
         "parameters": [
           {
-            "name": "Queue",
-            "in": "path",
+            "name": "body",
+            "in": "body",
             "required": true,
-            "type": "string",
-            "x-ms-summary": "Queue"
+            "schema": {
+              "$ref": "#/definitions/GetQueueMetricsRequest"
+            }
           }
         ],
         "responses": {
@@ -215,18 +195,19 @@
         }
       }
     },
-    "/pwrp_CheckCallbackEligibility(Queue=@{encodeURIComponent(parameters('Queue'))})": {
-      "get": {
+    "/pwrp_CheckCallbackEligibility": {
+      "post": {
         "summary": "Check callback eligibility",
         "description": "Whether direct callback, scheduled callback or neither is available for a queue. Call before offering a callback.",
         "operationId": "CheckCallbackEligibility",
         "parameters": [
           {
-            "name": "Queue",
-            "in": "path",
+            "name": "body",
+            "in": "body",
             "required": true,
-            "type": "string",
-            "x-ms-summary": "Queue"
+            "schema": {
+              "$ref": "#/definitions/CheckCallbackEligibilityRequest"
+            }
           }
         ],
         "responses": {
@@ -239,34 +220,19 @@
         }
       }
     },
-    "/pwrp_GetCallbackSlots(Queue=@{encodeURIComponent(parameters('Queue'))},Days=@{encodeURIComponent(parameters('Days'))},MaxResults=@{encodeURIComponent(parameters('MaxResults'))})": {
-      "get": {
+    "/pwrp_GetCallbackSlots": {
+      "post": {
         "summary": "Get callback slots",
         "description": "Bookable callback windows inside opening hours, with remaining capacity. Offer at most three over the phone.",
         "operationId": "GetCallbackSlots",
         "parameters": [
           {
-            "name": "Queue",
-            "in": "path",
+            "name": "body",
+            "in": "body",
             "required": true,
-            "type": "string",
-            "x-ms-summary": "Queue"
-          },
-          {
-            "name": "Days",
-            "in": "path",
-            "required": true,
-            "type": "integer",
-            "x-ms-summary": "Days",
-            "description": "1 to 14. Defaults to 3."
-          },
-          {
-            "name": "MaxResults",
-            "in": "path",
-            "required": true,
-            "type": "integer",
-            "x-ms-summary": "MaxResults",
-            "description": "Defaults to 6."
+            "schema": {
+              "$ref": "#/definitions/GetCallbackSlotsRequest"
+            }
           }
         ],
         "responses": {
@@ -304,32 +270,19 @@
         }
       }
     },
-    "/pwrp_GetCallbackStatus(Reference=@{encodeURIComponent(parameters('Reference'))},PhoneNumber=@{encodeURIComponent(parameters('PhoneNumber'))},CallbackId=@{encodeURIComponent(parameters('CallbackId'))})": {
-      "get": {
+    "/pwrp_GetCallbackStatus": {
+      "post": {
         "summary": "Get callback status",
         "description": "Looks up a callback by reference, phone number or id.",
         "operationId": "GetCallbackStatus",
         "parameters": [
           {
-            "name": "Reference",
-            "in": "path",
+            "name": "body",
+            "in": "body",
             "required": true,
-            "type": "string",
-            "x-ms-summary": "Reference"
-          },
-          {
-            "name": "PhoneNumber",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "x-ms-summary": "PhoneNumber"
-          },
-          {
-            "name": "CallbackId",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "x-ms-summary": "CallbackId"
+            "schema": {
+              "$ref": "#/definitions/GetCallbackStatusRequest"
+            }
           }
         ],
         "responses": {
@@ -392,26 +345,19 @@
         }
       }
     },
-    "/pwrp_ValidatePhoneNumber(PhoneNumber=@{encodeURIComponent(parameters('PhoneNumber'))},CountryCode=@{encodeURIComponent(parameters('CountryCode'))})": {
-      "get": {
+    "/pwrp_ValidatePhoneNumber": {
+      "post": {
         "summary": "Validate phone number",
         "description": "Normalises a spoken or typed phone number to E.164 and returns a digit by digit spelling for confirmation.",
         "operationId": "ValidatePhoneNumber",
         "parameters": [
           {
-            "name": "PhoneNumber",
-            "in": "path",
+            "name": "body",
+            "in": "body",
             "required": true,
-            "type": "string",
-            "x-ms-summary": "PhoneNumber"
-          },
-          {
-            "name": "CountryCode",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "x-ms-summary": "CountryCode",
-            "description": "Defaults to pwrp_DefaultCountryCode."
+            "schema": {
+              "$ref": "#/definitions/ValidatePhoneNumberRequest"
+            }
           }
         ],
         "responses": {
@@ -424,18 +370,19 @@
         }
       }
     },
-    "/pwrp_GetBroadcastMessage(Queue=@{encodeURIComponent(parameters('Queue'))})": {
-      "get": {
+    "/pwrp_GetBroadcastMessage": {
+      "post": {
         "summary": "Get broadcast message",
         "description": "Returns an active outage or announcement message for a queue, if an administrator has published one.",
         "operationId": "GetBroadcastMessage",
         "parameters": [
           {
-            "name": "Queue",
-            "in": "path",
+            "name": "body",
+            "in": "body",
             "required": true,
-            "type": "string",
-            "x-ms-summary": "Queue"
+            "schema": {
+              "$ref": "#/definitions/GetBroadcastMessageRequest"
+            }
           }
         ],
         "responses": {
@@ -473,12 +420,21 @@
         }
       }
     },
-    "/pwrp_HealthCheck()": {
-      "get": {
+    "/pwrp_HealthCheck": {
+      "post": {
         "summary": "Health check",
         "description": "Validates the installation. Run after install and after every platform update.",
         "operationId": "HealthCheck",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/HealthCheckRequest"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Health check",
@@ -529,6 +485,16 @@
         }
       }
     },
+    "GetQueuesRequest": {
+      "type": "object",
+      "properties": {
+        "ChannelType": {
+          "type": "string",
+          "x-ms-summary": "ChannelType",
+          "description": "Voice, Messaging or Record. Leave empty for all."
+        }
+      }
+    },
     "ResolveQueueResponse": {
       "type": "object",
       "properties": {
@@ -573,6 +539,19 @@
           "description": "Server side execution time. Watch this against your latency budget."
         }
       }
+    },
+    "ResolveQueueRequest": {
+      "type": "object",
+      "properties": {
+        "Queue": {
+          "type": "string",
+          "x-ms-summary": "Queue",
+          "description": "Queue name, alias or id."
+        }
+      },
+      "required": [
+        "Queue"
+      ]
     },
     "GetQueueContextResponse": {
       "type": "object",
@@ -636,6 +615,19 @@
         }
       }
     },
+    "GetQueueContextRequest": {
+      "type": "object",
+      "properties": {
+        "Queue": {
+          "type": "string",
+          "x-ms-summary": "Queue",
+          "description": "Queue name, alias or id."
+        }
+      },
+      "required": [
+        "Queue"
+      ]
+    },
     "GetQueueHoursResponse": {
       "type": "object",
       "properties": {
@@ -668,6 +660,29 @@
           "description": "Server side execution time. Watch this against your latency budget."
         }
       }
+    },
+    "GetQueueHoursRequest": {
+      "type": "object",
+      "properties": {
+        "Queue": {
+          "type": "string",
+          "x-ms-summary": "Queue"
+        },
+        "FromDate": {
+          "type": "string",
+          "x-ms-summary": "FromDate",
+          "description": "Defaults to today.",
+          "format": "date-time"
+        },
+        "Days": {
+          "type": "integer",
+          "x-ms-summary": "Days",
+          "description": "1 to 31. Defaults to 1."
+        }
+      },
+      "required": [
+        "Queue"
+      ]
     },
     "IsQueueOpenResponse": {
       "type": "object",
@@ -716,6 +731,24 @@
         }
       }
     },
+    "IsQueueOpenRequest": {
+      "type": "object",
+      "properties": {
+        "Queue": {
+          "type": "string",
+          "x-ms-summary": "Queue"
+        },
+        "AtUtc": {
+          "type": "string",
+          "x-ms-summary": "AtUtc",
+          "description": "Defaults to now.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "Queue"
+      ]
+    },
     "GetNextOpenTimeResponse": {
       "type": "object",
       "properties": {
@@ -753,6 +786,18 @@
           "description": "Server side execution time. Watch this against your latency budget."
         }
       }
+    },
+    "GetNextOpenTimeRequest": {
+      "type": "object",
+      "properties": {
+        "Queue": {
+          "type": "string",
+          "x-ms-summary": "Queue"
+        }
+      },
+      "required": [
+        "Queue"
+      ]
     },
     "GetQueueMetricsResponse": {
       "type": "object",
@@ -815,6 +860,18 @@
         }
       }
     },
+    "GetQueueMetricsRequest": {
+      "type": "object",
+      "properties": {
+        "Queue": {
+          "type": "string",
+          "x-ms-summary": "Queue"
+        }
+      },
+      "required": [
+        "Queue"
+      ]
+    },
     "CheckCallbackEligibilityResponse": {
       "type": "object",
       "properties": {
@@ -852,6 +909,18 @@
         }
       }
     },
+    "CheckCallbackEligibilityRequest": {
+      "type": "object",
+      "properties": {
+        "Queue": {
+          "type": "string",
+          "x-ms-summary": "Queue"
+        }
+      },
+      "required": [
+        "Queue"
+      ]
+    },
     "GetCallbackSlotsResponse": {
       "type": "object",
       "properties": {
@@ -888,6 +957,28 @@
           "description": "Server side execution time. Watch this against your latency budget."
         }
       }
+    },
+    "GetCallbackSlotsRequest": {
+      "type": "object",
+      "properties": {
+        "Queue": {
+          "type": "string",
+          "x-ms-summary": "Queue"
+        },
+        "Days": {
+          "type": "integer",
+          "x-ms-summary": "Days",
+          "description": "1 to 14. Defaults to 3."
+        },
+        "MaxResults": {
+          "type": "integer",
+          "x-ms-summary": "MaxResults",
+          "description": "Defaults to 6."
+        }
+      },
+      "required": [
+        "Queue"
+      ]
     },
     "CreateCallbackResponse": {
       "type": "object",
@@ -1016,6 +1107,23 @@
           "type": "integer",
           "x-ms-summary": "DurationMs",
           "description": "Server side execution time. Watch this against your latency budget."
+        }
+      }
+    },
+    "GetCallbackStatusRequest": {
+      "type": "object",
+      "properties": {
+        "Reference": {
+          "type": "string",
+          "x-ms-summary": "Reference"
+        },
+        "PhoneNumber": {
+          "type": "string",
+          "x-ms-summary": "PhoneNumber"
+        },
+        "CallbackId": {
+          "type": "string",
+          "x-ms-summary": "CallbackId"
         }
       }
     },
@@ -1169,6 +1277,23 @@
         }
       }
     },
+    "ValidatePhoneNumberRequest": {
+      "type": "object",
+      "properties": {
+        "PhoneNumber": {
+          "type": "string",
+          "x-ms-summary": "PhoneNumber"
+        },
+        "CountryCode": {
+          "type": "string",
+          "x-ms-summary": "CountryCode",
+          "description": "Defaults to pwrp_DefaultCountryCode."
+        }
+      },
+      "required": [
+        "PhoneNumber"
+      ]
+    },
     "GetBroadcastMessageResponse": {
       "type": "object",
       "properties": {
@@ -1201,6 +1326,18 @@
           "description": "Server side execution time. Watch this against your latency budget."
         }
       }
+    },
+    "GetBroadcastMessageRequest": {
+      "type": "object",
+      "properties": {
+        "Queue": {
+          "type": "string",
+          "x-ms-summary": "Queue"
+        }
+      },
+      "required": [
+        "Queue"
+      ]
     },
     "LogIvrOutcomeResponse": {
       "type": "object",
@@ -1304,6 +1441,10 @@
           "description": "Server side execution time. Watch this against your latency budget."
         }
       }
+    },
+    "HealthCheckRequest": {
+      "type": "object",
+      "properties": {}
     }
   },
   "securityDefinitions": {

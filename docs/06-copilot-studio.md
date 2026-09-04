@@ -12,8 +12,12 @@ Two agent types, one set of Custom APIs, two ways to expose them.
 ### Adding the tools
 
 Tools > Add a tool > Model Context Protocol, and point at the toolkit MCP server.
-Or add the Dataverse connector and use **Perform an unbound action** per API if MCP
-is not available in the tenant.
+Or add the Dataverse connector and use **Perform an unbound action** per API, which
+needs no Azure and is the shorter path.
+
+Every endpoint is an action, so all of them appear in that picklist. They were functions
+until 2.0.0, and functions are not offered there at all, which made the endpoint this
+toolkit is built around unreachable from its own default route.
 
 Add these four and nothing else:
 

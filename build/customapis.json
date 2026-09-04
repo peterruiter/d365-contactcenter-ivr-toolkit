@@ -30,7 +30,7 @@
       "displayName": "Get queues",
       "type": "PowerPete.IvrToolkit.CustomApis.GetQueues",
       "description": "Lists active contact centre queues the agent can route to, optionally filtered by channel.",
-      "isFunction": true,
+      "isFunction": false,
       "inputs": [
         {
           "name": "ChannelType",
@@ -60,7 +60,7 @@
       "displayName": "Resolve queue",
       "type": "PowerPete.IvrToolkit.CustomApis.ResolveQueue",
       "description": "Turns a spoken or typed queue name into a queue id using aliases and fuzzy matching. Call once, then reuse the id.",
-      "isFunction": true,
+      "isFunction": false,
       "inputs": [
         {
           "name": "Queue",
@@ -97,7 +97,7 @@
       "displayName": "Get queue context",
       "type": "PowerPete.IvrToolkit.CustomApis.GetQueueContext",
       "description": "Returns opening state, live wait band, outage message, callback availability and a recommended action in one call. Use this at the start of a voice conversation instead of several separate lookups.",
-      "isFunction": true,
+      "isFunction": false,
       "inputs": [
         {
           "name": "Queue",
@@ -151,7 +151,7 @@
       "displayName": "Get queue hours",
       "type": "PowerPete.IvrToolkit.CustomApis.GetQueueHours",
       "description": "Opening hours for a queue across a date range, holiday exceptions included.",
-      "isFunction": true,
+      "isFunction": false,
       "inputs": [
         {
           "name": "Queue",
@@ -187,7 +187,7 @@
       "displayName": "Is queue open",
       "type": "PowerPete.IvrToolkit.CustomApis.IsQueueOpen",
       "description": "Whether a queue is open now, or at a future moment. Use the future form to check a proposed callback time.",
-      "isFunction": true,
+      "isFunction": false,
       "inputs": [
         {
           "name": "Queue",
@@ -229,7 +229,7 @@
       "displayName": "Get next open time",
       "type": "PowerPete.IvrToolkit.CustomApis.GetNextOpenTime",
       "description": "When the queue opens next, with a phrase the agent can read out.",
-      "isFunction": true,
+      "isFunction": false,
       "inputs": [
         {
           "name": "Queue",
@@ -257,7 +257,7 @@
       "displayName": "Get queue metrics",
       "type": "PowerPete.IvrToolkit.CustomApis.GetQueueMetrics",
       "description": "Live queue state: callers waiting, longest wait, average wait, representatives available and an estimated wait. Give callers WaitBand, not the raw numbers.",
-      "isFunction": true,
+      "isFunction": false,
       "inputs": [
         {
           "name": "Queue",
@@ -309,7 +309,7 @@
       "displayName": "Check callback eligibility",
       "type": "PowerPete.IvrToolkit.CustomApis.CheckCallbackEligibility",
       "description": "Whether direct callback, scheduled callback or neither is available for a queue. Call before offering a callback.",
-      "isFunction": true,
+      "isFunction": false,
       "inputs": [
         {
           "name": "Queue",
@@ -337,7 +337,7 @@
       "displayName": "Get callback slots",
       "type": "PowerPete.IvrToolkit.CustomApis.GetCallbackSlots",
       "description": "Bookable callback windows inside opening hours, with remaining capacity. Offer at most three over the phone.",
-      "isFunction": true,
+      "isFunction": false,
       "inputs": [
         {
           "name": "Queue",
@@ -453,7 +453,7 @@
       "displayName": "Get callback status",
       "type": "PowerPete.IvrToolkit.CustomApis.GetCallbackStatus",
       "description": "Looks up a callback by reference, phone number or id.",
-      "isFunction": true,
+      "isFunction": false,
       "inputs": [
         {
           "name": "Reference",
@@ -553,7 +553,7 @@
       "displayName": "Validate phone number",
       "type": "PowerPete.IvrToolkit.CustomApis.ValidatePhoneNumber",
       "description": "Normalises a spoken or typed phone number to E.164 and returns a digit by digit spelling for confirmation.",
-      "isFunction": true,
+      "isFunction": false,
       "inputs": [
         {
           "name": "PhoneNumber",
@@ -595,7 +595,7 @@
       "displayName": "Get broadcast message",
       "type": "PowerPete.IvrToolkit.CustomApis.GetBroadcastMessage",
       "description": "Returns an active outage or announcement message for a queue, if an administrator has published one.",
-      "isFunction": true,
+      "isFunction": false,
       "inputs": [
         {
           "name": "Queue",
@@ -670,7 +670,7 @@
       "displayName": "Health check",
       "type": "PowerPete.IvrToolkit.CustomApis.HealthCheck",
       "description": "Validates the installation. Run after install and after every platform update.",
-      "isFunction": true,
+      "isFunction": false,
       "inputs": [],
       "outputs": [
         {

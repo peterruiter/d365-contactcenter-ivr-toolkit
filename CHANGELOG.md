@@ -9,6 +9,24 @@ Semantic versioning. The Custom API contract is stable within a major version.
 | Internal fix, same contract | Patch |
 | Removed or renamed output, changed enum, changed meaning | Major |
 
+## [2.0.0]
+
+### Changed, and it breaks callers
+
+- Every endpoint is now an action. The thirteen read endpoints were functions, called as
+  `GET pwrp_GetQueueContext(Queue='HR')`, and are now `POST pwrp_GetQueueContext` with a
+  JSON body. Anything calling them directly has to change
+
+Copilot Studio's Dataverse connector offers only actions under **Perform an unbound
+action**. Declaring the reads as functions was semantically right and left thirteen
+endpoints, `pwrp_GetQueueContext` among them, unreachable from the integration route the
+README calls the default. Found by wiring up an agent, which is the only way it shows.
+
+Changing this on an existing environment replaces the affected Custom APIs, because
+whether an API is a function is fixed once it exists. `Register-CustomApis.ps1` detects
+the change, deletes and recreates them, and reports each one. Their parameters and
+response properties go with them, so anything bound to an old definition needs rebinding.
+
 ## [1.1.0]
 
 ### Added

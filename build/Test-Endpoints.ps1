@@ -52,10 +52,13 @@ $failed = 0
     to be quoted. Errors are caught per call so one broken reader does not hide the rest.
 #>
 function Invoke-Endpoint {
-    param([string]$Name, [string]$Call, [string[]]$Show)
+    param([string]$Name, [string]$Api, $Body, [string[]]$Show)
 
     try {
-        $result = Invoke-Dataverse -Method GET -Path "/api/data/v9.2/$Call"
+        # Every endpoint is an action, so this is a POST with a body. They used to be
+        # functions, called as GET pwrp_X(Queue='HR'), but the Dataverse connector only
+        # offers actions and that is the route the toolkit tells people to use.
+        $result = Invoke-Dataverse -Method POST -Path "/api/data/v9.2/$Api" -Body $Body
     }
     catch {
         Write-Host "[FAIL] $Name" -ForegroundColor Red
@@ -97,39 +100,39 @@ if (-not $Queue) {
 Write-Host "Testing against queue '$Queue'`n" -ForegroundColor Cyan
 
 # --- Resolution ---------------------------------------------------------------
-Invoke-Endpoint -Name "GetQueues" -Call "pwrp_GetQueues(ChannelType='Voice')" `
+Invoke-Endpoint -Name "GetQueues" -Api "pwrp_GetQueues" -Body @{ ChannelType = "Voice" } `
     -Show @("Count", "Speakable") | Out-Null
 
-Invoke-Endpoint -Name "ResolveQueue" -Call "pwrp_ResolveQueue(Queue='$Queue')" `
+Invoke-Endpoint -Name "ResolveQueue" -Api "pwrp_ResolveQueue" -Body @{ Queue = $Queue } `
     -Show @("QueueId", "QueueName", "SpeakableName", "ChannelType", "Locale") | Out-Null
 
 # --- Hours. Exercises the native calendar path ---------------------------------
-Invoke-Endpoint -Name "IsQueueOpen" -Call "pwrp_IsQueueOpen(Queue='$Queue')" `
+Invoke-Endpoint -Name "IsQueueOpen" -Api "pwrp_IsQueueOpen" -Body @{ Queue = $Queue } `
     -Show @("IsOpen", "Reason", "NextOpenUtc", "Speakable") | Out-Null
 
-Invoke-Endpoint -Name "GetQueueHours" -Call "pwrp_GetQueueHours(Queue='$Queue',Days=3)" `
+Invoke-Endpoint -Name "GetQueueHours" -Api "pwrp_GetQueueHours" -Body @{ Queue = $Queue; Days = 3 } `
     -Show @("Hours", "Speakable") | Out-Null
 
-Invoke-Endpoint -Name "GetNextOpenTime" -Call "pwrp_GetNextOpenTime(Queue='$Queue')" `
+Invoke-Endpoint -Name "GetNextOpenTime" -Api "pwrp_GetNextOpenTime" -Body @{ Queue = $Queue } `
     -Show @("IsOpenNow", "NextOpenUtc", "Speakable") | Out-Null
 
 # --- Metrics. The least verified reader in the toolkit -------------------------
-Invoke-Endpoint -Name "GetQueueMetrics" -Call "pwrp_GetQueueMetrics(Queue='$Queue')" `
+Invoke-Endpoint -Name "GetQueueMetrics" -Api "pwrp_GetQueueMetrics" -Body @{ Queue = $Queue } `
     -Show @("WaitingNow", "LongestWaitSeconds", "AverageWaitSeconds", "EstimatedWaitSeconds",
             "RepresentativesAvailable", "RepresentativesOnline", "WaitBand", "Speakable") | Out-Null
 
 # --- Composite. What an agent actually calls -----------------------------------
-Invoke-Endpoint -Name "GetQueueContext" -Call "pwrp_GetQueueContext(Queue='$Queue')" `
+Invoke-Endpoint -Name "GetQueueContext" -Api "pwrp_GetQueueContext" -Body @{ Queue = $Queue } `
     -Show @("IsOpen", "WaitBand", "RecommendedAction", "Speakable") | Out-Null
 
 # --- Utility ------------------------------------------------------------------
-Invoke-Endpoint -Name "CheckCallbackEligibility" -Call "pwrp_CheckCallbackEligibility(Queue='$Queue')" `
+Invoke-Endpoint -Name "CheckCallbackEligibility" -Api "pwrp_CheckCallbackEligibility" -Body @{ Queue = $Queue } `
     -Show @("DirectCallbackAvailable", "ScheduledCallbackAvailable", "AnyAvailable") | Out-Null
 
-Invoke-Endpoint -Name "GetBroadcastMessage" -Call "pwrp_GetBroadcastMessage(Queue='$Queue')" `
+Invoke-Endpoint -Name "GetBroadcastMessage" -Api "pwrp_GetBroadcastMessage" -Body @{ Queue = $Queue } `
     -Show @("HasMessage", "Speakable") | Out-Null
 
-Invoke-Endpoint -Name "ValidatePhoneNumber" -Call "pwrp_ValidatePhoneNumber(PhoneNumber='$PhoneNumber')" `
+Invoke-Endpoint -Name "ValidatePhoneNumber" -Api "pwrp_ValidatePhoneNumber" -Body @{ PhoneNumber = $PhoneNumber } `
     -Show @("IsValid", "E164", "NumberType", "Speakable") | Out-Null
 
 Write-Host "`n$passed passed, $failed failed" -ForegroundColor $(if ($failed -eq 0) { "Green" } else { "Yellow" })

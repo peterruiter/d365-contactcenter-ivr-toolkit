@@ -20,7 +20,8 @@ $ErrorActionPreference = "Stop"
 . "$PSScriptRoot/Common.ps1"
 Connect-Dataverse -EnvironmentUrl $EnvironmentUrl
 
-$response = Invoke-Dataverse -Method GET -Path "/api/data/v9.2/pwrp_HealthCheck"
+# An action, so a POST with an empty body rather than a GET.
+$response = Invoke-Dataverse -Method POST -Path "/api/data/v9.2/pwrp_HealthCheck" -Body @{}
 $checks = $response.Checks | ConvertFrom-Json
 
 foreach ($check in $checks) {

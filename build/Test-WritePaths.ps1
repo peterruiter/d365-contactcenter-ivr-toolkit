@@ -80,7 +80,7 @@ Write-Host "Writing against queue '$Queue' and number $PhoneNumber`n" -Foregroun
 
 # --- Enable direct callback, if asked -----------------------------------------
 if ($EnableCallback) {
-    $resolved = Invoke-Api -Method GET -Call "pwrp_ResolveQueue(Queue='$Queue')"
+    $resolved = Invoke-Api -Method POST -Call "pwrp_ResolveQueue" -Body @{ Queue = $Queue }
     if (-not $resolved) { throw "Could not resolve $Queue." }
 
     $queueProfile = (Invoke-Dataverse -Method GET `
@@ -94,7 +94,7 @@ if ($EnableCallback) {
 }
 
 # --- Eligibility --------------------------------------------------------------
-$eligibility = Invoke-Api -Method GET -Call "pwrp_CheckCallbackEligibility(Queue='$Queue')"
+$eligibility = Invoke-Api -Method POST -Call "pwrp_CheckCallbackEligibility" -Body @{ Queue = $Queue }
 Assert-That -Name "Direct callback is available" -Condition ($null -ne $eligibility -and $eligibility.DirectCallbackAvailable) `
     -Detail $(if ($eligibility) { "DirectCallbackAvailable=$($eligibility.DirectCallbackAvailable)" } else { "call failed" })
 
@@ -135,11 +135,11 @@ Assert-That -Name "A repeat call returns the same request, not a second one" `
     -Detail $(if ($again) { "first=$($created.CallbackId) second=$($again.CallbackId)" } else { "call failed" })
 
 # --- Lookups ------------------------------------------------------------------
-$byReference = Invoke-Api -Method GET -Call "pwrp_GetCallbackStatus(Reference='$($created.Reference)')"
+$byReference = Invoke-Api -Method POST -Call "pwrp_GetCallbackStatus" -Body @{ Reference = $created.Reference }
 Assert-That -Name "GetCallbackStatus by reference" -Condition ($null -ne $byReference -and $byReference.Status) `
     -Detail $(if ($byReference) { "status=$($byReference.Status) attempts=$($byReference.Attempts)" } else { "call failed" })
 
-$byPhone = Invoke-Api -Method GET -Call "pwrp_GetCallbackStatus(PhoneNumber='$PhoneNumber')"
+$byPhone = Invoke-Api -Method POST -Call "pwrp_GetCallbackStatus" -Body @{ PhoneNumber = $PhoneNumber }
 Assert-That -Name "GetCallbackStatus by phone number" -Condition ($null -ne $byPhone -and $byPhone.Status) `
     -Detail $(if ($byPhone) { "status=$($byPhone.Status)" } else { "call failed" })
 

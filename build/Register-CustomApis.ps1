@@ -145,16 +145,33 @@ Write-Host "  found $($pluginTypes.Count) plugin types" -ForegroundColor Gray
 # --- Existing APIs, so we patch rather than duplicate -------------------------
 $existing = @{}
 $script:apiIds = @{}
-$current = Send-Api -Method GET -Path "/api/data/v9.2/customapis?`$select=customapiid,uniquename&`$filter=startswith(uniquename,'$($definition.publisherPrefix)_')"
+$existingIsFunction = @{}
+$current = Send-Api -Method GET -Path "/api/data/v9.2/customapis?`$select=customapiid,uniquename,isfunction&`$filter=startswith(uniquename,'$($definition.publisherPrefix)_')"
 foreach ($api in $current.value) {
     $existing[$api.uniquename] = $api.customapiid
     $script:apiIds[$api.uniquename] = $api.customapiid
+    $existingIsFunction[$api.uniquename] = [bool]$api.isfunction
 }
 
 # --- Push -------------------------------------------------------------------
 Write-Host "`nRegistering $($definition.apis.Count) custom APIs into $solution" -ForegroundColor Cyan
 
 foreach ($api in $definition.apis) {
+    # Whether an API is a function or an action is fixed once it exists, and it decides how
+    # the message is called: a function is a GET with the arguments in the URL, an action is
+    # a POST with a body. Changing it means replacing the API, along with its parameters and
+    # properties, which cascade with it.
+    if ($existing.ContainsKey($api.name) -and $existingIsFunction[$api.name] -ne [bool]$api.isFunction) {
+        $was = if ($existingIsFunction[$api.name]) { "function" } else { "action" }
+        $now = if ($api.isFunction) { "function" } else { "action" }
+        Write-Host "  [replace] $($api.name), $was becomes $now" -ForegroundColor Yellow
+        if (-not $WhatIf) {
+            Invoke-Dataverse -Method DELETE -Path "/api/data/v9.2/customapis($($existing[$api.name]))" | Out-Null
+            $existing.Remove($api.name)
+            $script:apiIds.Remove($api.name)
+        }
+    }
+
     $isNew = -not $existing.ContainsKey($api.name)
     $verb = if ($isNew) { "create" } else { "update" }
     Write-Host "  [$verb] $($api.name)" -ForegroundColor Gray
