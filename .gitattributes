@@ -1,0 +1,20 @@
+# Normalise line endings in the repository. Without this, the same file written by
+# Build-Swagger.py and by a PowerShell script differ only in line endings, and running a
+# documented build command leaves the tree dirty for no reason.
+* text=auto eol=lf
+
+# Windows tooling, kept as CRLF in the working tree.
+*.ps1 text eol=crlf
+*.psm1 text eol=crlf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# Never touched. The solution assembly in particular is committed as part of the
+# unpacked solution and any conversion would corrupt it.
+*.dll binary
+*.zip binary
+*.snk binary
+*.pfx binary
+*.png binary
+*.jpg binary
+*.ico binary
