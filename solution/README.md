@@ -3,31 +3,52 @@
 Holds the unpacked Dataverse solution that `pac solution pack` builds into the artefact,
 plus the promotion flow definition.
 
-**Empty in the repository as published**, apart from `Workflows/`. Solution XML is
-generated from a development environment, not written by hand.
+Solution XML is generated from a development environment by `Export-Solution.ps1`, not
+written by hand. Edit the environment, then export.
 
 ## Bootstrapping a development environment
 
+In this order. Each step needs the one before it.
+
 ```powershell
-# 1. Create the schema, environment variables and choices
-./build/New-Schema.ps1 -EnvironmentUrl https://mydev.crm4.dynamics.com
+$env = "https://mydev.crm4.dynamics.com"
 
-# 2. Create the model driven app by hand (see below)
-#    New-Schema.ps1 already created the security role. To redo just that:
-#    ./build/New-SecurityRole.ps1 -EnvironmentUrl https://mydev.crm4.dynamics.com
+# 1. Tables, columns, environment variables, and the security role
+./build/New-Schema.ps1 -EnvironmentUrl $env
 
-# 3. Build and import the plugin assembly, then register the Custom APIs
-./build/build.ps1
-./build/Register-CustomApis.ps1 -EnvironmentUrl https://mydev.crm4.dynamics.com
+# 2. Put the columns on the forms and default views.
+#    Dataverse builds a form when the table is created, so it holds the primary column
+#    and the owner and nothing else. Without this every record looks empty.
+./build/Update-Forms.ps1 -EnvironmentUrl $env
 
-# 4. Import the promotion flow from solution/Workflows
+# 3. Build the plugin, then get it into the environment.
+#    Import-PluginAssembly.ps1 is the development route, and exists because the Custom
+#    APIs need plugin types, which need a registered assembly, which normally arrives in
+#    a solution that cannot be packed until the components exist.
+./build/build.ps1 -Version 1.0.0
+./build/Import-PluginAssembly.ps1 -EnvironmentUrl $env
+./build/Register-CustomApis.ps1 -EnvironmentUrl $env
 
-# 5. Export and unpack, then commit
-./build/Export-Solution.ps1 -EnvironmentUrl https://mydev.crm4.dynamics.com
+# 4. Configuration and the app
+./build/New-QueueProfiles.ps1 -EnvironmentUrl $env
+./build/New-ModelDrivenApp.ps1 -EnvironmentUrl $env
+./build/Seed-Data.ps1 -EnvironmentUrl $env          # real holidays and templates
+./build/New-DemoData.ps1 -EnvironmentUrl $env       # sample content, development only
+
+# 5. The identity an agent connects as, and proof the role is enough
+./build/New-ApplicationUser.ps1 -EnvironmentUrl $env
+./build/Test-Installation.ps1 -EnvironmentUrl $env
+./build/Test-Endpoints.ps1 -EnvironmentUrl $env -TenantId <t> -ClientId <c> -ClientSecret <s>
+
+# 6. Export and unpack, then commit
+./build/Export-Solution.ps1 -EnvironmentUrl $env
 ```
 
-From then on the pipeline packs the committed folder and `New-Schema.ps1` is only needed
-when the schema changes.
+Run `Test-Endpoints.ps1` with the application credentials rather than as yourself. As an
+administrator everything passes whether the security role is right or not.
+
+From then on the pipeline packs the committed folder, and `New-Schema.ps1` and
+`Update-Forms.ps1` are only needed when the schema changes.
 
 ## Schema
 
@@ -88,8 +109,8 @@ health check assumes it.
 
 ## Model driven app
 
-**Contact Center IVR Toolkit**. Sitemap order matters, because admins live in two of
-these areas and visit the rest rarely:
+**Contact Center IVR Toolkit**, created by `build/New-ModelDrivenApp.ps1`. Sitemap order
+matters, because admins live in two of these areas and visit the rest rarely:
 
 1. Broadcast messages
 2. Queue aliases
@@ -100,8 +121,14 @@ these areas and visit the rest rarely:
 7. IVR outcomes
 8. Message templates
 
-Give `pwrp_broadcastmessage` a view filtered to active messages as the default. An admin
-publishing an outage message under pressure should not have to filter first.
+`pwrp_broadcastmessage` shows the active messages view by default. An admin publishing an
+outage message under pressure should not have to filter first.
+
+Icons come from the platform's own set under `/_imgs/TableIconsFluentV9`. It is a short
+list, and a path that does not resolve renders as a blank square rather than failing, so
+check any new one before using it. Do not borrow an icon from another solution's web
+resources: they work, and they make this solution depend on Field Service or Omnichannel
+being installed.
 
 ## Workflows
 
