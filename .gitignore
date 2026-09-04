@@ -1,0 +1,10 @@
+bin/
+obj/
+out/
+*.snk
+*.user
+.vs/
+.pac/
+node_modules/
+CLAUDE.md
+HANDOVER.md

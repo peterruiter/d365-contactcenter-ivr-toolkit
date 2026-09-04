@@ -1,0 +1,56 @@
+{
+  "properties": {
+    "connectionParameters": {
+      "token": {
+        "type": "oauthSetting",
+        "oAuthSettings": {
+          "identityProvider": "aad",
+          "clientId": "",
+          "scopes": [],
+          "redirectMode": "GlobalPerConnector",
+          "redirectUrl": "https://global.consent.azure-apim.net/redirect/pwrp-ivr-toolkit",
+          "properties": {
+            "IsFirstParty": "False",
+            "AzureActiveDirectoryResourceId": "https://{organisation}.api.crm4.dynamics.com",
+            "IsOnbehalfofLoginSupported": true
+          },
+          "customParameters": {
+            "loginUri": { "value": "https://login.microsoftonline.com" },
+            "tenantId": { "value": "common" },
+            "resourceUri": { "value": "https://{organisation}.api.crm4.dynamics.com" },
+            "enableOnbehalfOfLogin": { "value": false }
+          }
+        },
+        "uiDefinition": {
+          "displayName": "Sign in",
+          "description": "Sign in to Dynamics 365 Contact Center",
+          "tooltip": "Provide credentials",
+          "constraints": { "required": "true" }
+        }
+      },
+      "token:TenantId": {
+        "type": "string",
+        "metadata": { "sourceType": "AzureActiveDirectoryTenant" },
+        "uiDefinition": {
+          "constraints": { "required": "false", "hidden": "true" }
+        }
+      }
+    },
+    "iconBrandColor": "#0070AD",
+    "capabilities": [],
+    "policyTemplateInstances": [
+      {
+        "titleId": "SetHostFromEnvironment",
+        "templateId": "setqueryparameter",
+        "parameters": {
+          "x-ms-apimTemplateParameter.name": "api-version",
+          "x-ms-apimTemplateParameter.value": "9.2",
+          "x-ms-apimTemplate-operationName": [],
+          "x-ms-apimTemplate-policySection": "Request"
+        }
+      }
+    ],
+    "publisher": "Power Pete",
+    "stackOwner": "Power Pete"
+  }
+}

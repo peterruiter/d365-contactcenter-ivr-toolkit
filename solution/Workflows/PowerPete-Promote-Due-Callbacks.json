@@ -1,0 +1,113 @@
+{
+  "$comment": "Power Pete Promote Due Callbacks. Recurrence every 5 minutes. Deliberately thin: it is a timer that calls one action. All branching, date maths and the retry policy live in pwrp_PromoteDueCallbacks, where they can be unit tested and read in a pull request. A flow with that logic inside it is unreviewable.",
+  "properties": {
+    "connectionReferences": {
+      "shared_commondataserviceforapps": {
+        "runtimeSource": "embedded",
+        "connection": { "connectionReferenceLogicalName": "pwrp_sharedcommondataserviceforapps_ivrtoolkit" },
+        "api": { "name": "shared_commondataserviceforapps" }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$connections": { "defaultValue": {}, "type": "Object" },
+        "$authentication": { "defaultValue": {}, "type": "SecureObject" }
+      },
+      "triggers": {
+        "Every_5_minutes": {
+          "type": "Recurrence",
+          "recurrence": {
+            "frequency": "Minute",
+            "interval": 5
+          },
+          "metadata": {
+            "operationMetadataId": "a1f0c2d4-0000-4000-8000-000000000001"
+          }
+        }
+      },
+      "actions": {
+        "Promote_due_callbacks": {
+          "runAfter": {},
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "PerformUnboundAction",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+            },
+            "parameters": {
+              "actionName": "pwrp_PromoteDueCallbacks",
+              "item/LookAheadMinutes": 5
+            },
+            "authentication": "@parameters('$authentication')"
+          },
+          "metadata": {
+            "operationMetadataId": "a1f0c2d4-0000-4000-8000-000000000002"
+          }
+        },
+        "Check_for_configuration_failure": {
+          "$comment": "A configuration error means scheduled callbacks are silently not being dispatched. That must be loud, not swallowed.",
+          "runAfter": { "Promote_due_callbacks": ["Succeeded"] },
+          "type": "If",
+          "expression": {
+            "and": [
+              {
+                "equals": [
+                  "@outputs('Promote_due_callbacks')?['body/Success']",
+                  false
+                ]
+              }
+            ]
+          },
+          "actions": {
+            "Fail_the_run": {
+              "runAfter": {},
+              "type": "Terminate",
+              "inputs": {
+                "runStatus": "Failed",
+                "runError": {
+                  "code": "@{outputs('Promote_due_callbacks')?['body/ErrorCode']}",
+                  "message": "@{outputs('Promote_due_callbacks')?['body/ErrorMessage']}"
+                }
+              }
+            }
+          },
+          "else": {
+            "actions": {
+              "Log_when_something_happened": {
+                "$comment": "Most runs promote nothing. Only compose on a run that did something, so the run history stays readable.",
+                "runAfter": {},
+                "type": "If",
+                "expression": {
+                  "or": [
+                    { "greater": ["@outputs('Promote_due_callbacks')?['body/Promoted']", 0] },
+                    { "greater": ["@outputs('Promote_due_callbacks')?['body/Retried']", 0] },
+                    { "greater": ["@outputs('Promote_due_callbacks')?['body/Failed']", 0] },
+                    { "greater": ["@outputs('Promote_due_callbacks')?['body/Expired']", 0] }
+                  ]
+                },
+                "actions": {
+                  "Summary": {
+                    "runAfter": {},
+                    "type": "Compose",
+                    "inputs": {
+                      "promoted": "@outputs('Promote_due_callbacks')?['body/Promoted']",
+                      "retried": "@outputs('Promote_due_callbacks')?['body/Retried']",
+                      "failed": "@outputs('Promote_due_callbacks')?['body/Failed']",
+                      "expired": "@outputs('Promote_due_callbacks')?['body/Expired']",
+                      "references": "@outputs('Promote_due_callbacks')?['body/References']",
+                      "durationMs": "@outputs('Promote_due_callbacks')?['body/DurationMs']"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "schemaVersion": "1.0.0.0"
+}

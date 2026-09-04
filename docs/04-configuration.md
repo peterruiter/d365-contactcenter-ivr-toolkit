@@ -1,0 +1,124 @@
+# Configuration
+
+Nothing client specific belongs in code. Everything here is data.
+
+## Environment variables
+
+| Schema name | Default | What it does |
+|---|---|---|
+| `pwrp_DefaultLocale` | `nl-NL` | Language for speakable output when a queue profile does not override it |
+| `pwrp_DefaultTimeZone` | `W. Europe Standard Time` | Time zone for hours calculations |
+| `pwrp_DefaultCountryCode` | `31` | Country calling code for phone normalisation, digits only |
+| `pwrp_WaitBandThresholds` | `60,180,420` | Seconds. Short up to the first, Moderate to the second, Long to the third, VeryLong beyond |
+| `pwrp_MetricsCacheSeconds` | `15` | How long live metrics are cached. Raise it on high volume queues |
+| `pwrp_HoursCacheSeconds` | `300` | Hours and queue metadata cache. Safe to raise, hours rarely change |
+| `pwrp_MetricsWindowMinutes` | `60` | Trailing window for the average wait calculation |
+| `pwrp_EnableScheduledCallback` | `false` | Master switch. Off means only direct callback is offered |
+| `pwrp_OutboundWorkstreamId` | empty | Required when scheduled callback is on |
+| `pwrp_MaxCallbackAttempts` | `3` | Attempts before a callback is marked failed |
+| `pwrp_CallbackRetryMinutes` | `20` | Gap between attempts |
+| `pwrp_CallbackSlotMinutes` | `30` | Slot length for scheduled callback |
+| `pwrp_TelemetryEnabled` | `true` | Duration tracing |
+
+### Tuning the wait bands
+
+The defaults suit a general service queue. Adjust to what the client's callers
+actually tolerate, not to what the SLA says.
+
+- Sales or retention queue: tighten to `30,90,240`. Patience is shorter.
+- Technical support with known long handle times: `120,300,900`.
+- Anything with a hard SLA: set the Moderate threshold at the SLA target so
+  `OfferCallback` fires before you breach it.
+
+## Queue profiles (`pwrp_queueprofile`)
+
+One row per queue the IVR touches. The toolkit works without them and degrades
+sensibly, but you lose the parts that make it sound human.
+
+| Column | Purpose |
+|---|---|
+| `pwrp_queueid` | The queue this profile describes |
+| `pwrp_speakablename` | How the agent says the queue name out loud |
+| `pwrp_hourssource` | 1 = native operating hours, 2 = toolkit config tables |
+| `pwrp_timezone` | Overrides the default. Set it on any queue outside the main region |
+| `pwrp_locale` | Overrides the default. Set it on any queue serving another language |
+| `pwrp_directcallbackenabled` | Whether the agent may offer direct callback |
+| `pwrp_scheduledcallbackenabled` | Whether the agent may offer a booked slot |
+| `pwrp_slotcapacity` | Maximum callbacks per slot. Default 5 |
+
+### Speakable names matter more than you think
+
+The queue is called `NL_CS_Tier1_Voice_PROD`. Nobody says that. Set the speakable
+name to what a caller would recognise, and add the internal name as an alias so
+supervisors can still use it in testing.
+
+## Queue aliases (`pwrp_queuealias`)
+
+Every way a caller might name a queue. Cheap to add, and the single highest return
+configuration in the toolkit.
+
+For a billing queue you would typically add: `facturatie`, `factuur`, `rekening`,
+`betaling`, `billing`, `invoice`, plus the internal queue name.
+
+Resolution order is exact alias, exact name, then fuzzy match above 78 percent
+similarity. Two candidates within six points of each other return `QUEUE_AMBIGUOUS`
+so the agent asks rather than guesses.
+
+Watch the fuzzy matches in trace logs during testing. Every one of them is an alias
+you should have configured.
+
+## Hours
+
+Pick a source per queue.
+
+**Native operating hours** (`pwrp_hourssource = 1`) reads the calendar the client
+already maintains in the admin centre. Right answer when hours are already there.
+Reads internal platform schema, so it can break on a release wave.
+
+**Toolkit config** (`pwrp_hourssource = 2`) reads `pwrp_queuehours` and `pwrp_holiday`.
+More setup, immune to schema drift, easy for a client admin to edit.
+
+### `pwrp_queuehours`
+
+One row per weekday window. Two rows for a lunch break.
+
+| Queue | Day | Start | End |
+|---|---|---|---|
+| Billing | Monday | 08:30 | 12:00 |
+| Billing | Monday | 13:00 | 17:30 |
+
+### `pwrp_holiday`
+
+Date overrides. Leave the queue empty to apply organisation wide.
+
+| Name | Date | Queue | Start | End | Effect |
+|---|---|---|---|---|---|
+| Kerstmis | 25 Dec | (empty) | (empty) | (empty) | Everything closed |
+| Oudjaarsdag | 31 Dec | (empty) | 09:00 | 13:00 | Short day everywhere |
+| Team offsite | 14 Mar | Billing | (empty) | (empty) | Billing only closed |
+
+A queue specific row beats an organisation wide one for the same date.
+
+Load the national holidays for the next two years at install. Nobody remembers to do
+it in December.
+
+## Broadcast messages (`pwrp_broadcastmessage`)
+
+An admin publishes one row when something is wrong. The agent reads it before
+anything else, and `pwrp_GetQueueContext` returns `AnnounceOutage`.
+
+| Column | Notes |
+|---|---|
+| `pwrp_message` | Read out word for word. Write it the way you want it spoken |
+| `pwrp_queueid` | Leave empty for organisation wide |
+| `pwrp_validfrom` / `pwrp_validto` | Always set an end. A stale outage message is worse than none |
+
+Cached for 30 seconds, so a change reaches callers inside a minute.
+
+## Message wording (`pwrp_messagetemplate`)
+
+Overrides the built in phrases without a code change. Key plus locale plus text.
+Placeholders `{close}`, `{next}`, `{when}` and `{number}` are substituted.
+
+Change wording here, not in the agent instructions. Wording in one place stays
+consistent across every topic.

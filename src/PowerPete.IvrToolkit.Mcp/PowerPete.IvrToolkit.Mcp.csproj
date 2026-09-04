@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>PowerPete.IvrToolkit.Mcp</RootNamespace>
+    <UserSecretsId>pwrp-ivr-toolkit-mcp</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Azure.Identity" Version="1.11.4" />
+    <PackageReference Include="Microsoft.Identity.Web" Version="3.2.0" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The tool catalogue is generated from the same file the Custom APIs are
+         registered from, so the MCP surface can never drift from the contract. -->
+    <None Include="..\..\build\customapis.json" Link="customapis.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

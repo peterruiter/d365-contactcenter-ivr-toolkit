@@ -1,0 +1,246 @@
+# API reference
+
+Every endpoint is an unbound Dataverse Custom API in the `pwrp_` namespace.
+
+## Shared outputs
+
+Every endpoint returns these on top of its own outputs.
+
+| Output | Type | Notes |
+|---|---|---|
+| `Success` | Boolean | False means handled but not completed. Read `ErrorCode` |
+| `ErrorCode` | String | Stable. Branch on this, never on `ErrorMessage` |
+| `ErrorMessage` | String | For logs and clarifying questions. Never read verbatim to a caller |
+| `DurationMs` | Integer | Server side execution time. Watch it against your latency budget |
+
+## Error codes
+
+| Code | Meaning | What the agent should do |
+|---|---|---|
+| `QUEUE_NOT_FOUND` | No match | Ask the caller to name the team differently |
+| `QUEUE_AMBIGUOUS` | Several close matches | Ask one clarifying question using the candidates |
+| `HOURS_NOT_CONFIGURED` | No hours linked | Continue without an hours statement. Alert an admin |
+| `METRICS_UNAVAILABLE` | Live read failed | Continue without wait times. Never mention a system problem |
+| `CALLBACK_DISABLED` | Off for this queue | Offer voicemail or a transfer instead |
+| `CALLBACK_SLOT_UNAVAILABLE` | Slot taken or invalid | Offer the next available slots |
+| `CALLBACK_NOT_FOUND` | Lookup failed | Ask for the reference again |
+| `INVALID_PHONE_NUMBER` | Failed validation | Ask for the number again, maximum twice |
+| `INVALID_INPUT` | Missing or malformed input | Fix the agent. This is a wiring bug |
+| `CONFIGURATION_ERROR` | Install incomplete | Run the health check |
+
+---
+
+## pwrp_GetQueueContext
+
+The one to call. Opening state, wait band, outage message, callback availability and
+a recommended action in one round trip.
+
+**Input:** `Queue` (string, required) - name, alias or id.
+
+**Outputs**
+
+| Output | Type | Notes |
+|---|---|---|
+| `Context` | String | Full JSON payload |
+| `QueueId` | String | Hold this in a variable and reuse it |
+| `IsOpen` | Boolean | |
+| `WaitBand` | String | `Short`, `Moderate`, `Long`, `VeryLong` |
+| `RecommendedAction` | String | `Serve`, `OfferCallback`, `OfferVoicemail`, `AnnounceClosed`, `AnnounceOutage` |
+| `Speakable` | String | Read this |
+
+Metrics are the only part allowed to fail silently. If the live read fails, the
+context still returns with `WaitBand` defaulted to `Moderate` and the call continues.
+
+**Recommended action logic**
+
+```
+outage message published        -> AnnounceOutage
+queue closed                    -> AnnounceClosed
+wait band Long or VeryLong
+    and callback available      -> OfferCallback
+    and callback not available  -> OfferVoicemail
+otherwise                       -> Serve
+```
+
+---
+
+## pwrp_ResolveQueue
+
+Turns a spoken name into an id. Call once, reuse the id.
+
+**Input:** `Queue` (string, required)
+
+**Outputs:** `QueueId`, `QueueName`, `SpeakableName`, `ChannelType`, `Locale`
+
+---
+
+## pwrp_GetQueues
+
+Lists active queues. Cached, so cheap.
+
+**Input:** `ChannelType` (string, optional) - `Voice`, `Messaging`, `Record`
+
+**Outputs:** `Queues` (JSON array), `Count`, `Speakable`
+
+---
+
+## pwrp_GetQueueHours
+
+**Inputs:** `Queue` (required), `FromDate` (optional, defaults today), `Days`
+(optional, 1 to 31, defaults 1)
+
+**Outputs:** `Hours` (JSON array of days with windows), `Speakable`
+
+Use `Days = 1` for "are you open today" and `Days = 7` for "what are your hours this
+week". Holiday exceptions are already applied.
+
+---
+
+## pwrp_IsQueueOpen
+
+**Inputs:** `Queue` (required), `AtUtc` (optional, defaults now)
+
+**Outputs:** `IsOpen`, `Reason` (`Open`, `Closed`, `Holiday`, `OutsideHours`),
+`NextOpenUtc`, `NextCloseUtc`, `Speakable`
+
+Pass `AtUtc` to validate a callback time the caller proposes.
+
+---
+
+## pwrp_GetNextOpenTime
+
+**Input:** `Queue` (required)
+
+**Outputs:** `IsOpenNow`, `NextOpenUtc`, `Speakable`
+
+Looks 14 days ahead, so it survives a long holiday closure.
+
+---
+
+## pwrp_GetQueueMetrics
+
+**Input:** `Queue` (required)
+
+**Outputs**
+
+| Output | Notes |
+|---|---|
+| `WaitingNow` | Segments currently waiting |
+| `LongestWaitSeconds` | Longest live wait right now |
+| `AverageWaitSeconds` | Trailing average over `pwrp_MetricsWindowMinutes` |
+| `EstimatedWaitSeconds` | Waiting divided by available, times the trailing average |
+| `RepresentativesAvailable` | Queue members in an Available presence |
+| `RepresentativesOnline` | Queue members signed in, any presence |
+| `WaitBand` | Give the caller this |
+| `Speakable` | And this |
+
+`RepresentativesOnline` on its own is a weak signal. Somebody signed in but Busy
+cannot take the call. Use `RepresentativesAvailable`.
+
+---
+
+## pwrp_CheckCallbackEligibility
+
+**Input:** `Queue` (required)
+
+**Outputs:** `DirectCallbackAvailable`, `ScheduledCallbackAvailable`, `AnyAvailable`
+
+Skip this if you already have it from `pwrp_GetQueueContext`.
+
+---
+
+## pwrp_GetCallbackSlots
+
+**Inputs:** `Queue` (required), `Days` (optional, 1 to 14, defaults 3),
+`MaxResults` (optional, defaults 6)
+
+**Outputs:** `Slots` (JSON), `Count`, `Speakable` (first three only)
+
+Slots fall inside opening hours and respect `pwrp_slotcapacity`. Offer three over the
+phone. Six and the caller loses track.
+
+---
+
+## pwrp_CreateCallback
+
+**Inputs**
+
+| Input | Required | Notes |
+|---|---|---|
+| `Queue` | Yes | |
+| `PhoneNumber` | Yes | Any format. Normalised to E.164 |
+| `Mode` | No | `Direct` or `Scheduled`. Defaults to `Direct` |
+| `RequestedStartUtc` | For Scheduled | Must match an available slot |
+| `ContactId` | No | |
+| `ConversationId` | No | Ties the callback to the conversation |
+| `ContextJson` | No | Anything the representative should see before dialling |
+
+**Outputs:** `Callback` (JSON), `CallbackId`, `Reference`, `Status`, `Speakable`
+
+Idempotent per queue and number. A repeat call while a callback is open returns the
+existing one rather than creating a duplicate. Voice agents retry on timeouts, and
+callers repeat themselves, so this is not optional.
+
+`Reference` is six characters drawn from an alphabet with no lookalikes, so it
+survives being read over a phone line.
+
+---
+
+## pwrp_GetCallbackStatus
+
+**Inputs:** one of `Reference`, `PhoneNumber`, `CallbackId`
+
+**Outputs:** `Callback` (JSON), `Status`, `Attempts`
+
+Statuses: `Requested`, `Queued`, `Dialling`, `Completed`, `Cancelled`, `Failed`, `NoAnswer`
+
+---
+
+## pwrp_CancelCallback / pwrp_RescheduleCallback
+
+Cancel takes `CallbackId`. Reschedule takes `Queue`, `CallbackId` and `NewStartUtc`,
+and validates the new time against available slots.
+
+---
+
+## pwrp_ValidatePhoneNumber
+
+**Inputs:** `PhoneNumber` (required), `CountryCode` (optional)
+
+**Outputs:** `IsValid`, `E164`, `NumberType` (`Mobile`, `Landline`, `Unknown`),
+`Reason`, `Speakable`
+
+`Speakable` is the number spelled digit by digit, so a confirmation is actually
+verifiable. Handles `06 12 34 56 78`, `0031612345678`, `+31 6 1234 5678` and the
+other shapes speech recognition produces.
+
+---
+
+## pwrp_GetBroadcastMessage
+
+**Input:** `Queue` (required)
+
+**Outputs:** `HasMessage`, `Speakable`
+
+---
+
+## pwrp_LogIvrOutcome
+
+**Inputs:** `Outcome` (required), `Queue`, `Intent`, `ConversationId`, `AgentName`,
+`DurationSeconds`, `ContextJson`
+
+**Output:** `OutcomeId`
+
+Outcomes: `Contained`, `Escalated`, `CallbackBooked`, `Abandoned`, `ClosedAnnouncement`
+
+Call it on every conversation, including the ones that went nowhere. Without it you
+cannot answer the only question the client asks after go live.
+
+---
+
+## pwrp_HealthCheck
+
+No inputs. Returns `Checks` (JSON), `Passed`, `FailureCount`.
+
+Run after install, after every solution upgrade, and after every Contact Center
+release wave update.

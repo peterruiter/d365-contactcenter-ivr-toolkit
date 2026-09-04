@@ -1,0 +1,746 @@
+{
+  "publisherPrefix": "pwrp",
+  "solutionUniqueName": "PowerPeteIvrToolkitCore",
+  "assembly": "PowerPete.IvrToolkit.Plugins",
+  "sharedOutputs": [
+    {
+      "name": "Success",
+      "type": "Boolean",
+      "description": "False means the call was handled but could not be completed. Read ErrorCode."
+    },
+    {
+      "name": "ErrorCode",
+      "type": "String",
+      "description": "Stable error code. Branch on this, never on ErrorMessage."
+    },
+    {
+      "name": "ErrorMessage",
+      "type": "String",
+      "description": "Human readable detail. Do not read this to a caller."
+    },
+    {
+      "name": "DurationMs",
+      "type": "Integer",
+      "description": "Server side execution time. Watch this against your latency budget."
+    }
+  ],
+  "apis": [
+    {
+      "name": "pwrp_GetQueues",
+      "displayName": "Get queues",
+      "type": "PowerPete.IvrToolkit.CustomApis.GetQueues",
+      "description": "Lists active contact centre queues the agent can route to, optionally filtered by channel.",
+      "isFunction": true,
+      "inputs": [
+        {
+          "name": "ChannelType",
+          "type": "String",
+          "required": false,
+          "description": "Voice, Messaging or Record. Leave empty for all."
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Queues",
+          "type": "String",
+          "description": "JSON array of queues."
+        },
+        {
+          "name": "Count",
+          "type": "Integer"
+        },
+        {
+          "name": "Speakable",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "name": "pwrp_ResolveQueue",
+      "displayName": "Resolve queue",
+      "type": "PowerPete.IvrToolkit.CustomApis.ResolveQueue",
+      "description": "Turns a spoken or typed queue name into a queue id using aliases and fuzzy matching. Call once, then reuse the id.",
+      "isFunction": true,
+      "inputs": [
+        {
+          "name": "Queue",
+          "type": "String",
+          "required": true,
+          "description": "Queue name, alias or id."
+        }
+      ],
+      "outputs": [
+        {
+          "name": "QueueId",
+          "type": "String"
+        },
+        {
+          "name": "QueueName",
+          "type": "String"
+        },
+        {
+          "name": "SpeakableName",
+          "type": "String"
+        },
+        {
+          "name": "ChannelType",
+          "type": "String"
+        },
+        {
+          "name": "Locale",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "name": "pwrp_GetQueueContext",
+      "displayName": "Get queue context",
+      "type": "PowerPete.IvrToolkit.CustomApis.GetQueueContext",
+      "description": "Returns opening state, live wait band, outage message, callback availability and a recommended action in one call. Use this at the start of a voice conversation instead of several separate lookups.",
+      "isFunction": true,
+      "inputs": [
+        {
+          "name": "Queue",
+          "type": "String",
+          "required": true,
+          "description": "Queue name, alias or id."
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Context",
+          "type": "String",
+          "description": "Full JSON payload."
+        },
+        {
+          "name": "QueueId",
+          "type": "String"
+        },
+        {
+          "name": "IsOpen",
+          "type": "Boolean"
+        },
+        {
+          "name": "WaitBand",
+          "type": "String",
+          "description": "Short, Moderate, Long or VeryLong."
+        },
+        {
+          "name": "RecommendedAction",
+          "type": "String",
+          "description": "Serve, OfferCallback, OfferVoicemail, AnnounceClosed or AnnounceOutage."
+        },
+        {
+          "name": "Speakable",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "name": "pwrp_GetQueueHours",
+      "displayName": "Get queue hours",
+      "type": "PowerPete.IvrToolkit.CustomApis.GetQueueHours",
+      "description": "Opening hours for a queue across a date range, holiday exceptions included.",
+      "isFunction": true,
+      "inputs": [
+        {
+          "name": "Queue",
+          "type": "String",
+          "required": true
+        },
+        {
+          "name": "FromDate",
+          "type": "DateTime",
+          "required": false,
+          "description": "Defaults to today."
+        },
+        {
+          "name": "Days",
+          "type": "Integer",
+          "required": false,
+          "description": "1 to 31. Defaults to 1."
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Hours",
+          "type": "String"
+        },
+        {
+          "name": "Speakable",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "name": "pwrp_IsQueueOpen",
+      "displayName": "Is queue open",
+      "type": "PowerPete.IvrToolkit.CustomApis.IsQueueOpen",
+      "description": "Whether a queue is open now, or at a future moment. Use the future form to check a proposed callback time.",
+      "isFunction": true,
+      "inputs": [
+        {
+          "name": "Queue",
+          "type": "String",
+          "required": true
+        },
+        {
+          "name": "AtUtc",
+          "type": "DateTime",
+          "required": false,
+          "description": "Defaults to now."
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IsOpen",
+          "type": "Boolean"
+        },
+        {
+          "name": "Reason",
+          "type": "String"
+        },
+        {
+          "name": "NextOpenUtc",
+          "type": "DateTime"
+        },
+        {
+          "name": "NextCloseUtc",
+          "type": "DateTime"
+        },
+        {
+          "name": "Speakable",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "name": "pwrp_GetNextOpenTime",
+      "displayName": "Get next open time",
+      "type": "PowerPete.IvrToolkit.CustomApis.GetNextOpenTime",
+      "description": "When the queue opens next, with a phrase the agent can read out.",
+      "isFunction": true,
+      "inputs": [
+        {
+          "name": "Queue",
+          "type": "String",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IsOpenNow",
+          "type": "Boolean"
+        },
+        {
+          "name": "NextOpenUtc",
+          "type": "DateTime"
+        },
+        {
+          "name": "Speakable",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "name": "pwrp_GetQueueMetrics",
+      "displayName": "Get queue metrics",
+      "type": "PowerPete.IvrToolkit.CustomApis.GetQueueMetrics",
+      "description": "Live queue state: callers waiting, longest wait, average wait, representatives available and an estimated wait. Give callers WaitBand, not the raw numbers.",
+      "isFunction": true,
+      "inputs": [
+        {
+          "name": "Queue",
+          "type": "String",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Metrics",
+          "type": "String"
+        },
+        {
+          "name": "WaitingNow",
+          "type": "Integer"
+        },
+        {
+          "name": "LongestWaitSeconds",
+          "type": "Integer"
+        },
+        {
+          "name": "AverageWaitSeconds",
+          "type": "Integer"
+        },
+        {
+          "name": "EstimatedWaitSeconds",
+          "type": "Integer"
+        },
+        {
+          "name": "RepresentativesAvailable",
+          "type": "Integer"
+        },
+        {
+          "name": "RepresentativesOnline",
+          "type": "Integer"
+        },
+        {
+          "name": "WaitBand",
+          "type": "String"
+        },
+        {
+          "name": "Speakable",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "name": "pwrp_CheckCallbackEligibility",
+      "displayName": "Check callback eligibility",
+      "type": "PowerPete.IvrToolkit.CustomApis.CheckCallbackEligibility",
+      "description": "Whether direct callback, scheduled callback or neither is available for a queue. Call before offering a callback.",
+      "isFunction": true,
+      "inputs": [
+        {
+          "name": "Queue",
+          "type": "String",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "DirectCallbackAvailable",
+          "type": "Boolean"
+        },
+        {
+          "name": "ScheduledCallbackAvailable",
+          "type": "Boolean"
+        },
+        {
+          "name": "AnyAvailable",
+          "type": "Boolean"
+        }
+      ]
+    },
+    {
+      "name": "pwrp_GetCallbackSlots",
+      "displayName": "Get callback slots",
+      "type": "PowerPete.IvrToolkit.CustomApis.GetCallbackSlots",
+      "description": "Bookable callback windows inside opening hours, with remaining capacity. Offer at most three over the phone.",
+      "isFunction": true,
+      "inputs": [
+        {
+          "name": "Queue",
+          "type": "String",
+          "required": true
+        },
+        {
+          "name": "Days",
+          "type": "Integer",
+          "required": false,
+          "description": "1 to 14. Defaults to 3."
+        },
+        {
+          "name": "MaxResults",
+          "type": "Integer",
+          "required": false,
+          "description": "Defaults to 6."
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Slots",
+          "type": "String"
+        },
+        {
+          "name": "Count",
+          "type": "Integer"
+        },
+        {
+          "name": "Speakable",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "name": "pwrp_CreateCallback",
+      "displayName": "Create callback",
+      "type": "PowerPete.IvrToolkit.CustomApis.CreateCallback",
+      "description": "Books a callback. Mode Direct queues it for the next free representative. Mode Scheduled books a specific slot. Repeated calls for the same number and queue return the existing request rather than creating a duplicate.",
+      "isFunction": false,
+      "inputs": [
+        {
+          "name": "Queue",
+          "type": "String",
+          "required": true
+        },
+        {
+          "name": "PhoneNumber",
+          "type": "String",
+          "required": true,
+          "description": "Any format. Normalised to E.164."
+        },
+        {
+          "name": "Mode",
+          "type": "String",
+          "required": false,
+          "description": "Direct or Scheduled. Defaults to Direct."
+        },
+        {
+          "name": "RequestedStartUtc",
+          "type": "DateTime",
+          "required": false,
+          "description": "Required when Mode is Scheduled."
+        },
+        {
+          "name": "ContactId",
+          "type": "String",
+          "required": false
+        },
+        {
+          "name": "ConversationId",
+          "type": "String",
+          "required": false
+        },
+        {
+          "name": "ContextJson",
+          "type": "String",
+          "required": false,
+          "description": "Anything the representative should see before dialling."
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Callback",
+          "type": "String"
+        },
+        {
+          "name": "CallbackId",
+          "type": "String"
+        },
+        {
+          "name": "Reference",
+          "type": "String",
+          "description": "Six characters, chosen to be unambiguous over the phone."
+        },
+        {
+          "name": "Status",
+          "type": "String"
+        },
+        {
+          "name": "Speakable",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "name": "pwrp_GetCallbackStatus",
+      "displayName": "Get callback status",
+      "type": "PowerPete.IvrToolkit.CustomApis.GetCallbackStatus",
+      "description": "Looks up a callback by reference, phone number or id.",
+      "isFunction": true,
+      "inputs": [
+        {
+          "name": "Reference",
+          "type": "String",
+          "required": false
+        },
+        {
+          "name": "PhoneNumber",
+          "type": "String",
+          "required": false
+        },
+        {
+          "name": "CallbackId",
+          "type": "String",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Callback",
+          "type": "String"
+        },
+        {
+          "name": "Status",
+          "type": "String"
+        },
+        {
+          "name": "Attempts",
+          "type": "Integer"
+        }
+      ]
+    },
+    {
+      "name": "pwrp_CancelCallback",
+      "displayName": "Cancel callback",
+      "type": "PowerPete.IvrToolkit.CustomApis.CancelCallback",
+      "description": "Cancels an open callback request.",
+      "isFunction": false,
+      "inputs": [
+        {
+          "name": "CallbackId",
+          "type": "String",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Status",
+          "type": "String"
+        },
+        {
+          "name": "Callback",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "name": "pwrp_RescheduleCallback",
+      "displayName": "Reschedule callback",
+      "type": "PowerPete.IvrToolkit.CustomApis.RescheduleCallback",
+      "description": "Moves a scheduled callback to a different available slot.",
+      "isFunction": false,
+      "inputs": [
+        {
+          "name": "Queue",
+          "type": "String",
+          "required": true
+        },
+        {
+          "name": "CallbackId",
+          "type": "String",
+          "required": true
+        },
+        {
+          "name": "NewStartUtc",
+          "type": "DateTime",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Status",
+          "type": "String"
+        },
+        {
+          "name": "Callback",
+          "type": "String"
+        },
+        {
+          "name": "Speakable",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "name": "pwrp_ValidatePhoneNumber",
+      "displayName": "Validate phone number",
+      "type": "PowerPete.IvrToolkit.CustomApis.ValidatePhoneNumber",
+      "description": "Normalises a spoken or typed phone number to E.164 and returns a digit by digit spelling for confirmation.",
+      "isFunction": true,
+      "inputs": [
+        {
+          "name": "PhoneNumber",
+          "type": "String",
+          "required": true
+        },
+        {
+          "name": "CountryCode",
+          "type": "String",
+          "required": false,
+          "description": "Defaults to pwrp_DefaultCountryCode."
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IsValid",
+          "type": "Boolean"
+        },
+        {
+          "name": "E164",
+          "type": "String"
+        },
+        {
+          "name": "NumberType",
+          "type": "String"
+        },
+        {
+          "name": "Reason",
+          "type": "String"
+        },
+        {
+          "name": "Speakable",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "name": "pwrp_GetBroadcastMessage",
+      "displayName": "Get broadcast message",
+      "type": "PowerPete.IvrToolkit.CustomApis.GetBroadcastMessage",
+      "description": "Returns an active outage or announcement message for a queue, if an administrator has published one.",
+      "isFunction": true,
+      "inputs": [
+        {
+          "name": "Queue",
+          "type": "String",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "HasMessage",
+          "type": "Boolean"
+        },
+        {
+          "name": "Speakable",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "name": "pwrp_LogIvrOutcome",
+      "displayName": "Log IVR outcome",
+      "type": "PowerPete.IvrToolkit.CustomApis.LogIvrOutcome",
+      "description": "Records what the agent did so containment and deflection can be reported. Call once at the end of every conversation.",
+      "isFunction": false,
+      "inputs": [
+        {
+          "name": "Outcome",
+          "type": "String",
+          "required": true,
+          "description": "Contained, Escalated, CallbackBooked, Abandoned or ClosedAnnouncement."
+        },
+        {
+          "name": "Queue",
+          "type": "String",
+          "required": false
+        },
+        {
+          "name": "Intent",
+          "type": "String",
+          "required": false
+        },
+        {
+          "name": "ConversationId",
+          "type": "String",
+          "required": false
+        },
+        {
+          "name": "AgentName",
+          "type": "String",
+          "required": false
+        },
+        {
+          "name": "DurationSeconds",
+          "type": "Integer",
+          "required": false
+        },
+        {
+          "name": "ContextJson",
+          "type": "String",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "name": "OutcomeId",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "name": "pwrp_HealthCheck",
+      "displayName": "Health check",
+      "type": "PowerPete.IvrToolkit.CustomApis.HealthCheck",
+      "description": "Validates the installation. Run after install and after every platform update.",
+      "isFunction": true,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "Checks",
+          "type": "String"
+        },
+        {
+          "name": "Passed",
+          "type": "Boolean"
+        },
+        {
+          "name": "FailureCount",
+          "type": "Integer"
+        }
+      ]
+    },
+    {
+      "name": "pwrp_PromoteDueCallbacks",
+      "displayName": "Promote due callbacks",
+      "type": "PowerPete.IvrToolkit.CustomApis.PromoteDueCallbacks",
+      "description": "Moves due scheduled callbacks into the outbound workstream, applies the retry policy and expires stale requests. Called by the Power Pete Promote Due Callbacks flow. Not for agents.",
+      "isFunction": false,
+      "isPrivate": true,
+      "inputs": [
+        {
+          "name": "LookAheadMinutes",
+          "type": "Integer",
+          "required": false,
+          "description": "How far ahead to promote. Defaults to 5, matching the flow recurrence."
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Promoted",
+          "type": "Integer"
+        },
+        {
+          "name": "Retried",
+          "type": "Integer"
+        },
+        {
+          "name": "Failed",
+          "type": "Integer"
+        },
+        {
+          "name": "Expired",
+          "type": "Integer"
+        },
+        {
+          "name": "References",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "name": "pwrp_RecordCallbackOutcome",
+      "displayName": "Record callback outcome",
+      "type": "PowerPete.IvrToolkit.CustomApis.RecordCallbackOutcome",
+      "description": "Records the result of a callback dial so the retry policy can act. Wire into the proactive engagement completion path.",
+      "isFunction": false,
+      "isPrivate": true,
+      "inputs": [
+        {
+          "name": "CallbackId",
+          "type": "String",
+          "required": true
+        },
+        {
+          "name": "Outcome",
+          "type": "String",
+          "required": true,
+          "description": "Connected, NoAnswer, Voicemail, Dialling, Cancelled or Failed."
+        },
+        {
+          "name": "Detail",
+          "type": "String",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Status",
+          "type": "String"
+        }
+      ]
+    }
+  ]
+}

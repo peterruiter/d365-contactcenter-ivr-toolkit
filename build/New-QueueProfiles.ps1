@@ -1,0 +1,47 @@
+<#
+.SYNOPSIS
+    Creates a pwrp_queueprofile row for every active queue that does not have one.
+
+.DESCRIPTION
+    Speeds up a first install. Defaults are conservative: native operating hours as
+    the hours source, callback off, speakable name equal to the queue name. Review
+    and adjust each profile afterwards, particularly the speakable name.
+
+.EXAMPLE
+    ./New-QueueProfiles.ps1 -EnvironmentUrl https://contoso.crm4.dynamics.com -All
+#>
+[CmdletBinding()]
+param(
+    [Parameter(Mandatory = $true)][string]$EnvironmentUrl,
+    [switch]$All,
+    [string]$ChannelType = "Voice"
+)
+
+$ErrorActionPreference = "Stop"
+
+$filter = if ($All) { "" } else { "&`$filter=msdyn_queuetype eq 192350002" }
+$queues = (& pac env http --method GET --url "/api/data/v9.2/queues?`$select=queueid,name$filter" | ConvertFrom-Json).value
+
+Write-Host "Found $($queues.Count) queues" -ForegroundColor Cyan
+
+foreach ($queue in $queues) {
+    $existing = (& pac env http --method GET --url "/api/data/v9.2/pwrp_queueprofiles?`$filter=_pwrp_queueid_value eq $($queue.queueid)" | ConvertFrom-Json).value
+    if ($existing.Count -gt 0) {
+        Write-Host "  skip $($queue.name), profile exists" -ForegroundColor Gray
+        continue
+    }
+
+    & pac env http --method POST --url "/api/data/v9.2/pwrp_queueprofiles" --body (@{
+        pwrp_name                     = $queue.name
+        pwrp_speakablename            = $queue.name
+        pwrp_hourssource              = 1      # native operating hours
+        pwrp_directcallbackenabled    = $false
+        pwrp_scheduledcallbackenabled = $false
+        pwrp_slotcapacity             = 5
+        "pwrp_queueid@odata.bind"     = "/queues($($queue.queueid))"
+    } | ConvertTo-Json -Compress) | Out-Null
+
+    Write-Host "  created profile for $($queue.name)" -ForegroundColor Green
+}
+
+Write-Host "Done. Review speakable names before going live." -ForegroundColor Green

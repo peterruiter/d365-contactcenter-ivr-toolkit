@@ -1,0 +1,190 @@
+{
+  "publisherPrefix": "pwrp",
+  "publisherName": "Power Pete",
+  "solutionUniqueName": "PowerPeteIvrToolkitCore",
+  "tables": [
+    {
+      "logicalName": "pwrp_queueprofile",
+      "displayName": "Queue profile",
+      "pluralName": "Queue profiles",
+      "primaryField": { "name": "pwrp_name", "displayName": "Name", "maxLength": 100 },
+      "description": "Per queue settings for the IVR toolkit. Speakable name, hours source, callback options.",
+      "columns": [
+        { "name": "pwrp_queueid", "type": "Lookup", "target": "queue", "displayName": "Queue", "required": true },
+        { "name": "pwrp_speakablename", "type": "String", "maxLength": 200, "displayName": "Speakable name", "description": "How the agent says this queue out loud. The internal queue name is rarely right." },
+        { "name": "pwrp_hourssource", "type": "Picklist", "displayName": "Hours source", "options": [
+          { "value": 1, "label": "Native operating hours" },
+          { "value": 2, "label": "Toolkit config tables" }
+        ], "defaultValue": 1 },
+        { "name": "pwrp_timezone", "type": "String", "maxLength": 100, "displayName": "Time zone", "description": "Windows time zone id. Overrides pwrp_DefaultTimeZone." },
+        { "name": "pwrp_locale", "type": "String", "maxLength": 10, "displayName": "Locale", "description": "Overrides pwrp_DefaultLocale. e.g. nl-NL" },
+        { "name": "pwrp_directcallbackenabled", "type": "Boolean", "displayName": "Direct callback enabled", "defaultValue": false },
+        { "name": "pwrp_scheduledcallbackenabled", "type": "Boolean", "displayName": "Scheduled callback enabled", "defaultValue": false },
+        { "name": "pwrp_slotcapacity", "type": "Integer", "displayName": "Slot capacity", "defaultValue": 5, "minValue": 1, "maxValue": 100, "description": "Maximum callbacks per slot. Start low." }
+      ]
+    },
+    {
+      "logicalName": "pwrp_queuealias",
+      "displayName": "Queue alias",
+      "pluralName": "Queue aliases",
+      "primaryField": { "name": "pwrp_name", "displayName": "Alias", "maxLength": 200 },
+      "description": "Every way a caller might name a queue. The highest return configuration in the toolkit.",
+      "columns": [
+        { "name": "pwrp_queueid", "type": "Lookup", "target": "queue", "displayName": "Queue", "required": true }
+      ]
+    },
+    {
+      "logicalName": "pwrp_queuehours",
+      "displayName": "Queue hours",
+      "pluralName": "Queue hours",
+      "primaryField": { "name": "pwrp_name", "displayName": "Name", "maxLength": 100 },
+      "description": "Weekly opening windows when the queue profile uses toolkit config hours.",
+      "columns": [
+        { "name": "pwrp_queueid", "type": "Lookup", "target": "queue", "displayName": "Queue", "required": true },
+        { "name": "pwrp_dayofweek", "type": "Picklist", "displayName": "Day", "options": [
+          { "value": 0, "label": "Sunday" },
+          { "value": 1, "label": "Monday" },
+          { "value": 2, "label": "Tuesday" },
+          { "value": 3, "label": "Wednesday" },
+          { "value": 4, "label": "Thursday" },
+          { "value": 5, "label": "Friday" },
+          { "value": 6, "label": "Saturday" }
+        ], "required": true },
+        { "name": "pwrp_starttime", "type": "String", "maxLength": 5, "displayName": "Start", "description": "HH:mm" },
+        { "name": "pwrp_endtime", "type": "String", "maxLength": 5, "displayName": "End", "description": "HH:mm" }
+      ]
+    },
+    {
+      "logicalName": "pwrp_holiday",
+      "displayName": "Holiday",
+      "pluralName": "Holidays",
+      "primaryField": { "name": "pwrp_name", "displayName": "Name", "maxLength": 100 },
+      "description": "Date overrides. Empty queue means organisation wide. Empty times mean closed all day.",
+      "columns": [
+        { "name": "pwrp_date", "type": "DateTime", "format": "DateOnly", "displayName": "Date", "required": true },
+        { "name": "pwrp_queueid", "type": "Lookup", "target": "queue", "displayName": "Queue", "description": "Leave empty for organisation wide." },
+        { "name": "pwrp_starttime", "type": "String", "maxLength": 5, "displayName": "Start", "description": "HH:mm. Empty means closed all day." },
+        { "name": "pwrp_endtime", "type": "String", "maxLength": 5, "displayName": "End" }
+      ]
+    },
+    {
+      "logicalName": "pwrp_callbackrequest",
+      "displayName": "Callback request",
+      "pluralName": "Callback requests",
+      "primaryField": { "name": "pwrp_name", "displayName": "Reference", "maxLength": 10 },
+      "description": "A requested callback. Six character reference chosen to survive being read over a phone line.",
+      "columns": [
+        { "name": "pwrp_phonenumber", "type": "String", "maxLength": 20, "displayName": "Phone number", "required": true, "index": true },
+        { "name": "pwrp_numbertype", "type": "String", "maxLength": 20, "displayName": "Number type" },
+        { "name": "pwrp_queueid", "type": "Lookup", "target": "queue", "displayName": "Queue", "required": true },
+        { "name": "pwrp_contactid", "type": "Lookup", "target": "contact", "displayName": "Contact" },
+        { "name": "pwrp_mode", "type": "Picklist", "displayName": "Mode", "options": [
+          { "value": 1, "label": "Direct" },
+          { "value": 2, "label": "Scheduled" }
+        ], "defaultValue": 1 },
+        { "name": "pwrp_status", "type": "Picklist", "displayName": "Status", "index": true, "options": [
+          { "value": 1, "label": "Requested" },
+          { "value": 2, "label": "Queued" },
+          { "value": 3, "label": "Dialling" },
+          { "value": 4, "label": "Completed" },
+          { "value": 5, "label": "Cancelled" },
+          { "value": 6, "label": "Failed" },
+          { "value": 7, "label": "No answer" }
+        ], "defaultValue": 1 },
+        { "name": "pwrp_requestedstart", "type": "DateTime", "displayName": "Requested start", "index": true },
+        { "name": "pwrp_queuedon", "type": "DateTime", "displayName": "Queued on" },
+        { "name": "pwrp_lastattemptedon", "type": "DateTime", "displayName": "Last attempted on" },
+        { "name": "pwrp_completedon", "type": "DateTime", "displayName": "Completed on" },
+        { "name": "pwrp_attempts", "type": "Integer", "displayName": "Attempts", "defaultValue": 0 },
+        { "name": "pwrp_failurereason", "type": "String", "maxLength": 400, "displayName": "Failure reason" },
+        { "name": "pwrp_workstreamid", "type": "String", "maxLength": 100, "displayName": "Workstream id" },
+        { "name": "pwrp_locale", "type": "String", "maxLength": 10, "displayName": "Locale" },
+        { "name": "pwrp_conversationid", "type": "String", "maxLength": 100, "displayName": "Conversation id", "index": true },
+        { "name": "pwrp_context", "type": "Memo", "maxLength": 4000, "displayName": "Context", "description": "JSON shown to the representative before dialling." }
+      ]
+    },
+    {
+      "logicalName": "pwrp_broadcastmessage",
+      "displayName": "Broadcast message",
+      "pluralName": "Broadcast messages",
+      "primaryField": { "name": "pwrp_name", "displayName": "Name", "maxLength": 100 },
+      "description": "Outage or announcement read out before anything else. Always set an end date.",
+      "columns": [
+        { "name": "pwrp_message", "type": "Memo", "maxLength": 2000, "displayName": "Message", "required": true, "description": "Written the way you want it spoken, not the way you would write it." },
+        { "name": "pwrp_queueid", "type": "Lookup", "target": "queue", "displayName": "Queue", "description": "Leave empty for organisation wide." },
+        { "name": "pwrp_validfrom", "type": "DateTime", "displayName": "Valid from", "required": true },
+        { "name": "pwrp_validto", "type": "DateTime", "displayName": "Valid to", "required": true, "description": "A stale outage message is worse than no message." }
+      ]
+    },
+    {
+      "logicalName": "pwrp_ivroutcome",
+      "displayName": "IVR outcome",
+      "pluralName": "IVR outcomes",
+      "primaryField": { "name": "pwrp_name", "displayName": "Name", "maxLength": 100 },
+      "description": "One row per conversation. The source for containment reporting. Set a retention policy.",
+      "columns": [
+        { "name": "pwrp_conversationid", "type": "String", "maxLength": 100, "displayName": "Conversation id", "index": true },
+        { "name": "pwrp_queueid", "type": "Lookup", "target": "queue", "displayName": "Queue" },
+        { "name": "pwrp_queuetext", "type": "String", "maxLength": 200, "displayName": "Queue text", "description": "Fallback when the spoken queue could not be resolved. Review these, they are missing aliases." },
+        { "name": "pwrp_outcome", "type": "String", "maxLength": 50, "displayName": "Outcome", "required": true, "index": true },
+        { "name": "pwrp_intent", "type": "String", "maxLength": 100, "displayName": "Intent" },
+        { "name": "pwrp_agentname", "type": "String", "maxLength": 100, "displayName": "Agent name" },
+        { "name": "pwrp_durationseconds", "type": "Integer", "displayName": "Duration (s)" },
+        { "name": "pwrp_contextjson", "type": "Memo", "maxLength": 4000, "displayName": "Context" },
+        { "name": "pwrp_occurredon", "type": "DateTime", "displayName": "Occurred on", "index": true }
+      ]
+    },
+    {
+      "logicalName": "pwrp_messagetemplate",
+      "displayName": "Message template",
+      "pluralName": "Message templates",
+      "primaryField": { "name": "pwrp_name", "displayName": "Key", "maxLength": 100 },
+      "description": "Overrides built in spoken phrases without a code change. Change wording here, not in agent instructions.",
+      "columns": [
+        { "name": "pwrp_locale", "type": "String", "maxLength": 10, "displayName": "Locale", "required": true },
+        { "name": "pwrp_text", "type": "Memo", "maxLength": 2000, "displayName": "Text", "required": true, "description": "Placeholders: {close} {next} {when} {number}" }
+      ]
+    }
+  ],
+  "securityRole": {
+    "name": "Power Pete IVR Reader",
+    "description": "Minimum role for the application user a Copilot Studio agent authenticates as. Do not grant System Administrator instead.",
+    "privileges": [
+      { "table": "queue", "read": "Organization" },
+      { "table": "queuemembership", "read": "Organization" },
+      { "table": "systemuser", "read": "Organization" },
+      { "table": "msdyn_operatinghour", "read": "Organization" },
+      { "table": "calendar", "read": "Organization" },
+      { "table": "calendarrule", "read": "Organization" },
+      { "table": "msdyn_queueextension", "read": "Organization" },
+      { "table": "msdyn_ocliveworkitem", "read": "Organization" },
+      { "table": "msdyn_agentstatushistory", "read": "Organization" },
+      { "table": "msdyn_presence", "read": "Organization" },
+      { "table": "environmentvariabledefinition", "read": "Organization" },
+      { "table": "environmentvariablevalue", "read": "Organization" },
+      { "table": "pwrp_queueprofile", "read": "Organization" },
+      { "table": "pwrp_queuealias", "read": "Organization" },
+      { "table": "pwrp_queuehours", "read": "Organization" },
+      { "table": "pwrp_holiday", "read": "Organization" },
+      { "table": "pwrp_broadcastmessage", "read": "Organization" },
+      { "table": "pwrp_messagetemplate", "read": "Organization" },
+      { "table": "pwrp_callbackrequest", "read": "Organization", "create": true, "write": "Organization" },
+      { "table": "pwrp_ivroutcome", "read": "Organization", "create": true }
+    ]
+  },
+  "environmentVariables": [
+    { "name": "pwrp_DefaultLocale", "displayName": "Default locale", "type": "String", "default": "nl-NL" },
+    { "name": "pwrp_DefaultTimeZone", "displayName": "Default time zone", "type": "String", "default": "W. Europe Standard Time" },
+    { "name": "pwrp_DefaultCountryCode", "displayName": "Default country code", "type": "String", "default": "31" },
+    { "name": "pwrp_WaitBandThresholds", "displayName": "Wait band thresholds (s)", "type": "String", "default": "60,180,420" },
+    { "name": "pwrp_MetricsCacheSeconds", "displayName": "Metrics cache (s)", "type": "Number", "default": "15" },
+    { "name": "pwrp_HoursCacheSeconds", "displayName": "Hours cache (s)", "type": "Number", "default": "300" },
+    { "name": "pwrp_MetricsWindowMinutes", "displayName": "Metrics window (min)", "type": "Number", "default": "60" },
+    { "name": "pwrp_EnableScheduledCallback", "displayName": "Enable scheduled callback", "type": "Boolean", "default": "false" },
+    { "name": "pwrp_OutboundWorkstreamId", "displayName": "Outbound workstream id", "type": "String", "default": "" },
+    { "name": "pwrp_MaxCallbackAttempts", "displayName": "Max callback attempts", "type": "Number", "default": "3" },
+    { "name": "pwrp_CallbackRetryMinutes", "displayName": "Callback retry gap (min)", "type": "Number", "default": "20" },
+    { "name": "pwrp_CallbackSlotMinutes", "displayName": "Callback slot length (min)", "type": "Number", "default": "30" },
+    { "name": "pwrp_TelemetryEnabled", "displayName": "Telemetry enabled", "type": "Boolean", "default": "true" }
+  ]
+}

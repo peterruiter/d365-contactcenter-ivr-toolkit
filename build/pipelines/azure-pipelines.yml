@@ -1,0 +1,141 @@
+# Contact Center IVR Toolkit
+# Build once, promote the same artefact through every environment.
+#
+# The toolkit is reusable IP, so the pipeline versions and publishes an artefact
+# rather than deploying straight to a client. Client pipelines consume the
+# published package.
+
+name: $(Date:yyyyMMdd)$(Rev:.r)
+
+trigger:
+  branches:
+    include:
+      - main
+      - release/*
+  paths:
+    include:
+      - src/*
+      - solution/*
+      - build/*
+
+pool:
+  vmImage: windows-latest
+
+variables:
+  - name: solutionName
+    value: PowerPeteIvrToolkitCore
+  - name: buildConfiguration
+    value: Release
+
+stages:
+  - stage: Build
+    jobs:
+      - job: BuildAndPack
+        steps:
+          - task: PowerPlatformToolInstaller@2
+
+          - task: DotNetCoreCLI@2
+            displayName: Restore
+            inputs:
+              command: restore
+              projects: '**/*.csproj'
+
+          - task: DotNetCoreCLI@2
+            displayName: Build plugin assembly
+            inputs:
+              command: build
+              projects: src/PowerPete.IvrToolkit.Plugins/PowerPete.IvrToolkit.Plugins.csproj
+              arguments: --configuration $(buildConfiguration) /p:Version=$(Build.BuildNumber)
+
+          # The connector swagger and the MCP catalogue both generate from
+          # customapis.json. If someone hand edited the swagger, fail here rather
+          # than shipping a connector that lies about the contract.
+          - script: |
+              python3 build/Build-Swagger.py
+              git diff --exit-code connector/apiDefinition.swagger.json
+            displayName: Check generated artefacts are current
+            failOnStderr: false
+
+          - task: DotNetCoreCLI@2
+            displayName: Unit tests
+            inputs:
+              command: test
+              projects: tests/**/*.csproj
+              arguments: --configuration $(buildConfiguration) --collect:"XPlat Code Coverage"
+
+          - task: PowerPlatformPackSolution@2
+            displayName: Pack unmanaged
+            inputs:
+              SolutionSourceFolder: solution
+              SolutionOutputFile: $(Build.ArtifactStagingDirectory)/$(solutionName)_unmanaged.zip
+              SolutionType: Unmanaged
+
+          - task: PowerPlatformPackSolution@2
+            displayName: Pack managed
+            inputs:
+              SolutionSourceFolder: solution
+              SolutionOutputFile: $(Build.ArtifactStagingDirectory)/$(solutionName)_managed.zip
+              SolutionType: Managed
+
+          - task: PowerPlatformChecker@2
+            displayName: Solution checker
+            inputs:
+              PowerPlatformSPN: $(serviceConnection)
+              FilesToAnalyze: $(Build.ArtifactStagingDirectory)/*.zip
+              RuleSet: 0ad12346-e108-40b8-a956-9a8f95ea18c9   # Solution checker
+
+          - publish: $(Build.ArtifactStagingDirectory)
+            artifact: toolkit
+
+  - stage: BuildMcp
+    dependsOn: Build
+    condition: and(succeeded(), eq(variables['buildMcpServer'], 'true'))
+    jobs:
+      - job: Container
+        steps:
+          # Optional. Most deployments use the Dataverse connector and never build this.
+          - task: AzureCLI@2
+            displayName: Build and push MCP image
+            inputs:
+              azureSubscription: $(azureServiceConnection)
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                az acr build \
+                  --registry $(containerRegistry) \
+                  --image pwrp-ivr-mcp:$(Build.BuildNumber) \
+                  --image pwrp-ivr-mcp:latest \
+                  --file src/PowerPete.IvrToolkit.Mcp/Dockerfile .
+
+  - stage: DeployTest
+    dependsOn: Build
+    condition: succeeded()
+    jobs:
+      - deployment: Test
+        environment: pwrp-test
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: PowerPlatformToolInstaller@2
+
+                - task: PowerPlatformImportSolution@2
+                  inputs:
+                    PowerPlatformSPN: $(testServiceConnection)
+                    SolutionInputFile: $(Pipeline.Workspace)/toolkit/$(solutionName)_managed.zip
+                    ActivatePlugins: true
+                    PublishWorkflows: true
+
+                - task: PowerShell@2
+                  displayName: Register custom APIs
+                  inputs:
+                    filePath: build/Register-CustomApis.ps1
+                    arguments: -EnvironmentUrl $(testEnvironmentUrl)
+
+                # This gate is the point of the whole pipeline. A release wave update
+                # that moves the internal metrics schema fails here, not at a client.
+                - task: PowerShell@2
+                  displayName: Health check
+                  inputs:
+                    filePath: build/Test-Installation.ps1
+                    arguments: -EnvironmentUrl $(testEnvironmentUrl)

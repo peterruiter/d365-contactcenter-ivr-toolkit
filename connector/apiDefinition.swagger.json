@@ -1,0 +1,1308 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Contact Center IVR Toolkit",
+    "description": "Queue state, opening hours, live wait times and callbacks for Dynamics 365 Contact Center, shaped for voice agents. Every operation accepts a queue name or id and returns a speakable string alongside structured data. Start with GetQueueContext: it answers open or closed, how busy, is there an outage and what to do next, in one call.",
+    "version": "1.0",
+    "contact": {
+      "name": "Power Pete"
+    }
+  },
+  "host": "{organisation}.api.crm4.dynamics.com",
+  "basePath": "/api/data/v9.2",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/pwrp_GetQueues(ChannelType=@{encodeURIComponent(parameters('ChannelType'))})": {
+      "get": {
+        "summary": "Get queues",
+        "description": "Lists active contact centre queues the agent can route to, optionally filtered by channel.",
+        "operationId": "GetQueues",
+        "parameters": [
+          {
+            "name": "ChannelType",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "ChannelType",
+            "description": "Voice, Messaging or Record. Leave empty for all."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get queues",
+            "schema": {
+              "$ref": "#/definitions/GetQueuesResponse"
+            }
+          }
+        }
+      }
+    },
+    "/pwrp_ResolveQueue(Queue=@{encodeURIComponent(parameters('Queue'))})": {
+      "get": {
+        "summary": "Resolve queue",
+        "description": "Turns a spoken or typed queue name into a queue id using aliases and fuzzy matching. Call once, then reuse the id.",
+        "operationId": "ResolveQueue",
+        "parameters": [
+          {
+            "name": "Queue",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Queue",
+            "description": "Queue name, alias or id."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resolve queue",
+            "schema": {
+              "$ref": "#/definitions/ResolveQueueResponse"
+            }
+          }
+        }
+      }
+    },
+    "/pwrp_GetQueueContext(Queue=@{encodeURIComponent(parameters('Queue'))})": {
+      "get": {
+        "summary": "Get queue context",
+        "description": "Returns opening state, live wait band, outage message, callback availability and a recommended action in one call. Use this at the start of a voice conversation instead of several separate lookups.",
+        "operationId": "GetQueueContext",
+        "parameters": [
+          {
+            "name": "Queue",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Queue",
+            "description": "Queue name, alias or id."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get queue context",
+            "schema": {
+              "$ref": "#/definitions/GetQueueContextResponse"
+            }
+          }
+        }
+      }
+    },
+    "/pwrp_GetQueueHours(Queue=@{encodeURIComponent(parameters('Queue'))},FromDate=@{encodeURIComponent(parameters('FromDate'))},Days=@{encodeURIComponent(parameters('Days'))})": {
+      "get": {
+        "summary": "Get queue hours",
+        "description": "Opening hours for a queue across a date range, holiday exceptions included.",
+        "operationId": "GetQueueHours",
+        "parameters": [
+          {
+            "name": "Queue",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Queue"
+          },
+          {
+            "name": "FromDate",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "FromDate",
+            "description": "Defaults to today."
+          },
+          {
+            "name": "Days",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "x-ms-summary": "Days",
+            "description": "1 to 31. Defaults to 1."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get queue hours",
+            "schema": {
+              "$ref": "#/definitions/GetQueueHoursResponse"
+            }
+          }
+        }
+      }
+    },
+    "/pwrp_IsQueueOpen(Queue=@{encodeURIComponent(parameters('Queue'))},AtUtc=@{encodeURIComponent(parameters('AtUtc'))})": {
+      "get": {
+        "summary": "Is queue open",
+        "description": "Whether a queue is open now, or at a future moment. Use the future form to check a proposed callback time.",
+        "operationId": "IsQueueOpen",
+        "parameters": [
+          {
+            "name": "Queue",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Queue"
+          },
+          {
+            "name": "AtUtc",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "AtUtc",
+            "description": "Defaults to now."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Is queue open",
+            "schema": {
+              "$ref": "#/definitions/IsQueueOpenResponse"
+            }
+          }
+        }
+      }
+    },
+    "/pwrp_GetNextOpenTime(Queue=@{encodeURIComponent(parameters('Queue'))})": {
+      "get": {
+        "summary": "Get next open time",
+        "description": "When the queue opens next, with a phrase the agent can read out.",
+        "operationId": "GetNextOpenTime",
+        "parameters": [
+          {
+            "name": "Queue",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Queue"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get next open time",
+            "schema": {
+              "$ref": "#/definitions/GetNextOpenTimeResponse"
+            }
+          }
+        }
+      }
+    },
+    "/pwrp_GetQueueMetrics(Queue=@{encodeURIComponent(parameters('Queue'))})": {
+      "get": {
+        "summary": "Get queue metrics",
+        "description": "Live queue state: callers waiting, longest wait, average wait, representatives available and an estimated wait. Give callers WaitBand, not the raw numbers.",
+        "operationId": "GetQueueMetrics",
+        "parameters": [
+          {
+            "name": "Queue",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Queue"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get queue metrics",
+            "schema": {
+              "$ref": "#/definitions/GetQueueMetricsResponse"
+            }
+          }
+        }
+      }
+    },
+    "/pwrp_CheckCallbackEligibility(Queue=@{encodeURIComponent(parameters('Queue'))})": {
+      "get": {
+        "summary": "Check callback eligibility",
+        "description": "Whether direct callback, scheduled callback or neither is available for a queue. Call before offering a callback.",
+        "operationId": "CheckCallbackEligibility",
+        "parameters": [
+          {
+            "name": "Queue",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Queue"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Check callback eligibility",
+            "schema": {
+              "$ref": "#/definitions/CheckCallbackEligibilityResponse"
+            }
+          }
+        }
+      }
+    },
+    "/pwrp_GetCallbackSlots(Queue=@{encodeURIComponent(parameters('Queue'))},Days=@{encodeURIComponent(parameters('Days'))},MaxResults=@{encodeURIComponent(parameters('MaxResults'))})": {
+      "get": {
+        "summary": "Get callback slots",
+        "description": "Bookable callback windows inside opening hours, with remaining capacity. Offer at most three over the phone.",
+        "operationId": "GetCallbackSlots",
+        "parameters": [
+          {
+            "name": "Queue",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Queue"
+          },
+          {
+            "name": "Days",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "x-ms-summary": "Days",
+            "description": "1 to 14. Defaults to 3."
+          },
+          {
+            "name": "MaxResults",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "x-ms-summary": "MaxResults",
+            "description": "Defaults to 6."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get callback slots",
+            "schema": {
+              "$ref": "#/definitions/GetCallbackSlotsResponse"
+            }
+          }
+        }
+      }
+    },
+    "/pwrp_CreateCallback": {
+      "post": {
+        "summary": "Create callback",
+        "description": "Books a callback. Mode Direct queues it for the next free representative. Mode Scheduled books a specific slot. Repeated calls for the same number and queue return the existing request rather than creating a duplicate.",
+        "operationId": "CreateCallback",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateCallbackRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Create callback",
+            "schema": {
+              "$ref": "#/definitions/CreateCallbackResponse"
+            }
+          }
+        }
+      }
+    },
+    "/pwrp_GetCallbackStatus(Reference=@{encodeURIComponent(parameters('Reference'))},PhoneNumber=@{encodeURIComponent(parameters('PhoneNumber'))},CallbackId=@{encodeURIComponent(parameters('CallbackId'))})": {
+      "get": {
+        "summary": "Get callback status",
+        "description": "Looks up a callback by reference, phone number or id.",
+        "operationId": "GetCallbackStatus",
+        "parameters": [
+          {
+            "name": "Reference",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Reference"
+          },
+          {
+            "name": "PhoneNumber",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "PhoneNumber"
+          },
+          {
+            "name": "CallbackId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "CallbackId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get callback status",
+            "schema": {
+              "$ref": "#/definitions/GetCallbackStatusResponse"
+            }
+          }
+        }
+      }
+    },
+    "/pwrp_CancelCallback": {
+      "post": {
+        "summary": "Cancel callback",
+        "description": "Cancels an open callback request.",
+        "operationId": "CancelCallback",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CancelCallbackRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cancel callback",
+            "schema": {
+              "$ref": "#/definitions/CancelCallbackResponse"
+            }
+          }
+        }
+      }
+    },
+    "/pwrp_RescheduleCallback": {
+      "post": {
+        "summary": "Reschedule callback",
+        "description": "Moves a scheduled callback to a different available slot.",
+        "operationId": "RescheduleCallback",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RescheduleCallbackRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reschedule callback",
+            "schema": {
+              "$ref": "#/definitions/RescheduleCallbackResponse"
+            }
+          }
+        }
+      }
+    },
+    "/pwrp_ValidatePhoneNumber(PhoneNumber=@{encodeURIComponent(parameters('PhoneNumber'))},CountryCode=@{encodeURIComponent(parameters('CountryCode'))})": {
+      "get": {
+        "summary": "Validate phone number",
+        "description": "Normalises a spoken or typed phone number to E.164 and returns a digit by digit spelling for confirmation.",
+        "operationId": "ValidatePhoneNumber",
+        "parameters": [
+          {
+            "name": "PhoneNumber",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "PhoneNumber"
+          },
+          {
+            "name": "CountryCode",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "CountryCode",
+            "description": "Defaults to pwrp_DefaultCountryCode."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Validate phone number",
+            "schema": {
+              "$ref": "#/definitions/ValidatePhoneNumberResponse"
+            }
+          }
+        }
+      }
+    },
+    "/pwrp_GetBroadcastMessage(Queue=@{encodeURIComponent(parameters('Queue'))})": {
+      "get": {
+        "summary": "Get broadcast message",
+        "description": "Returns an active outage or announcement message for a queue, if an administrator has published one.",
+        "operationId": "GetBroadcastMessage",
+        "parameters": [
+          {
+            "name": "Queue",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Queue"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get broadcast message",
+            "schema": {
+              "$ref": "#/definitions/GetBroadcastMessageResponse"
+            }
+          }
+        }
+      }
+    },
+    "/pwrp_LogIvrOutcome": {
+      "post": {
+        "summary": "Log IVR outcome",
+        "description": "Records what the agent did so containment and deflection can be reported. Call once at the end of every conversation.",
+        "operationId": "LogIvrOutcome",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LogIvrOutcomeRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Log IVR outcome",
+            "schema": {
+              "$ref": "#/definitions/LogIvrOutcomeResponse"
+            }
+          }
+        }
+      }
+    },
+    "/pwrp_HealthCheck()": {
+      "get": {
+        "summary": "Health check",
+        "description": "Validates the installation. Run after install and after every platform update.",
+        "operationId": "HealthCheck",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Health check",
+            "schema": {
+              "$ref": "#/definitions/HealthCheckResponse"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "GetQueuesResponse": {
+      "type": "object",
+      "properties": {
+        "Queues": {
+          "type": "string",
+          "x-ms-summary": "Queues",
+          "description": "JSON array of queues."
+        },
+        "Count": {
+          "type": "integer",
+          "x-ms-summary": "Count"
+        },
+        "Speakable": {
+          "type": "string",
+          "x-ms-summary": "Speakable"
+        },
+        "Success": {
+          "type": "boolean",
+          "x-ms-summary": "Success",
+          "description": "False means the call was handled but could not be completed. Read ErrorCode."
+        },
+        "ErrorCode": {
+          "type": "string",
+          "x-ms-summary": "ErrorCode",
+          "description": "Stable error code. Branch on this, never on ErrorMessage."
+        },
+        "ErrorMessage": {
+          "type": "string",
+          "x-ms-summary": "ErrorMessage",
+          "description": "Human readable detail. Do not read this to a caller."
+        },
+        "DurationMs": {
+          "type": "integer",
+          "x-ms-summary": "DurationMs",
+          "description": "Server side execution time. Watch this against your latency budget."
+        }
+      }
+    },
+    "ResolveQueueResponse": {
+      "type": "object",
+      "properties": {
+        "QueueId": {
+          "type": "string",
+          "x-ms-summary": "QueueId"
+        },
+        "QueueName": {
+          "type": "string",
+          "x-ms-summary": "QueueName"
+        },
+        "SpeakableName": {
+          "type": "string",
+          "x-ms-summary": "SpeakableName"
+        },
+        "ChannelType": {
+          "type": "string",
+          "x-ms-summary": "ChannelType"
+        },
+        "Locale": {
+          "type": "string",
+          "x-ms-summary": "Locale"
+        },
+        "Success": {
+          "type": "boolean",
+          "x-ms-summary": "Success",
+          "description": "False means the call was handled but could not be completed. Read ErrorCode."
+        },
+        "ErrorCode": {
+          "type": "string",
+          "x-ms-summary": "ErrorCode",
+          "description": "Stable error code. Branch on this, never on ErrorMessage."
+        },
+        "ErrorMessage": {
+          "type": "string",
+          "x-ms-summary": "ErrorMessage",
+          "description": "Human readable detail. Do not read this to a caller."
+        },
+        "DurationMs": {
+          "type": "integer",
+          "x-ms-summary": "DurationMs",
+          "description": "Server side execution time. Watch this against your latency budget."
+        }
+      }
+    },
+    "GetQueueContextResponse": {
+      "type": "object",
+      "properties": {
+        "Context": {
+          "type": "string",
+          "x-ms-summary": "Context",
+          "description": "Full JSON payload."
+        },
+        "QueueId": {
+          "type": "string",
+          "x-ms-summary": "QueueId"
+        },
+        "IsOpen": {
+          "type": "boolean",
+          "x-ms-summary": "IsOpen"
+        },
+        "WaitBand": {
+          "type": "string",
+          "x-ms-summary": "WaitBand",
+          "description": "Short, Moderate, Long or VeryLong."
+        },
+        "RecommendedAction": {
+          "type": "string",
+          "x-ms-summary": "RecommendedAction",
+          "description": "Serve, OfferCallback, OfferVoicemail, AnnounceClosed or AnnounceOutage."
+        },
+        "Speakable": {
+          "type": "string",
+          "x-ms-summary": "Speakable"
+        },
+        "Success": {
+          "type": "boolean",
+          "x-ms-summary": "Success",
+          "description": "False means the call was handled but could not be completed. Read ErrorCode."
+        },
+        "ErrorCode": {
+          "type": "string",
+          "x-ms-summary": "ErrorCode",
+          "description": "Stable error code. Branch on this, never on ErrorMessage."
+        },
+        "ErrorMessage": {
+          "type": "string",
+          "x-ms-summary": "ErrorMessage",
+          "description": "Human readable detail. Do not read this to a caller."
+        },
+        "DurationMs": {
+          "type": "integer",
+          "x-ms-summary": "DurationMs",
+          "description": "Server side execution time. Watch this against your latency budget."
+        }
+      }
+    },
+    "GetQueueHoursResponse": {
+      "type": "object",
+      "properties": {
+        "Hours": {
+          "type": "string",
+          "x-ms-summary": "Hours"
+        },
+        "Speakable": {
+          "type": "string",
+          "x-ms-summary": "Speakable"
+        },
+        "Success": {
+          "type": "boolean",
+          "x-ms-summary": "Success",
+          "description": "False means the call was handled but could not be completed. Read ErrorCode."
+        },
+        "ErrorCode": {
+          "type": "string",
+          "x-ms-summary": "ErrorCode",
+          "description": "Stable error code. Branch on this, never on ErrorMessage."
+        },
+        "ErrorMessage": {
+          "type": "string",
+          "x-ms-summary": "ErrorMessage",
+          "description": "Human readable detail. Do not read this to a caller."
+        },
+        "DurationMs": {
+          "type": "integer",
+          "x-ms-summary": "DurationMs",
+          "description": "Server side execution time. Watch this against your latency budget."
+        }
+      }
+    },
+    "IsQueueOpenResponse": {
+      "type": "object",
+      "properties": {
+        "IsOpen": {
+          "type": "boolean",
+          "x-ms-summary": "IsOpen"
+        },
+        "Reason": {
+          "type": "string",
+          "x-ms-summary": "Reason"
+        },
+        "NextOpenUtc": {
+          "type": "string",
+          "x-ms-summary": "NextOpenUtc",
+          "format": "date-time"
+        },
+        "NextCloseUtc": {
+          "type": "string",
+          "x-ms-summary": "NextCloseUtc",
+          "format": "date-time"
+        },
+        "Speakable": {
+          "type": "string",
+          "x-ms-summary": "Speakable"
+        },
+        "Success": {
+          "type": "boolean",
+          "x-ms-summary": "Success",
+          "description": "False means the call was handled but could not be completed. Read ErrorCode."
+        },
+        "ErrorCode": {
+          "type": "string",
+          "x-ms-summary": "ErrorCode",
+          "description": "Stable error code. Branch on this, never on ErrorMessage."
+        },
+        "ErrorMessage": {
+          "type": "string",
+          "x-ms-summary": "ErrorMessage",
+          "description": "Human readable detail. Do not read this to a caller."
+        },
+        "DurationMs": {
+          "type": "integer",
+          "x-ms-summary": "DurationMs",
+          "description": "Server side execution time. Watch this against your latency budget."
+        }
+      }
+    },
+    "GetNextOpenTimeResponse": {
+      "type": "object",
+      "properties": {
+        "IsOpenNow": {
+          "type": "boolean",
+          "x-ms-summary": "IsOpenNow"
+        },
+        "NextOpenUtc": {
+          "type": "string",
+          "x-ms-summary": "NextOpenUtc",
+          "format": "date-time"
+        },
+        "Speakable": {
+          "type": "string",
+          "x-ms-summary": "Speakable"
+        },
+        "Success": {
+          "type": "boolean",
+          "x-ms-summary": "Success",
+          "description": "False means the call was handled but could not be completed. Read ErrorCode."
+        },
+        "ErrorCode": {
+          "type": "string",
+          "x-ms-summary": "ErrorCode",
+          "description": "Stable error code. Branch on this, never on ErrorMessage."
+        },
+        "ErrorMessage": {
+          "type": "string",
+          "x-ms-summary": "ErrorMessage",
+          "description": "Human readable detail. Do not read this to a caller."
+        },
+        "DurationMs": {
+          "type": "integer",
+          "x-ms-summary": "DurationMs",
+          "description": "Server side execution time. Watch this against your latency budget."
+        }
+      }
+    },
+    "GetQueueMetricsResponse": {
+      "type": "object",
+      "properties": {
+        "Metrics": {
+          "type": "string",
+          "x-ms-summary": "Metrics"
+        },
+        "WaitingNow": {
+          "type": "integer",
+          "x-ms-summary": "WaitingNow"
+        },
+        "LongestWaitSeconds": {
+          "type": "integer",
+          "x-ms-summary": "LongestWaitSeconds"
+        },
+        "AverageWaitSeconds": {
+          "type": "integer",
+          "x-ms-summary": "AverageWaitSeconds"
+        },
+        "EstimatedWaitSeconds": {
+          "type": "integer",
+          "x-ms-summary": "EstimatedWaitSeconds"
+        },
+        "RepresentativesAvailable": {
+          "type": "integer",
+          "x-ms-summary": "RepresentativesAvailable"
+        },
+        "RepresentativesOnline": {
+          "type": "integer",
+          "x-ms-summary": "RepresentativesOnline"
+        },
+        "WaitBand": {
+          "type": "string",
+          "x-ms-summary": "WaitBand"
+        },
+        "Speakable": {
+          "type": "string",
+          "x-ms-summary": "Speakable"
+        },
+        "Success": {
+          "type": "boolean",
+          "x-ms-summary": "Success",
+          "description": "False means the call was handled but could not be completed. Read ErrorCode."
+        },
+        "ErrorCode": {
+          "type": "string",
+          "x-ms-summary": "ErrorCode",
+          "description": "Stable error code. Branch on this, never on ErrorMessage."
+        },
+        "ErrorMessage": {
+          "type": "string",
+          "x-ms-summary": "ErrorMessage",
+          "description": "Human readable detail. Do not read this to a caller."
+        },
+        "DurationMs": {
+          "type": "integer",
+          "x-ms-summary": "DurationMs",
+          "description": "Server side execution time. Watch this against your latency budget."
+        }
+      }
+    },
+    "CheckCallbackEligibilityResponse": {
+      "type": "object",
+      "properties": {
+        "DirectCallbackAvailable": {
+          "type": "boolean",
+          "x-ms-summary": "DirectCallbackAvailable"
+        },
+        "ScheduledCallbackAvailable": {
+          "type": "boolean",
+          "x-ms-summary": "ScheduledCallbackAvailable"
+        },
+        "AnyAvailable": {
+          "type": "boolean",
+          "x-ms-summary": "AnyAvailable"
+        },
+        "Success": {
+          "type": "boolean",
+          "x-ms-summary": "Success",
+          "description": "False means the call was handled but could not be completed. Read ErrorCode."
+        },
+        "ErrorCode": {
+          "type": "string",
+          "x-ms-summary": "ErrorCode",
+          "description": "Stable error code. Branch on this, never on ErrorMessage."
+        },
+        "ErrorMessage": {
+          "type": "string",
+          "x-ms-summary": "ErrorMessage",
+          "description": "Human readable detail. Do not read this to a caller."
+        },
+        "DurationMs": {
+          "type": "integer",
+          "x-ms-summary": "DurationMs",
+          "description": "Server side execution time. Watch this against your latency budget."
+        }
+      }
+    },
+    "GetCallbackSlotsResponse": {
+      "type": "object",
+      "properties": {
+        "Slots": {
+          "type": "string",
+          "x-ms-summary": "Slots"
+        },
+        "Count": {
+          "type": "integer",
+          "x-ms-summary": "Count"
+        },
+        "Speakable": {
+          "type": "string",
+          "x-ms-summary": "Speakable"
+        },
+        "Success": {
+          "type": "boolean",
+          "x-ms-summary": "Success",
+          "description": "False means the call was handled but could not be completed. Read ErrorCode."
+        },
+        "ErrorCode": {
+          "type": "string",
+          "x-ms-summary": "ErrorCode",
+          "description": "Stable error code. Branch on this, never on ErrorMessage."
+        },
+        "ErrorMessage": {
+          "type": "string",
+          "x-ms-summary": "ErrorMessage",
+          "description": "Human readable detail. Do not read this to a caller."
+        },
+        "DurationMs": {
+          "type": "integer",
+          "x-ms-summary": "DurationMs",
+          "description": "Server side execution time. Watch this against your latency budget."
+        }
+      }
+    },
+    "CreateCallbackResponse": {
+      "type": "object",
+      "properties": {
+        "Callback": {
+          "type": "string",
+          "x-ms-summary": "Callback"
+        },
+        "CallbackId": {
+          "type": "string",
+          "x-ms-summary": "CallbackId"
+        },
+        "Reference": {
+          "type": "string",
+          "x-ms-summary": "Reference",
+          "description": "Six characters, chosen to be unambiguous over the phone."
+        },
+        "Status": {
+          "type": "string",
+          "x-ms-summary": "Status"
+        },
+        "Speakable": {
+          "type": "string",
+          "x-ms-summary": "Speakable"
+        },
+        "Success": {
+          "type": "boolean",
+          "x-ms-summary": "Success",
+          "description": "False means the call was handled but could not be completed. Read ErrorCode."
+        },
+        "ErrorCode": {
+          "type": "string",
+          "x-ms-summary": "ErrorCode",
+          "description": "Stable error code. Branch on this, never on ErrorMessage."
+        },
+        "ErrorMessage": {
+          "type": "string",
+          "x-ms-summary": "ErrorMessage",
+          "description": "Human readable detail. Do not read this to a caller."
+        },
+        "DurationMs": {
+          "type": "integer",
+          "x-ms-summary": "DurationMs",
+          "description": "Server side execution time. Watch this against your latency budget."
+        }
+      }
+    },
+    "CreateCallbackRequest": {
+      "type": "object",
+      "properties": {
+        "Queue": {
+          "type": "string",
+          "x-ms-summary": "Queue"
+        },
+        "PhoneNumber": {
+          "type": "string",
+          "x-ms-summary": "PhoneNumber",
+          "description": "Any format. Normalised to E.164."
+        },
+        "Mode": {
+          "type": "string",
+          "x-ms-summary": "Mode",
+          "description": "Direct or Scheduled. Defaults to Direct."
+        },
+        "RequestedStartUtc": {
+          "type": "string",
+          "x-ms-summary": "RequestedStartUtc",
+          "description": "Required when Mode is Scheduled.",
+          "format": "date-time"
+        },
+        "ContactId": {
+          "type": "string",
+          "x-ms-summary": "ContactId"
+        },
+        "ConversationId": {
+          "type": "string",
+          "x-ms-summary": "ConversationId"
+        },
+        "ContextJson": {
+          "type": "string",
+          "x-ms-summary": "ContextJson",
+          "description": "Anything the representative should see before dialling."
+        }
+      },
+      "required": [
+        "Queue",
+        "PhoneNumber"
+      ]
+    },
+    "GetCallbackStatusResponse": {
+      "type": "object",
+      "properties": {
+        "Callback": {
+          "type": "string",
+          "x-ms-summary": "Callback"
+        },
+        "Status": {
+          "type": "string",
+          "x-ms-summary": "Status"
+        },
+        "Attempts": {
+          "type": "integer",
+          "x-ms-summary": "Attempts"
+        },
+        "Success": {
+          "type": "boolean",
+          "x-ms-summary": "Success",
+          "description": "False means the call was handled but could not be completed. Read ErrorCode."
+        },
+        "ErrorCode": {
+          "type": "string",
+          "x-ms-summary": "ErrorCode",
+          "description": "Stable error code. Branch on this, never on ErrorMessage."
+        },
+        "ErrorMessage": {
+          "type": "string",
+          "x-ms-summary": "ErrorMessage",
+          "description": "Human readable detail. Do not read this to a caller."
+        },
+        "DurationMs": {
+          "type": "integer",
+          "x-ms-summary": "DurationMs",
+          "description": "Server side execution time. Watch this against your latency budget."
+        }
+      }
+    },
+    "CancelCallbackResponse": {
+      "type": "object",
+      "properties": {
+        "Status": {
+          "type": "string",
+          "x-ms-summary": "Status"
+        },
+        "Callback": {
+          "type": "string",
+          "x-ms-summary": "Callback"
+        },
+        "Success": {
+          "type": "boolean",
+          "x-ms-summary": "Success",
+          "description": "False means the call was handled but could not be completed. Read ErrorCode."
+        },
+        "ErrorCode": {
+          "type": "string",
+          "x-ms-summary": "ErrorCode",
+          "description": "Stable error code. Branch on this, never on ErrorMessage."
+        },
+        "ErrorMessage": {
+          "type": "string",
+          "x-ms-summary": "ErrorMessage",
+          "description": "Human readable detail. Do not read this to a caller."
+        },
+        "DurationMs": {
+          "type": "integer",
+          "x-ms-summary": "DurationMs",
+          "description": "Server side execution time. Watch this against your latency budget."
+        }
+      }
+    },
+    "CancelCallbackRequest": {
+      "type": "object",
+      "properties": {
+        "CallbackId": {
+          "type": "string",
+          "x-ms-summary": "CallbackId"
+        }
+      },
+      "required": [
+        "CallbackId"
+      ]
+    },
+    "RescheduleCallbackResponse": {
+      "type": "object",
+      "properties": {
+        "Status": {
+          "type": "string",
+          "x-ms-summary": "Status"
+        },
+        "Callback": {
+          "type": "string",
+          "x-ms-summary": "Callback"
+        },
+        "Speakable": {
+          "type": "string",
+          "x-ms-summary": "Speakable"
+        },
+        "Success": {
+          "type": "boolean",
+          "x-ms-summary": "Success",
+          "description": "False means the call was handled but could not be completed. Read ErrorCode."
+        },
+        "ErrorCode": {
+          "type": "string",
+          "x-ms-summary": "ErrorCode",
+          "description": "Stable error code. Branch on this, never on ErrorMessage."
+        },
+        "ErrorMessage": {
+          "type": "string",
+          "x-ms-summary": "ErrorMessage",
+          "description": "Human readable detail. Do not read this to a caller."
+        },
+        "DurationMs": {
+          "type": "integer",
+          "x-ms-summary": "DurationMs",
+          "description": "Server side execution time. Watch this against your latency budget."
+        }
+      }
+    },
+    "RescheduleCallbackRequest": {
+      "type": "object",
+      "properties": {
+        "Queue": {
+          "type": "string",
+          "x-ms-summary": "Queue"
+        },
+        "CallbackId": {
+          "type": "string",
+          "x-ms-summary": "CallbackId"
+        },
+        "NewStartUtc": {
+          "type": "string",
+          "x-ms-summary": "NewStartUtc",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "Queue",
+        "CallbackId",
+        "NewStartUtc"
+      ]
+    },
+    "ValidatePhoneNumberResponse": {
+      "type": "object",
+      "properties": {
+        "IsValid": {
+          "type": "boolean",
+          "x-ms-summary": "IsValid"
+        },
+        "E164": {
+          "type": "string",
+          "x-ms-summary": "E164"
+        },
+        "NumberType": {
+          "type": "string",
+          "x-ms-summary": "NumberType"
+        },
+        "Reason": {
+          "type": "string",
+          "x-ms-summary": "Reason"
+        },
+        "Speakable": {
+          "type": "string",
+          "x-ms-summary": "Speakable"
+        },
+        "Success": {
+          "type": "boolean",
+          "x-ms-summary": "Success",
+          "description": "False means the call was handled but could not be completed. Read ErrorCode."
+        },
+        "ErrorCode": {
+          "type": "string",
+          "x-ms-summary": "ErrorCode",
+          "description": "Stable error code. Branch on this, never on ErrorMessage."
+        },
+        "ErrorMessage": {
+          "type": "string",
+          "x-ms-summary": "ErrorMessage",
+          "description": "Human readable detail. Do not read this to a caller."
+        },
+        "DurationMs": {
+          "type": "integer",
+          "x-ms-summary": "DurationMs",
+          "description": "Server side execution time. Watch this against your latency budget."
+        }
+      }
+    },
+    "GetBroadcastMessageResponse": {
+      "type": "object",
+      "properties": {
+        "HasMessage": {
+          "type": "boolean",
+          "x-ms-summary": "HasMessage"
+        },
+        "Speakable": {
+          "type": "string",
+          "x-ms-summary": "Speakable"
+        },
+        "Success": {
+          "type": "boolean",
+          "x-ms-summary": "Success",
+          "description": "False means the call was handled but could not be completed. Read ErrorCode."
+        },
+        "ErrorCode": {
+          "type": "string",
+          "x-ms-summary": "ErrorCode",
+          "description": "Stable error code. Branch on this, never on ErrorMessage."
+        },
+        "ErrorMessage": {
+          "type": "string",
+          "x-ms-summary": "ErrorMessage",
+          "description": "Human readable detail. Do not read this to a caller."
+        },
+        "DurationMs": {
+          "type": "integer",
+          "x-ms-summary": "DurationMs",
+          "description": "Server side execution time. Watch this against your latency budget."
+        }
+      }
+    },
+    "LogIvrOutcomeResponse": {
+      "type": "object",
+      "properties": {
+        "OutcomeId": {
+          "type": "string",
+          "x-ms-summary": "OutcomeId"
+        },
+        "Success": {
+          "type": "boolean",
+          "x-ms-summary": "Success",
+          "description": "False means the call was handled but could not be completed. Read ErrorCode."
+        },
+        "ErrorCode": {
+          "type": "string",
+          "x-ms-summary": "ErrorCode",
+          "description": "Stable error code. Branch on this, never on ErrorMessage."
+        },
+        "ErrorMessage": {
+          "type": "string",
+          "x-ms-summary": "ErrorMessage",
+          "description": "Human readable detail. Do not read this to a caller."
+        },
+        "DurationMs": {
+          "type": "integer",
+          "x-ms-summary": "DurationMs",
+          "description": "Server side execution time. Watch this against your latency budget."
+        }
+      }
+    },
+    "LogIvrOutcomeRequest": {
+      "type": "object",
+      "properties": {
+        "Outcome": {
+          "type": "string",
+          "x-ms-summary": "Outcome",
+          "description": "Contained, Escalated, CallbackBooked, Abandoned or ClosedAnnouncement."
+        },
+        "Queue": {
+          "type": "string",
+          "x-ms-summary": "Queue"
+        },
+        "Intent": {
+          "type": "string",
+          "x-ms-summary": "Intent"
+        },
+        "ConversationId": {
+          "type": "string",
+          "x-ms-summary": "ConversationId"
+        },
+        "AgentName": {
+          "type": "string",
+          "x-ms-summary": "AgentName"
+        },
+        "DurationSeconds": {
+          "type": "integer",
+          "x-ms-summary": "DurationSeconds"
+        },
+        "ContextJson": {
+          "type": "string",
+          "x-ms-summary": "ContextJson"
+        }
+      },
+      "required": [
+        "Outcome"
+      ]
+    },
+    "HealthCheckResponse": {
+      "type": "object",
+      "properties": {
+        "Checks": {
+          "type": "string",
+          "x-ms-summary": "Checks"
+        },
+        "Passed": {
+          "type": "boolean",
+          "x-ms-summary": "Passed"
+        },
+        "FailureCount": {
+          "type": "integer",
+          "x-ms-summary": "FailureCount"
+        },
+        "Success": {
+          "type": "boolean",
+          "x-ms-summary": "Success",
+          "description": "False means the call was handled but could not be completed. Read ErrorCode."
+        },
+        "ErrorCode": {
+          "type": "string",
+          "x-ms-summary": "ErrorCode",
+          "description": "Stable error code. Branch on this, never on ErrorMessage."
+        },
+        "ErrorMessage": {
+          "type": "string",
+          "x-ms-summary": "ErrorMessage",
+          "description": "Human readable detail. Do not read this to a caller."
+        },
+        "DurationMs": {
+          "type": "integer",
+          "x-ms-summary": "DurationMs",
+          "description": "Server side execution time. Watch this against your latency budget."
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "oauth2_auth": {
+      "type": "oauth2",
+      "flow": "accessCode",
+      "authorizationUrl": "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+      "tokenUrl": "https://login.microsoftonline.com/common/oauth2/v2.0/token",
+      "scopes": {}
+    }
+  },
+  "security": [
+    {
+      "oauth2_auth": []
+    }
+  ]
+}
