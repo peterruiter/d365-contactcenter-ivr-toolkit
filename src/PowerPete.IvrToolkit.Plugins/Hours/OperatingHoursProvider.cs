@@ -4,8 +4,8 @@ using System.Linq;
 using PowerPete.IvrToolkit.Common;
 using PowerPete.IvrToolkit.Model;
 using PowerPete.IvrToolkit.Speech;
+using Microsoft.Crm.Sdk.Messages;
 using Microsoft.Xrm.Sdk;
-using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Sdk.Query;
 
 namespace PowerPete.IvrToolkit.Hours
@@ -13,11 +13,19 @@ namespace PowerPete.IvrToolkit.Hours
     /// <summary>
     /// Reads the native operating hours calendar.
     ///
-    /// SUPPORT NOTE: msdyn_operatinghour points at a calendar record whose calendarrule
-    /// rows carry the recurrence. This model is internal to the platform and has changed
-    /// shape between release waves. If a wave update breaks this provider, switch the
-    /// affected queue profiles to the Config provider and raise an issue. Nothing else
-    /// in the toolkit depends on this file.
+    /// The calendar rules are expanded by the platform through ExpandCalendarRequest rather
+    /// than parsed here. That message is supported, and it returns concrete UTC blocks with
+    /// the recurrence, the timezone and daylight saving already applied.
+    ///
+    /// This used to walk the rules by hand, and got it wrong twice. The outer rule carries
+    /// only the recurrence, so reading its duration reported every day as open around the
+    /// clock. The real window lives on an inner calendar as an offset in minutes from
+    /// midnight, and whether that offset is local or UTC could not be settled from the data:
+    /// the one calendar available to check disagreed with its own name under either reading.
+    /// Asking the platform removes the question rather than answering it.
+    ///
+    /// SUPPORT NOTE: only the walk from queue to calendar below is internal schema now.
+    /// If a wave update breaks that, switch the affected queue profiles to config hours.
     /// </summary>
     public class OperatingHoursProvider : IHoursProvider
     {
@@ -39,27 +47,53 @@ namespace PowerPete.IvrToolkit.Hours
                     "No operating hours are linked to this queue. Link operating hours in the admin centre, or switch the queue profile to config hours.");
             }
 
-            var rules = LoadRules(calendarId.Value);
+            var timeZone = HoursService.ResolveTimeZone(queue.TimeZone);
+            var firstDay = fromLocal.Date;
+
+            // A day of slack either side. A block can start before local midnight or run past
+            // it, and asking for exactly the local range would drop the overlapping part.
+            var fromUtc = TimeZoneInfo.ConvertTimeToUtc(firstDay, timeZone).AddDays(-1);
+            var toUtc = TimeZoneInfo.ConvertTimeToUtc(firstDay.AddDays(days), timeZone).AddDays(1);
+
+            var response = (ExpandCalendarResponse)_service.Execute(new ExpandCalendarRequest
+            {
+                CalendarId = calendarId.Value,
+                Start = fromUtc,
+                End = toUtc
+            });
+
+            // Available is the working time. Holiday, vacation and break blocks come back
+            // under another code and simply leave the day without hours, which is the answer
+            // a caller needs anyway.
+            var openBlocks = (response.result ?? new TimeInfo[0])
+                .Where(block => block.TimeCode == TimeCode.Available && block.Start.HasValue && block.End.HasValue)
+                .Select(block => new
+                {
+                    StartLocal = ToLocal(block.Start.Value, timeZone),
+                    EndLocal = ToLocal(block.End.Value, timeZone)
+                })
+                .Where(block => block.EndLocal > block.StartLocal)
+                .ToList();
+
+            _tracing.Trace("[pwrp] calendar {0} expanded to {1} available blocks", calendarId, openBlocks.Count);
+
             var result = new List<DayHours>();
 
             for (var offset = 0; offset < days; offset++)
             {
-                var date = fromLocal.Date.AddDays(offset);
+                var date = firstDay.AddDays(offset);
+                var nextDate = date.AddDays(1);
                 var day = new DayHours { Date = date, DayOfWeek = date.DayOfWeek.ToString() };
 
-                var closures = rules.Where(r => r.IsClosure && r.Covers(date)).ToList();
-                if (closures.Any())
-                {
-                    day.IsOpen = false;
-                    day.Speakable = SpeakableFormatter.DescribeDay(day, queue.Locale);
-                    result.Add(day);
-                    continue;
-                }
-
-                day.Windows = rules
-                    .Where(r => !r.IsClosure && r.AppliesOn(date))
-                    .Select(r => new OpeningWindow { StartLocal = date.Add(r.Start), EndLocal = date.Add(r.Start).AddMinutes(r.DurationMinutes) })
-                    .OrderBy(w => w.StartLocal)
+                // Clip to the day, so a block spanning midnight belongs to both days it covers.
+                day.Windows = openBlocks
+                    .Where(block => block.StartLocal < nextDate && block.EndLocal > date)
+                    .Select(block => new OpeningWindow
+                    {
+                        StartLocal = block.StartLocal < date ? date : block.StartLocal,
+                        EndLocal = block.EndLocal > nextDate ? nextDate : block.EndLocal
+                    })
+                    .OrderBy(window => window.StartLocal)
                     .ToList();
 
                 day.IsOpen = day.Windows.Count > 0;
@@ -68,6 +102,12 @@ namespace PowerPete.IvrToolkit.Hours
             }
 
             return result;
+        }
+
+        private static DateTime ToLocal(DateTime utc, TimeZoneInfo timeZone)
+        {
+            // ExpandCalendar answers in UTC, but does not always say so on the value itself.
+            return TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(utc, DateTimeKind.Utc), timeZone);
         }
 
         /// <summary>
@@ -95,157 +135,6 @@ namespace PowerPete.IvrToolkit.Hours
 
             Guid parsed;
             return Guid.TryParse(calendarId, out parsed) ? parsed : (Guid?)null;
-        }
-
-        private class Rule
-        {
-            public TimeSpan Start;
-            public int DurationMinutes;
-            public bool IsClosure;
-            public DateTime? EffectiveFrom;
-            public DateTime? EffectiveTo;
-            public HashSet<DayOfWeek> Days = new HashSet<DayOfWeek>();
-
-            public bool AppliesOn(DateTime date)
-            {
-                if (EffectiveFrom.HasValue && date < EffectiveFrom.Value.Date) return false;
-                if (EffectiveTo.HasValue && date > EffectiveTo.Value.Date) return false;
-                return Days.Count == 0 || Days.Contains(date.DayOfWeek);
-            }
-
-            public bool Covers(DateTime date)
-            {
-                return EffectiveFrom.HasValue && EffectiveTo.HasValue
-                       && date >= EffectiveFrom.Value.Date && date <= EffectiveTo.Value.Date;
-            }
-        }
-
-        /// <summary>
-        /// Loads the recurrence rules for a calendar.
-        /// </summary>
-        /// <remarks>
-        /// Confirmed against a real environment, 2026-09-04: calendarrule cannot be queried
-        /// directly. RetrieveMultiple on it fails with "does not support entities of type
-        /// calendarrule", so the rules come back as a related collection on the calendar
-        /// through the calendar_calendar_rules relationship instead.
-        ///
-        /// A pattern looks like FREQ=WEEKLY;INTERVAL=1;BYDAY=MO,TU,WE,TH,FR, and duration is
-        /// in minutes.
-        /// </remarks>
-        private List<Entity> LoadCalendarRules(Guid calendarId)
-        {
-            var request = new RetrieveRequest
-            {
-                Target = new EntityReference("calendar", calendarId),
-                ColumnSet = new ColumnSet("calendarid"),
-                RelatedEntitiesQuery = new RelationshipQueryCollection
-                {
-                    {
-                        new Relationship("calendar_calendar_rules"),
-                        new QueryExpression("calendarrule")
-                        {
-                            ColumnSet = new ColumnSet("starttime", "duration", "offset", "pattern", "effectiveintervalstart", "effectiveintervalend", "innercalendarid", "timezonecode")
-                        }
-                    }
-                }
-            };
-
-            var calendar = ((RetrieveResponse)_service.Execute(request)).Entity;
-
-            if (calendar.RelatedEntities == null ||
-                !calendar.RelatedEntities.TryGetValue(new Relationship("calendar_calendar_rules"), out var ruleCollection))
-            {
-                _tracing.Trace("[pwrp] calendar {0} returned no rule collection", calendarId);
-                return new List<Entity>();
-            }
-
-            return ruleCollection.Entities.ToList();
-        }
-
-        /// <summary>
-        /// Flattens the calendar into one rule per opening window per weekday pattern.
-        /// </summary>
-        /// <remarks>
-        /// The calendar is two levels deep, confirmed against a real environment 2026-09-04.
-        ///
-        /// The outer rule carries the recurrence and nothing about time of day. It has
-        /// duration 1440, a pattern such as FREQ=WEEKLY;INTERVAL=1;BYDAY=MO,TU,WE,TH,FR, the
-        /// effective interval, and innercalendarid.
-        ///
-        /// The inner calendar holds the actual window, as offset and duration in minutes
-        /// from midnight. 08:00 to 17:00 is offset 480, duration 540. Inner rules carry no
-        /// starttime and no pattern at all.
-        ///
-        /// Reading starttime and duration off the outer rule, as this did originally, yields
-        /// a window of midnight to midnight for every day the calendar is open.
-        /// </remarks>
-        private List<Rule> LoadRules(Guid calendarId)
-        {
-            var rules = new List<Rule>();
-
-            foreach (var outer in LoadCalendarRules(calendarId))
-            {
-                var days = new HashSet<DayOfWeek>(ParseByDay(outer.GetAttributeValue<string>("pattern") ?? string.Empty));
-                var effectiveFrom = outer.GetAttributeValue<DateTime?>("effectiveintervalstart");
-                var effectiveTo = outer.GetAttributeValue<DateTime?>("effectiveintervalend");
-                var inner = outer.GetAttributeValue<EntityReference>("innercalendarid");
-
-                if (inner != null)
-                {
-                    foreach (var window in LoadCalendarRules(inner.Id))
-                    {
-                        var minutes = window.GetAttributeValue<int>("duration");
-                        rules.Add(new Rule
-                        {
-                            Start = TimeSpan.FromMinutes(window.GetAttributeValue<int>("offset")),
-                            DurationMinutes = minutes,
-                            IsClosure = minutes == 0,
-                            EffectiveFrom = effectiveFrom,
-                            EffectiveTo = effectiveTo,
-                            Days = days
-                        });
-                    }
-
-                    continue;
-                }
-
-                // A rule with no inner calendar describes itself. Holiday closures arrive
-                // this way, with a duration of zero over an effective interval.
-                var outerMinutes = outer.GetAttributeValue<int>("duration");
-                rules.Add(new Rule
-                {
-                    Start = outer.GetAttributeValue<DateTime>("starttime").TimeOfDay,
-                    DurationMinutes = outerMinutes,
-                    IsClosure = outerMinutes == 0,
-                    EffectiveFrom = effectiveFrom,
-                    EffectiveTo = effectiveTo,
-                    Days = days
-                });
-            }
-
-            _tracing.Trace("[pwrp] loaded {0} opening windows for calendar {1}", rules.Count, calendarId);
-            return rules;
-        }
-
-        private static IEnumerable<DayOfWeek> ParseByDay(string pattern)
-        {
-            var marker = pattern.IndexOf("BYDAY=", StringComparison.OrdinalIgnoreCase);
-            if (marker < 0) yield break;
-
-            var segment = pattern.Substring(marker + 6).Split(';')[0];
-            foreach (var token in segment.Split(','))
-            {
-                switch (token.Trim().ToUpperInvariant())
-                {
-                    case "MO": yield return DayOfWeek.Monday; break;
-                    case "TU": yield return DayOfWeek.Tuesday; break;
-                    case "WE": yield return DayOfWeek.Wednesday; break;
-                    case "TH": yield return DayOfWeek.Thursday; break;
-                    case "FR": yield return DayOfWeek.Friday; break;
-                    case "SA": yield return DayOfWeek.Saturday; break;
-                    case "SU": yield return DayOfWeek.Sunday; break;
-                }
-            }
         }
     }
 }
