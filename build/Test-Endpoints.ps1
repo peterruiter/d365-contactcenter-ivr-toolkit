@@ -20,13 +20,26 @@
 param(
     [Parameter(Mandatory = $true)][string]$EnvironmentUrl,
     [string]$Queue,
-    [string]$PhoneNumber = "0612345678"
+    [string]$PhoneNumber = "0612345678",
+    # Supply all three to run as the application user an agent authenticates as, which is
+    # the only way to find out whether the minimal security role is sufficient.
+    [string]$TenantId,
+    [string]$ClientId,
+    [string]$ClientSecret
 )
 
 $ErrorActionPreference = "Continue"
 
 . "$PSScriptRoot/Common.ps1"
-Connect-Dataverse -EnvironmentUrl $EnvironmentUrl
+
+if ($ClientId) {
+    if (-not $TenantId -or -not $ClientSecret) { throw "Running as an application needs -TenantId, -ClientId and -ClientSecret." }
+    Connect-DataverseAsApp -EnvironmentUrl $EnvironmentUrl -TenantId $TenantId -ClientId $ClientId -ClientSecret $ClientSecret
+    Write-Host "Running as the application user, so a failure here is a missing privilege." -ForegroundColor Yellow
+}
+else {
+    Connect-Dataverse -EnvironmentUrl $EnvironmentUrl
+}
 
 $passed = 0
 $failed = 0

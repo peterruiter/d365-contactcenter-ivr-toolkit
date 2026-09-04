@@ -38,6 +38,48 @@ function Connect-Dataverse {
 
 <#
 .SYNOPSIS
+    Prepares the transport as an application user, using a client secret.
+
+.DESCRIPTION
+    This is how an agent and the MCP server actually connect, and it is the only way to
+    find out whether the minimal security role is really sufficient. Running as yourself
+    proves nothing, because you are an administrator.
+
+    Nothing is cached. A client secret belongs in whatever is holding it already, not in a
+    file this script writes.
+#>
+function Connect-DataverseAsApp {
+    param(
+        [Parameter(Mandatory = $true)][string]$EnvironmentUrl,
+        [Parameter(Mandatory = $true)][string]$TenantId,
+        [Parameter(Mandatory = $true)][string]$ClientId,
+        [Parameter(Mandatory = $true)][string]$ClientSecret
+    )
+
+    $script:DataverseOrgUrl = $EnvironmentUrl.TrimEnd('/')
+
+    $token = Invoke-RestMethod -Method Post `
+        -Uri "https://login.microsoftonline.com/$TenantId/oauth2/v2.0/token" `
+        -Body @{
+            grant_type    = "client_credentials"
+            client_id     = $ClientId
+            client_secret = $ClientSecret
+            scope         = "$script:DataverseOrgUrl/.default"
+        }
+
+    $script:DataverseHeaders = @{
+        Authorization      = "Bearer $($token.access_token)"
+        "OData-MaxVersion" = "4.0"
+        "OData-Version"    = "4.0"
+        Accept             = "application/json"
+        "Content-Type"     = "application/json; charset=utf-8"
+    }
+
+    Write-Host "Connected as application $ClientId" -ForegroundColor DarkGray
+}
+
+<#
+.SYNOPSIS
     Calls the Dataverse Web API.
 
 .DESCRIPTION

@@ -69,6 +69,20 @@ Scripting it also reaches tables the role editor will not show you: `queuemember
 an intersect entity, `msdyn_ocliveworkitem` is not surfaced, and `environmentvariablevalue`
 is not where you would look for it.
 
+### Why the role reads plugintype and pluginassembly
+
+Nothing in the toolkit queries either table. The platform reads them when it resolves a
+Custom API to the code behind it, so a caller without them gets
+
+    is missing prvReadPluginType privilege ... for entity 'plugintype'
+
+and the API never runs. Confirmed on 2026-09-04 by calling every endpoint as the
+application user rather than as an administrator, which is the only way this shows up.
+
+That test is worth repeating rather than trusting once. The failure moves between
+endpoints from run to run, because whichever call warms the metadata cache first succeeds
+and the rest do not. Two clean runs mean more than one.
+
 Do not substitute System Administrator. The toolkit is built to run on this role and the
 health check assumes it.
 
