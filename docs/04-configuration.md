@@ -22,9 +22,13 @@ Nothing client specific belongs in code. Everything here is data.
 
 ### Where to set them
 
-Open the **Contact Center IVR Toolkit** app and go to **Settings**. The two entries there
-are filtered to this toolkit, so you see thirteen settings rather than every environment
-variable in the environment.
+Open the **Contact Center IVR Toolkit** app and go to **Settings**. There are two entries.
+
+The list shows every environment variable in the environment, not only the toolkit's.
+Some environments refuse to accept a new view on these tables, because they are managed
+platform tables, so the install script tries to add a filtered view and carries on
+without one when it is blocked. Sort or filter the grid on **Schema Name** beginning
+`pwrp_` to narrow it. Thirteen of them are the toolkit's.
 
 - **Settings** lists the definitions. Each one carries the guidance for that setting in
   its Description, which is the same text as the table above in longer form. Read it

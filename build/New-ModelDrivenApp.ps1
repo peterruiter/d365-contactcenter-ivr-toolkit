@@ -156,20 +156,32 @@ Invoke-Dataverse -Method POST -Path "/api/data/v9.2/PublishXml" -Body @{
 # a stack trace that says nothing about lookups.
 #
 # Read the name rather than guessing it. Guessing produced that stack trace.
-$iconRelationship = (Invoke-Dataverse -Method GET -Path (
-    "/api/data/v9.2/EntityDefinitions(LogicalName='appmodule')/ManyToOneRelationships" +
-    "?`$select=ReferencingAttribute,ReferencingEntityNavigationPropertyName" +
-    "&`$filter=ReferencedEntity eq 'webresource'")).value |
-    Where-Object { $_.ReferencingAttribute -eq "webresourceid" } |
+# The lookup is found by what it points at, not by its name. It is not called
+# "webresourceid": filtering the relationships on that attribute name matched nothing,
+# and an assumption about the name is what produced the deserialiser stack trace before
+# that.
+$iconLookup = (Invoke-Dataverse -Method GET -Path (
+    "/api/data/v9.2/EntityDefinitions(LogicalName='appmodule')/Attributes/" +
+    "Microsoft.Dynamics.CRM.LookupAttributeMetadata?`$select=LogicalName,Targets")).value |
+    Where-Object { $_.Targets -contains "webresource" } |
     Select-Object -First 1
+
+$iconNav = $null
+if ($iconLookup) {
+    $iconNav = ((Invoke-Dataverse -Method GET -Path (
+        "/api/data/v9.2/EntityDefinitions(LogicalName='appmodule')/ManyToOneRelationships" +
+        "?`$select=ReferencingAttribute,ReferencingEntityNavigationPropertyName" +
+        "&`$filter=ReferencingAttribute eq '$($iconLookup.LogicalName)'")).value |
+        Select-Object -First 1).ReferencingEntityNavigationPropertyName
+}
 
 # Not fatal. The icon is cosmetic, and the sitemap below is not, so a failure here must
 # not cost the run. An earlier version threw at this point and never wrote the navigation.
-if (-not $iconRelationship) {
-    Write-Warning "No appmodule to webresource relationship on 'webresourceid'. Icon not set."
+if (-not $iconNav) {
+    Write-Warning ("No appmodule lookup to webresource was found, so the icon was not set. " +
+        "Set it by hand in the app designer, choosing $iconName.")
 }
 else {
-    $iconNav = $iconRelationship.ReferencingEntityNavigationPropertyName
     try {
         Invoke-Dataverse -Method PATCH -Path "/api/data/v9.2/appmodules($AppId)" -SolutionName $SolutionName -Body @{
             "$iconNav@odata.bind" = "/webresourceset($iconId)"
@@ -199,10 +211,24 @@ function Set-FilteredView {
         [string]$LayoutXml
     )
 
+    # Both settings tables are managed system tables, and some environments will not
+    # accept a new view on them at all: the create fails on the isparentcustomizable
+    # managed property, after the row has been allocated an id, with a message about
+    # component evaluation that does not mention views. CanCreateViews is the platform
+    # saying so in advance, so ask first rather than reading it from a failure.
+    $meta = Invoke-Dataverse -Method GET `
+        -Path "/api/data/v9.2/EntityDefinitions(LogicalName='$Entity')?`$select=ObjectTypeCode,CanCreateViews"
+
+    if (-not $meta.CanCreateViews.Value) {
+        Write-Warning ("'$Entity' does not allow new views in this environment, so '$Name' " +
+            "was not created. Settings will list every environment variable rather than " +
+            "only the toolkit's. Filter the grid on pwrp_ to narrow it.")
+        return
+    }
+
     # object= in the layout is the entity's type code. A wrong one is accepted on save
     # and then renders an empty grid, so it is read rather than guessed.
-    $otc = (Invoke-Dataverse -Method GET `
-        -Path "/api/data/v9.2/EntityDefinitions(LogicalName='$Entity')?`$select=ObjectTypeCode").ObjectTypeCode
+    $otc = $meta.ObjectTypeCode
 
     $existing = (Invoke-Dataverse -Method GET `
         -Path "/api/data/v9.2/savedqueries?`$select=savedqueryid&`$filter=name eq '$Name' and returnedtypecode eq '$Entity'").value
@@ -223,10 +249,17 @@ function Set-FilteredView {
         Write-Host "  = view '$Name'" -ForegroundColor DarkGray
     }
     else {
-        $created = Invoke-Dataverse -Method POST -Path "/api/data/v9.2/savedqueries" `
-            -SolutionName $SolutionName -Body $body
-        $viewId = $created.savedqueryid
-        Write-Host "  + view '$Name'" -ForegroundColor DarkGray
+        try {
+            $viewId = (Invoke-Dataverse -Method POST -Path "/api/data/v9.2/savedqueries" `
+                -SolutionName $SolutionName -Body $body).savedqueryid
+            Write-Host "  + view '$Name'" -ForegroundColor DarkGray
+        }
+        catch {
+            # Filtering the list is a convenience. The Settings navigation below is not,
+            # so this warns rather than throwing.
+            Write-Warning "View '$Name' was not created: $($_.Exception.Message)"
+            return
+        }
     }
 
     # Adding the view to the app is what puts it in the app's view picker. It is not

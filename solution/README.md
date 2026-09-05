@@ -130,10 +130,16 @@ A second group, **Settings**, holds the two platform tables behind environment v
 outage message under pressure should not have to filter first.
 
 The settings tables are shared with every other solution in the environment, so the script
-creates two filtered views, **IVR toolkit settings** and **IVR toolkit setting values**,
-and adds them to the app. Both filter on a `pwrp_` schema name. They are app views rather
-than table defaults: making them the default would hide other solutions' variables from
-everyone in the environment, not just from this app.
+tries to add two filtered views, **IVR toolkit settings** and **IVR toolkit setting
+values**, both filtering on a `pwrp_` schema name. They are app views rather than table
+defaults: making them the default would hide other solutions' variables from everyone in
+the environment, not just from this app.
+
+This does not work everywhere. Both tables are managed platform tables, and an environment
+may refuse a new view on them, failing on the `isparentcustomizable` managed property with
+a message about component evaluation that never mentions views. The script asks
+`CanCreateViews` first and skips with a warning rather than failing the run, so Settings
+still appears in the navigation and simply lists every environment variable.
 
 Guidance for each setting is the Description on its definition, written by
 `build/New-Schema.ps1` from `build/schema.json`. Change the wording there rather than in
@@ -149,6 +155,12 @@ The app's own tile icon is different: it is an SVG web resource, `pwrp_/icons/iv
 uploaded from `build/assets/app-icon.svg`. Without it the app shows the platform default
 tile, which several other apps also show. Edit the SVG in the repository and re-run
 `New-ModelDrivenApp.ps1`; do not edit the web resource in the environment.
+
+Binding it to the app is done by finding the `appmodule` lookup whose target is
+`webresource` and using that relationship's navigation property name. Do not shorten this
+to the attribute name. The attribute is not called `webresourceid`, and an `@odata.bind`
+on a name that is not a navigation property fails inside the OData deserialiser with a
+stack trace that mentions neither lookups nor icons.
 
 It is line art in one accent colour on a transparent ground. The app selector renders the
 tile on dark navy and the maker portal renders it on white, and an icon designed for one
