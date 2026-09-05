@@ -53,13 +53,21 @@ $areas = @(
     @{ Entity = "pwrp_messagetemplate";  Title = "Message templates";  Icon = "person" }
 )
 
-# Settings sit in their own group. They are environment variables rather than toolkit
-# tables, and an administrator otherwise has to find them under the solution, which is
-# not a place anyone looks. The guidance for each one is its description, written by
-# New-Schema.ps1 from schema.json, and it shows on the form.
+# Settings are environment variables, and an administrator otherwise has to know that,
+# then find them under the solution, which is not a place anyone looks.
+#
+# The obvious answer, a subarea over environmentvariabledefinition, is a bad screen and
+# in some environments not even possible. Those are managed platform tables shared with
+# every other solution, so the grid lists everyone's variables, and a filtered view is
+# refused outright on the isparentcustomizable managed property. On top of that the
+# definition and its value are two records, so changing a setting means editing a row in
+# a second table that the first one only hints at.
+#
+# So this is a page instead: src/webresources/pwrp_settings.html. It reads the labels,
+# guidance, types and defaults from the definitions and writes the values, and it can say
+# whether a setting is on its default and put it back.
 $settingsAreas = @(
-    @{ Entity = "environmentvariabledefinition"; Title = "Settings";        Icon = "settings" }
-    @{ Entity = "environmentvariablevalue";      Title = "Setting values";  Icon = "briefcase" }
+    @{ WebResource = "pwrp_settings"; Title = "Settings"; Icon = "settings" }
 )
 
 # --- App shell ----------------------------------------------------------------
@@ -114,40 +122,55 @@ Write-Host "  '$($app.name)' [$($app.uniquename)]" -ForegroundColor DarkGray
 # one is unreadable on the other.
 Write-Host "`nApp icon" -ForegroundColor Cyan
 
-$iconPath = Join-Path $PSScriptRoot "assets/app-icon.svg"
-if (-not (Test-Path $iconPath)) { throw "App icon not found at $iconPath." }
+# A web resource has to be published before anything can reference it. Pointing the app
+# icon or a subarea at an unpublished resource renders blank rather than failing, which
+# is a slow thing to work out, so publishing is part of uploading here.
+function Set-WebResource {
+    param(
+        [string]$Name,
+        [string]$DisplayName,
+        [string]$Description,
+        [int]$Type,
+        [string]$Path
+    )
+
+    if (-not (Test-Path $Path)) { throw "Web resource source not found at $Path." }
+
+    $body = @{
+        name            = $Name
+        displayname     = $DisplayName
+        description     = $Description
+        webresourcetype = $Type
+        content         = [Convert]::ToBase64String([IO.File]::ReadAllBytes($Path))
+    }
+
+    $existing = (Invoke-Dataverse -Method GET `
+        -Path "/api/data/v9.2/webresourceset?`$select=webresourceid&`$filter=name eq '$Name'").value
+
+    if ($existing.Count -gt 0) {
+        $id = $existing[0].webresourceid
+        Invoke-Dataverse -Method PATCH -Path "/api/data/v9.2/webresourceset($id)" `
+            -SolutionName $SolutionName -Body $body | Out-Null
+        Write-Host "  = $Name" -ForegroundColor DarkGray
+    }
+    else {
+        $id = (Invoke-Dataverse -Method POST -Path "/api/data/v9.2/webresourceset" `
+            -SolutionName $SolutionName -Body $body).webresourceid
+        Write-Host "  + $Name" -ForegroundColor DarkGray
+    }
+
+    Invoke-Dataverse -Method POST -Path "/api/data/v9.2/PublishXml" -Body @{
+        ParameterXml = "<importexportxml><webresources><webresource>$id</webresource></webresources></importexportxml>"
+    } | Out-Null
+
+    return $id
+}
 
 $iconName = "pwrp_/icons/ivrtoolkit.svg"
-$iconContent = [Convert]::ToBase64String([IO.File]::ReadAllBytes($iconPath))
-
-$iconBody = @{
-    name           = $iconName
-    displayname    = "Contact Center IVR Toolkit icon"
-    description    = "App tile icon. Source of truth is build/assets/app-icon.svg."
-    webresourcetype = 11   # SVG
-    content        = $iconContent
-}
-
-$iconResource = (Invoke-Dataverse -Method GET `
-    -Path "/api/data/v9.2/webresourceset?`$select=webresourceid&`$filter=name eq '$iconName'").value
-
-if ($iconResource.Count -gt 0) {
-    $iconId = $iconResource[0].webresourceid
-    Invoke-Dataverse -Method PATCH -Path "/api/data/v9.2/webresourceset($iconId)" `
-        -SolutionName $SolutionName -Body $iconBody | Out-Null
-    Write-Host "  = web resource $iconName" -ForegroundColor DarkGray
-}
-else {
-    $iconId = (Invoke-Dataverse -Method POST -Path "/api/data/v9.2/webresourceset" `
-        -SolutionName $SolutionName -Body $iconBody).webresourceid
-    Write-Host "  + web resource $iconName" -ForegroundColor DarkGray
-}
-
-# A web resource has to be published before anything can reference it. Setting the app
-# icon to an unpublished resource leaves the tile blank rather than failing.
-Invoke-Dataverse -Method POST -Path "/api/data/v9.2/PublishXml" -Body @{
-    ParameterXml = "<importexportxml><webresources><webresource>$iconId</webresource></webresources></importexportxml>"
-} | Out-Null
+$iconId = Set-WebResource -Name $iconName -Type 11 `
+    -DisplayName "Contact Center IVR Toolkit icon" `
+    -Description "App tile icon. Source of truth is build/assets/app-icon.svg." `
+    -Path (Join-Path $PSScriptRoot "assets/app-icon.svg")
 
 # The icon is a lookup, so it is set by binding rather than by writing the column, and
 # the binding needs the navigation property name rather than the attribute name. The two
@@ -194,135 +217,50 @@ else {
     }
 }
 
-# --- Settings views -----------------------------------------------------------
-# Both settings tables are platform tables shared with every other solution in the
-# environment. Their stock views list every environment variable there is, so an
-# administrator sent to "Settings" to change a wait threshold arrives at a list of
-# other people's variables. These two views cut that down to pwrp_ only.
-#
-# The views are added to the app rather than made the table default. Changing the
-# default would hide other solutions' variables from everyone, everywhere.
-function Set-FilteredView {
-    param(
-        [string]$Entity,
-        [string]$Name,
-        [string]$Description,
-        [string]$FetchXml,
-        [string]$LayoutXml
-    )
+# --- Settings page ------------------------------------------------------------
+Write-Host "`nSettings page" -ForegroundColor Cyan
 
-    # Both settings tables are managed system tables, and some environments will not
-    # accept a new view on them at all: the create fails on the isparentcustomizable
-    # managed property, after the row has been allocated an id, with a message about
-    # component evaluation that does not mention views. CanCreateViews is the platform
-    # saying so in advance, so ask first rather than reading it from a failure.
-    $meta = Invoke-Dataverse -Method GET `
-        -Path "/api/data/v9.2/EntityDefinitions(LogicalName='$Entity')?`$select=ObjectTypeCode,CanCreateViews"
+$settingsWebResource = "pwrp_settings"
+$settingsId = Set-WebResource -Name $settingsWebResource -Type 1 `
+    -DisplayName "Contact Center IVR Toolkit settings" `
+    -Description "Reads and writes the pwrp_ environment variables. Source is src/webresources/pwrp_settings.html." `
+    -Path (Join-Path $PSScriptRoot "../src/webresources/pwrp_settings.html")
 
-    if (-not $meta.CanCreateViews.Value) {
-        Write-Warning ("'$Entity' does not allow new views in this environment, so '$Name' " +
-            "was not created. Settings will list every environment variable rather than " +
-            "only the toolkit's. Filter the grid on pwrp_ to narrow it.")
-        return
-    }
-
-    # object= in the layout is the entity's type code. A wrong one is accepted on save
-    # and then renders an empty grid, so it is read rather than guessed.
-    $otc = $meta.ObjectTypeCode
-
-    $existing = (Invoke-Dataverse -Method GET `
-        -Path "/api/data/v9.2/savedqueries?`$select=savedqueryid&`$filter=name eq '$Name' and returnedtypecode eq '$Entity'").value
-
-    $body = @{
-        name             = $Name
-        description      = $Description
-        returnedtypecode = $Entity
-        fetchxml         = $FetchXml
-        layoutxml        = $LayoutXml -replace 'OBJECTTYPECODE', $otc
-        querytype        = 0
-    }
-
-    if ($existing.Count -gt 0) {
-        $viewId = $existing[0].savedqueryid
-        Invoke-Dataverse -Method PATCH -Path "/api/data/v9.2/savedqueries($viewId)" `
-            -SolutionName $SolutionName -Body $body | Out-Null
-        Write-Host "  = view '$Name'" -ForegroundColor DarkGray
-    }
-    else {
-        try {
-            $viewId = (Invoke-Dataverse -Method POST -Path "/api/data/v9.2/savedqueries" `
-                -SolutionName $SolutionName -Body $body).savedqueryid
-            Write-Host "  + view '$Name'" -ForegroundColor DarkGray
-        }
-        catch {
-            # Filtering the list is a convenience. The Settings navigation below is not,
-            # so this warns rather than throwing.
-            Write-Warning "View '$Name' was not created: $($_.Exception.Message)"
-            return
-        }
-    }
-
-    # Adding the view to the app is what puts it in the app's view picker. It is not
-    # fatal when it fails: the view still exists and the table still opens.
-    try {
-        Invoke-Dataverse -Method POST -Path "/api/data/v9.2/AddAppComponents" -Body @{
-            AppId      = $AppId
-            Components = @(@{ "@odata.type" = "Microsoft.Dynamics.CRM.savedquery"; savedqueryid = $viewId })
-        } | Out-Null
-    }
-    catch {
-        Write-Warning "View '$Name' was not added to the app: $($_.Exception.Message)"
-    }
+# A subarea can point at a web resource the app does not list as a component, and it
+# renders as an empty pane rather than an error. Adding it explicitly is what stops that.
+try {
+    Invoke-Dataverse -Method POST -Path "/api/data/v9.2/AddAppComponents" -Body @{
+        AppId      = $AppId
+        Components = @(@{ "@odata.type" = "Microsoft.Dynamics.CRM.webresource"; webresourceid = $settingsId })
+    } | Out-Null
+    Write-Host "  + added to the app" -ForegroundColor DarkGray
 }
-
-Write-Host "`nFiltered settings views" -ForegroundColor Cyan
-
-Set-FilteredView -Entity "environmentvariabledefinition" -Name "IVR toolkit settings" `
-    -Description "Environment variables belonging to the Contact Center IVR Toolkit." `
-    -FetchXml ('<fetch version="1.0" mapping="logical" returntotalrecordcount="true">' +
-        '<entity name="environmentvariabledefinition">' +
-        '<attribute name="displayname" /><attribute name="schemaname" />' +
-        '<attribute name="defaultvalue" /><attribute name="description" />' +
-        '<attribute name="environmentvariabledefinitionid" />' +
-        '<order attribute="displayname" descending="false" />' +
-        '<filter type="and"><condition attribute="schemaname" operator="like" value="pwrp\_%" /></filter>' +
-        '</entity></fetch>') `
-    -LayoutXml ('<grid name="resultset" object="OBJECTTYPECODE" jump="displayname" select="1" icon="1" preview="1">' +
-        '<row name="result" id="environmentvariabledefinitionid">' +
-        '<cell name="displayname" width="220" />' +
-        '<cell name="defaultvalue" width="140" />' +
-        '<cell name="description" width="520" />' +
-        '<cell name="schemaname" width="220" />' +
-        '</row></grid>')
-
-Set-FilteredView -Entity "environmentvariablevalue" -Name "IVR toolkit setting values" `
-    -Description "Values set for Contact Center IVR Toolkit environment variables." `
-    -FetchXml ('<fetch version="1.0" mapping="logical" returntotalrecordcount="true">' +
-        '<entity name="environmentvariablevalue">' +
-        '<attribute name="value" /><attribute name="environmentvariablevalueid" />' +
-        '<attribute name="environmentvariabledefinitionid" />' +
-        '<order attribute="environmentvariabledefinitionid" descending="false" />' +
-        '<link-entity name="environmentvariabledefinition" from="environmentvariabledefinitionid" ' +
-        'to="environmentvariabledefinitionid" alias="def" link-type="inner">' +
-        '<attribute name="displayname" />' +
-        '<filter type="and"><condition attribute="schemaname" operator="like" value="pwrp\_%" /></filter>' +
-        '</link-entity></entity></fetch>') `
-    -LayoutXml ('<grid name="resultset" object="OBJECTTYPECODE" jump="environmentvariabledefinitionid" select="1" icon="1" preview="1">' +
-        '<row name="result" id="environmentvariablevalueid">' +
-        '<cell name="def.displayname" width="260" disableSorting="1" />' +
-        '<cell name="value" width="320" />' +
-        '</row></grid>')
+catch {
+    Write-Warning "Settings page was not added to the app as a component: $($_.Exception.Message)"
+}
 
 # --- Sitemap ------------------------------------------------------------------
 # Shape copied from a working app in the same organisation. The Client and Sku attributes
 # are not decoration: a SubArea without them is dropped by the Unified Interface.
 function New-SubArea {
     param($Area)
-    $suffix = $Area.Entity -replace '^pwrp_', ''
+
+    if ($Area.WebResource) {
+        # A web resource subarea is addressed by the $webresource: token, not by a path.
+        # PassParams hands the page the organisation and user context in the query string.
+        # AvailableOffline is false because the page calls the Web API on load.
+        $target = "Url=`"`$webresource:$($Area.WebResource)`" AvailableOffline=`"false`" PassParams=`"true`""
+        $suffix = $Area.WebResource -replace '^pwrp_', ''
+    }
+    else {
+        $target = "Entity=`"$($Area.Entity)`" AvailableOffline=`"true`" PassParams=`"false`""
+        $suffix = $Area.Entity -replace '^pwrp_', ''
+    }
+
     return "<SubArea Id=`"pwrp_sub_$suffix`" VectorIcon=`"/_imgs/TableIconsFluentV9/$($Area.Icon).svg`" " +
         "Icon=`"/_imgs/imagestrips/transparent_spacer.gif`" " +
-        "Entity=`"$($Area.Entity)`" Client=`"All,Outlook,OutlookLaptopClient,OutlookWorkstationClient,Web`" " +
-        "AvailableOffline=`"true`" PassParams=`"false`" Sku=`"All,OnPremise,Live,SPLA`">" +
+        "Client=`"All,Outlook,OutlookLaptopClient,OutlookWorkstationClient,Web`" " +
+        "$target Sku=`"All,OnPremise,Live,SPLA`">" +
         "<Titles><Title LCID=`"1033`" Title=`"$($Area.Title)`" /></Titles></SubArea>"
 }
 
@@ -367,11 +305,7 @@ foreach ($area in ($areas + $settingsAreas)) { Write-Host "    $($area.Title)" -
 Write-Host "`nPublishing" -ForegroundColor Cyan
 Invoke-Dataverse -Method POST -Path "/api/data/v9.2/PublishXml" -Body @{
     ParameterXml = "<importexportxml><appmodules><appmodule>$AppId</appmodule></appmodules>" +
-                   "<sitemaps><sitemap>$sitemapId</sitemap></sitemaps>" +
-                   # The settings views are saved queries, and a saved query only goes live
-                   # when its table is published.
-                   "<entities><entity>environmentvariabledefinition</entity>" +
-                   "<entity>environmentvariablevalue</entity></entities></importexportxml>"
+                   "<sitemaps><sitemap>$sitemapId</sitemap></sitemaps></importexportxml>"
 } | Out-Null
 
 Write-Host "`nApp ready. Open it from the Power Apps maker portal, or Dynamics 365 home." -ForegroundColor Green

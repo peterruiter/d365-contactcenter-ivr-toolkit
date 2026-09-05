@@ -13,21 +13,23 @@ Semantic versioning. The Custom API contract is stable within a major version.
 
 ### Added
 
-- A **Settings** group in the model driven app, holding the environment variable
-  definitions and their values. There was no way to reach a setting from the app at all.
-  An administrator had to know that settings are environment variables, that environment
-  variables live under the solution, and where the solution is
+- A **Settings** page in the model driven app, `src/webresources/pwrp_settings.html`.
+  There was no way to reach a setting from the app at all: an administrator had to know
+  that a setting is an environment variable, that environment variables live under the
+  solution, and where the solution is
 - Guidance on every one of the thirteen settings. None of them had a description, in the
   environment or anywhere else, so `New-Schema.ps1` now writes one from `schema.json` and
-  refreshes it on a rerun. The text says what the setting does and what goes wrong when it
-  is set badly, including the pairing that catches everyone: `pwrp_EnableScheduledCallback`
-  and the queue profile flag are both required, so turning one on alone appears to do
-  nothing
-- Two filtered views, added to the app rather than made table defaults, so Settings lists
-  thirteen rows instead of every environment variable in the environment
+  refreshes it on a rerun. The page displays it under each field. The text says what the
+  setting does and what goes wrong when it is set badly, including the pairing that
+  catches everyone: `pwrp_EnableScheduledCallback` and the queue profile flag are both
+  required, so turning one on alone appears to do nothing
+- **Use default** on each setting, which deletes the value row. Clearing the box and
+  saving never did this. An empty string is a value, and the platform refuses one on some
+  types, so there was no way back to a default short of deleting the record by hand
+- **Run health check** on the page, calling `pwrp_HealthCheck` and listing each check
 - An app tile icon, `build/assets/app-icon.svg`, uploaded as a solution web resource. The
-  app previously showed the platform default tile, which is shared with several other apps
-  in the app selector
+  app previously showed the platform default tile, shared with several other apps in the
+  selector
 
 ### Fixed
 

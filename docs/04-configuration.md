@@ -22,39 +22,29 @@ Nothing client specific belongs in code. Everything here is data.
 
 ### Where to set them
 
-Open the **Contact Center IVR Toolkit** app and go to **Settings**. There are two entries.
+Open the **Contact Center IVR Toolkit** app and go to **Settings**.
 
-The list shows every environment variable in the environment, not only the toolkit's.
-Some environments refuse to accept a new view on these tables, because they are managed
-platform tables, so the install script tries to add a filtered view and carries on
-without one when it is blocked. Sort or filter the grid on **Schema Name** beginning
-`pwrp_` to narrow it. Thirteen of them are the toolkit's.
+That page is the supported way to change any of them. It lists the thirteen settings in
+groups, with the guidance for each one underneath the box, and it says whether a setting
+is on its default or has been set here.
 
-- **Settings** lists the definitions. Each one carries the guidance for that setting in
-  its Description, which is the same text as the table above in longer form. Read it
-  before changing anything.
-- **Setting values** lists the values that have actually been set. A definition with no
-  value uses its default.
+Three things it does that the maker portal does not:
 
-The distinction matters and catches people out. A definition holds the default that
-shipped with the solution. A value overrides it for this environment. Changing the
-default on the definition does nothing to a setting that already has a value.
+- **Reads the guidance from the solution.** Labels, help text, types and defaults come
+  from the environment variable definitions, so the page cannot drift from what shipped
+- **Puts a setting back on its default.** Clearing the box and saving does not do this.
+  An empty string is a value, and the platform refuses one on some types. **Use default**
+  deletes the value so the default applies again
+- **Runs the health check.** The same `pwrp_HealthCheck` the install runs, so you can see
+  straight away whether what you just saved holds together
 
-To change one:
+You can still edit environment variables from the solution in the maker portal, and for
+anything Key Vault backed you have to. Be aware of the split while you are in there: a
+definition holds the default that shipped, a value overrides it for this environment, and
+changing the default does nothing to a setting that already has a value. The Settings page
+exists so nobody has to hold that distinction in their head.
 
-1. Open **Setting values** and look for the setting
-2. If it is there, edit the **Value** and save
-3. If it is not, choose **New**, pick the setting in **Environment Variable**, set the
-   value and save
-
-A value is a text field whatever the setting is. A boolean takes `true` or `false` in
-lower case. A number takes digits with no unit.
-
-Changes take effect within a minute, sooner on a quiet environment, because the plugin
-caches configuration for the same period as `pwrp_HoursCacheSeconds`.
-
-The Description also travels with the solution, so an administrator in a downstream
-environment gets the same guidance without this document.
+Changes take effect once the configuration cache expires, which is `pwrp_HoursCacheSeconds`.
 
 ### Tuning the wait bands
 

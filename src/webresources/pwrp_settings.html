@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Contact Center IVR Toolkit Settings</title>
+<style>
+  body { font-family: "Segoe UI", sans-serif; font-size: 13px; color: #242424; margin: 0; padding: 20px; background: #faf9f8; }
+  .wrap { max-width: 760px; }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  .sub { color: #616161; margin-bottom: 16px; }
+  .card { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px 20px; margin-bottom: 12px; }
+  .card h2 { font-size: 14px; margin: 0 0 2px; }
+  .card .blurb { color: #616161; font-size: 12px; margin-bottom: 4px; }
+  .field { padding: 10px 0; border-top: 1px solid #f0f0f0; }
+  .row { display: flex; align-items: baseline; gap: 8px; }
+  label { display: block; font-weight: 600; flex: 1; }
+  input, select { width: 100%; padding: 7px 8px; border: 1px solid #8a8886; border-radius: 4px; box-sizing: border-box; font-family: inherit; font-size: 13px; }
+  .hint { color: #616161; font-size: 12px; margin-top: 4px; }
+  .schema { color: #909090; font-size: 11px; font-family: Consolas, monospace; margin-top: 2px; }
+  .badge { font-size: 11px; padding: 1px 6px; border-radius: 9px; background: #f3f2f1; color: #616161; white-space: nowrap; }
+  .badge.set { background: #eff6fc; color: #0f6cbd; }
+  .reset { background: none; border: none; color: #0f6cbd; cursor: pointer; font-size: 12px; padding: 0; text-decoration: underline; }
+  .reset[disabled] { color: #a0a0a0; cursor: default; text-decoration: none; }
+  .actions { position: sticky; bottom: 0; background: #faf9f8; padding: 12px 0; display: flex; gap: 8px; align-items: center; }
+  button.act { padding: 7px 16px; border-radius: 4px; border: none; cursor: pointer; font-size: 13px; }
+  .primary { background: #0f6cbd; color: #fff; }
+  .secondary { background: #f3f2f1; }
+  #status { margin-left: auto; padding: 6px 10px; border-radius: 4px; display: none; }
+  .ok { background: #f1faf1; border-left: 3px solid #107c10; }
+  .fail { background: #fdf3f4; border-left: 3px solid #c50f1f; }
+  .check { padding: 6px 0; border-top: 1px solid #f0f0f0; }
+  .pass { color: #107c10; } .failed { color: #c50f1f; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Contact Center IVR Toolkit Settings</h1>
+  <div class="sub">
+    Everything the toolkit reads at runtime. A setting with no value uses the default that
+    shipped with the solution. A change reaches a live call once the configuration cache
+    expires, which is <b>Hours cache seconds</b>.
+  </div>
+
+  <div id="groups"></div>
+
+  <div class="actions">
+    <button class="act primary" id="save">Save</button>
+    <button class="act secondary" id="check">Run health check</button>
+    <div id="status"></div>
+  </div>
+  <div id="checks"></div>
+</div>
+
+<script>
+const Xrm = window.parent.Xrm;
+
+const api = (path, opts) => fetch(Xrm.Utility.getGlobalContext().getClientUrl() + "/api/data/v9.2/" + path, Object.assign({
+  headers: { "Accept": "application/json", "Content-Type": "application/json", "OData-MaxVersion": "4.0", "OData-Version": "4.0" }
+}, opts)).then(r => {
+  if (!r.ok && r.status !== 204) return r.json().then(e => { throw new Error((e.error && e.error.message) || r.status); });
+  return r.status === 204 ? null : r.json();
+});
+
+// Type codes on environmentvariabledefinition.type.
+const NUMBER = 100000001, BOOLEAN = 100000002;
+
+// Grouping and order are the only thing this page decides for itself. Labels, guidance,
+// types and defaults come from the definitions in Dataverse, written by
+// build/New-Schema.ps1 out of build/schema.json, so the wording has one source and this
+// page cannot drift from it. A setting added later and not listed here still appears,
+// under Other, with its guidance intact.
+const GROUPS = [
+  { title: "Language and region",
+    blurb: "What a caller hears, and when a queue counts as open. Each of these can be overridden per queue on the queue profile, which is where they belong as soon as two queues differ.",
+    vars: ["pwrp_DefaultLocale", "pwrp_DefaultTimeZone", "pwrp_DefaultCountryCode"] },
+  { title: "When to offer a callback",
+    blurb: "The bands decide when the toolkit stops putting callers through and offers to ring them back instead.",
+    vars: ["pwrp_WaitBandThresholds"] },
+  { title: "Callbacks",
+    blurb: "Direct callback needs only the queue profile flag. Scheduled callback needs the master switch here as well, which is why turning it on for a single queue appears to do nothing.",
+    vars: ["pwrp_EnableScheduledCallback", "pwrp_OutboundWorkstreamId", "pwrp_CallbackSlotMinutes",
+           "pwrp_MaxCallbackAttempts", "pwrp_CallbackRetryMinutes"] },
+  { title: "Performance",
+    blurb: "Caching. Raise these on a busy environment. Lower them while you are editing wording or hours and want to hear the change.",
+    vars: ["pwrp_MetricsCacheSeconds", "pwrp_HoursCacheSeconds", "pwrp_MetricsWindowMinutes"] },
+  { title: "Diagnostics",
+    blurb: "",
+    vars: ["pwrp_TelemetryEnabled"] }
+];
+
+let defs = [];
+
+function escapeHtml(text) {
+  return String(text == null ? "" : text)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+function inputFor(def) {
+  if (def.type === BOOLEAN) {
+    return '<select data-schema="' + def.schemaname + '">' +
+      '<option value="true">true</option><option value="false">false</option></select>';
+  }
+  return '<input type="' + (def.type === NUMBER ? "number" : "text") + '" ' +
+    'data-schema="' + def.schemaname + '" placeholder="' + escapeHtml(def.defaultvalue) + '" />';
+}
+
+function fieldHtml(def) {
+  return '<div class="field">' +
+      '<div class="row">' +
+        '<label>' + escapeHtml(def.displayname || def.schemaname) + '</label>' +
+        '<span class="badge" id="badge_' + def.schemaname + '"></span>' +
+        '<button class="reset" data-reset="' + def.schemaname + '">Use default</button>' +
+      '</div>' +
+      inputFor(def) +
+      (def.description ? '<div class="hint">' + escapeHtml(def.description) + '</div>' : '') +
+      '<div class="schema">' + def.schemaname +
+        (def.defaultvalue ? ' &middot; default ' + escapeHtml(def.defaultvalue) : '') + '</div>' +
+    '</div>';
+}
+
+function render() {
+  const seen = {};
+  const groups = GROUPS.map(g => ({
+    title: g.title,
+    blurb: g.blurb,
+    items: g.vars.map(v => {
+      const d = defs.find(x => x.schemaname === v);
+      if (d) seen[v] = true;
+      return d;
+    }).filter(Boolean)
+  }));
+
+  const rest = defs.filter(d => !seen[d.schemaname]);
+  if (rest.length) groups.push({ title: "Other", blurb: "Added since this page was written.", items: rest });
+
+  document.getElementById("groups").innerHTML = groups.filter(g => g.items.length).map(g =>
+    '<div class="card"><h2>' + g.title + '</h2>' +
+    (g.blurb ? '<div class="blurb">' + g.blurb + '</div>' : '') +
+    g.items.map(fieldHtml).join("") +
+    '</div>').join("");
+
+  defs.forEach(paint);
+  Array.prototype.forEach.call(document.querySelectorAll("[data-reset]"), b =>
+    b.addEventListener("click", () => resetToDefault(b.getAttribute("data-reset")).catch(e => show(false, e.message))));
+}
+
+function control(schema) { return document.querySelector('[data-schema="' + schema + '"]'); }
+
+function paint(def) {
+  const el = control(def.schemaname);
+  if (!el) return;
+  const raw = def.valueId ? def.value : def.defaultvalue;
+  el.value = (raw == null ? "" : String(raw)).trim();
+  const badge = document.getElementById("badge_" + def.schemaname);
+  badge.textContent = def.valueId ? "set here" : "default";
+  badge.className = def.valueId ? "badge set" : "badge";
+  document.querySelector('[data-reset="' + def.schemaname + '"]').disabled = !def.valueId;
+}
+
+async function load() {
+  const r = await api("environmentvariabledefinitions" +
+    "?$select=schemaname,displayname,description,defaultvalue,type" +
+    "&$filter=startswith(schemaname,'pwrp_')" +
+    "&$expand=environmentvariabledefinition_environmentvariablevalue($select=value,environmentvariablevalueid)");
+
+  defs = r.value.map(d => {
+    const v = d.environmentvariabledefinition_environmentvariablevalue[0];
+    return Object.assign({}, d, {
+      valueId: v ? v.environmentvariablevalueid : null,
+      value: v ? v.value : null
+    });
+  });
+
+  if (!defs.length) {
+    show(false, "No pwrp_ environment variables found. Run build/New-Schema.ps1 against this environment.");
+    return;
+  }
+  render();
+}
+
+async function save() {
+  let written = 0;
+  for (const def of defs) {
+    const el = control(def.schemaname);
+    if (!el) continue;
+
+    // A leading or trailing space is invisible in the box and breaks everything
+    // downstream: a time zone id stops matching, a country code stops parsing.
+    const value = el.value.trim();
+    el.value = value;
+
+    const current = def.valueId ? (def.value || "").trim() : null;
+    if (value === current) continue;
+
+    // A setting still on its default, left alone, must stay on its default. Writing the
+    // default as a value looks identical on this page and is not the same thing: a later
+    // solution upgrade can change a default, and it will never change a value.
+    if (!def.valueId && value === String(def.defaultvalue == null ? "" : def.defaultvalue).trim()) continue;
+
+    if (def.valueId) {
+      await api("environmentvariablevalues(" + def.valueId + ")",
+        { method: "PATCH", body: JSON.stringify({ value: value }) });
+    } else {
+      const created = await api("environmentvariablevalues", {
+        method: "POST",
+        body: JSON.stringify({
+          value: value,
+          "EnvironmentVariableDefinitionId@odata.bind":
+            "/environmentvariabledefinitions(" + def.environmentvariabledefinitionid + ")"
+        }),
+        headers: {
+          "Accept": "application/json", "Content-Type": "application/json",
+          "OData-MaxVersion": "4.0", "OData-Version": "4.0", "Prefer": "return=representation"
+        }
+      });
+      def.valueId = created.environmentvariablevalueid;
+    }
+    def.value = value;
+    written++;
+    paint(def);
+  }
+  show(true, written ? "Saved " + written + " setting(s)." : "Nothing had changed.");
+}
+
+// Clearing the box and saving does not put a setting back on its default. An empty string
+// is a value, and the platform refuses one on some types anyway. Reverting means deleting
+// the value row so the definition's default applies again.
+async function resetToDefault(schema) {
+  const def = defs.find(d => d.schemaname === schema);
+  if (!def || !def.valueId) return;
+  await api("environmentvariablevalues(" + def.valueId + ")", { method: "DELETE" });
+  def.valueId = null;
+  def.value = null;
+  paint(def);
+  show(true, (def.displayname || schema) + " is back to its default.");
+}
+
+async function health() {
+  show(true, "Running…");
+  document.getElementById("checks").innerHTML = "";
+  try {
+    const r = await api("pwrp_HealthCheck", { method: "POST", body: "{}" });
+    const checks = JSON.parse(r.Checks || "[]");
+    document.getElementById("checks").innerHTML = '<div class="card"><h2>Health check</h2>' +
+      checks.map(c => '<div class="check"><b class="' + (c.Passed ? "pass" : "failed") + '">' +
+        (c.Passed ? "PASS" : "FAIL") + '</b> &nbsp;<b>' + escapeHtml(c.Check) + '</b>' +
+        '<div class="hint">' + escapeHtml(c.Detail) + '</div></div>').join("") +
+      '</div>';
+    show(r.Passed, r.Passed ? "All checks passed." : r.FailureCount + " check(s) failed.");
+  } catch (e) {
+    show(false, e.message);
+  }
+}
+
+function show(ok, msg) {
+  const s = document.getElementById("status");
+  s.className = ok ? "ok" : "fail";
+  s.style.display = "block";
+  s.textContent = msg;
+}
+
+document.getElementById("save").addEventListener("click", () => save().catch(e => show(false, e.message)));
+document.getElementById("check").addEventListener("click", health);
+load().catch(e => show(false, e.message));
+</script>
+</body>
+</html>

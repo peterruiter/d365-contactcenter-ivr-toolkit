@@ -121,25 +121,32 @@ matters, because admins live in two of these areas and visit the rest rarely:
 7. IVR outcomes
 8. Message templates
 
-A second group, **Settings**, holds the two platform tables behind environment variables:
+A second group, **Settings**, holds one entry:
 
-9. Settings, `environmentvariabledefinition`
-10. Setting values, `environmentvariablevalue`
+9. Settings, the `pwrp_settings` HTML web resource
 
 `pwrp_broadcastmessage` shows the active messages view by default. An admin publishing an
 outage message under pressure should not have to filter first.
 
-The settings tables are shared with every other solution in the environment, so the script
-tries to add two filtered views, **IVR toolkit settings** and **IVR toolkit setting
-values**, both filtering on a `pwrp_` schema name. They are app views rather than table
-defaults: making them the default would hide other solutions' variables from everyone in
-the environment, not just from this app.
+Settings is a page, not a table. The obvious alternative, a subarea over
+`environmentvariabledefinition`, was tried and abandoned:
 
-This does not work everywhere. Both tables are managed platform tables, and an environment
-may refuse a new view on them, failing on the `isparentcustomizable` managed property with
-a message about component evaluation that never mentions views. The script asks
-`CanCreateViews` first and skips with a warning rather than failing the run, so Settings
-still appears in the navigation and simply lists every environment variable.
+- Both settings tables are managed platform tables shared with every other solution in the
+  environment, so the grid lists everybody's variables
+- A filtered view on them is refused outright, failing on the `isparentcustomizable`
+  managed property with a message about component evaluation that never mentions views
+- A definition and its value are two records in two tables, so changing a setting means
+  editing a row the first screen only hints at
+
+`src/webresources/pwrp_settings.html` reads the definitions, writes the values, marks
+which settings are on their default, reverts one by deleting its value row, and runs
+`pwrp_HealthCheck`. It is uploaded and published by `New-ModelDrivenApp.ps1` and added to
+the app as a component, because a subarea pointing at a web resource the app does not list
+renders an empty pane rather than an error.
+
+Everything the page displays except the grouping comes from the definitions, so the
+guidance has one source. A setting added later and not in the page's group list still
+appears, under Other, with its guidance intact.
 
 Guidance for each setting is the Description on its definition, written by
 `build/New-Schema.ps1` from `build/schema.json`. Change the wording there rather than in
