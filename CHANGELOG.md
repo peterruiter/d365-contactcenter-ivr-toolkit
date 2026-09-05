@@ -9,6 +9,32 @@ Semantic versioning. The Custom API contract is stable within a major version.
 | Internal fix, same contract | Patch |
 | Removed or renamed output, changed enum, changed meaning | Major |
 
+## [2.1.0]
+
+### Added
+
+- `pwrp_queueprofile.pwrp_countrycode`, next to the locale and timezone overrides that
+  were already there. Set it on any queue serving another country
+- `pwrp_ValidatePhoneNumber` takes an optional `Queue`. Country resolves most specific
+  first: an explicit `CountryCode`, then the queue, then `pwrp_DefaultCountryCode`
+
+### Fixed
+
+- `pwrp_CreateCallback` validated the number against the organisation default while
+  holding the queue that knew better. A Belgian caller booking through a Belgian queue
+  had their number stored as Dutch
+
+Only numbers given in national format were affected, and they failed silently rather than
+erroring: `0475 123456` read against the Dutch code is `+31475123456`, nine digits after a
+valid country code, so it came back as a valid Dutch landline and was confirmed to the
+caller digit by digit.
+
+`pwrp_GetCallbackStatus` still uses the organisation default on purpose. A caller looking
+up a callback gives a number and nothing else, and a lookup that misses is harmless where
+a booking against the wrong number is not.
+
+Run `New-Schema.ps1` and then `Update-Forms.ps1` to pick up the new column.
+
 ## [2.0.0]
 
 ### Changed, and it breaks callers

@@ -42,9 +42,21 @@ sensibly, but you lose the parts that make it sound human.
 | `pwrp_hourssource` | 1 = native operating hours, 2 = toolkit config tables |
 | `pwrp_timezone` | Overrides the default. Set it on any queue outside the main region |
 | `pwrp_locale` | Overrides the default. Set it on any queue serving another language |
+| `pwrp_countrycode` | Overrides the default. Set it on any queue serving another country |
 | `pwrp_directcallbackenabled` | Whether the agent may offer direct callback |
 | `pwrp_scheduledcallbackenabled` | Whether the agent may offer a booked slot |
 | `pwrp_slotcapacity` | Maximum callbacks per slot. Default 5 |
+
+### Serving more than one country
+
+Set `pwrp_countrycode` on every queue outside the main market, the same way you set
+`pwrp_locale` and `pwrp_timezone`. It is the country calling code in digits, so `32` for
+Belgium, `49` for Germany.
+
+It only affects a number given in national format, but that is the dangerous case. A
+Belgian caller saying "0475 123456" against the Dutch default becomes `+31475123456`,
+which is a perfectly valid Dutch landline. No error, confirmed back digit by digit, and a
+callback booked to a stranger.
 
 ### Speakable names matter more than you think
 

@@ -69,7 +69,8 @@ model sees when it decides what to call, so paste it as written. See
 | Parameter | Fill using | Value |
 |---|---|---|
 | `PhoneNumber` | Dynamically fill with AI | Whatever the caller said, in any format |
-| `CountryCode` | Custom value `31` | The country you serve. It duplicates `pwrp_DefaultCountryCode`, which is unavoidable when a blank cannot be saved. Change both together |
+| `Queue` | Dynamically fill with AI | The same queue name sent to `pwrp_GetQueueContext`. The country comes from the queue profile, so one agent serves every market |
+| `CountryCode` | Custom value `-` | Not digits, so it is ignored and `Queue` decides. Set a real code here only to force one country regardless of queue |
 
 **Description:**
 

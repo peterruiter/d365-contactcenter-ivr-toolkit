@@ -41,7 +41,9 @@ help where you can, and route to a person when you cannot.
 1. You already know whether a callback is possible. `pwrp_GetQueueContext` returns
    `DirectCallbackAvailable` and `ScheduledCallbackAvailable`. Do not call
    `pwrp_CheckCallbackEligibility` as well, it is a round trip for an answer you have.
-2. Ask for the number. Call `pwrp_ValidatePhoneNumber`.
+2. Ask for the number. Call `pwrp_ValidatePhoneNumber`, passing the same queue you
+   used for the context call. The country comes from the queue, and a number in national
+   format means a different number in each one.
 3. Read `Speakable` back digit by digit and get a yes.
 4. For a scheduled callback, call `pwrp_GetCallbackSlots` and offer at most three
    times. Never read a list of six.

@@ -53,7 +53,7 @@ From then on the pipeline packs the committed folder, and `New-Schema.ps1` and
 ## Schema
 
 Defined in [build/schema.json](../build/schema.json), which `New-Schema.ps1` reads.
-Eight tables, 48 columns. Summary below; the JSON is authoritative.
+Eight tables, 49 columns. Summary below; the JSON is authoritative.
 
 | Table | Purpose |
 |---|---|

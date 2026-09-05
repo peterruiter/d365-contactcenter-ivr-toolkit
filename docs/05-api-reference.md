@@ -226,10 +226,21 @@ and validates the new time against available slots.
 
 ## pwrp_ValidatePhoneNumber
 
-**Inputs:** `PhoneNumber` (required), `CountryCode` (optional)
+**Inputs:** `PhoneNumber` (required), `Queue` (optional), `CountryCode` (optional)
 
 **Outputs:** `IsValid`, `E164`, `NumberType` (`Mobile`, `Landline`, `Unknown`),
 `Reason`, `Speakable`
+
+Country is resolved most specific first: an explicit `CountryCode`, then the queue's
+`pwrp_countrycode`, then `pwrp_DefaultCountryCode`. Send `Queue` rather than
+`CountryCode` in an agent. A market is a property of the queue, not of the agent, and an
+agent that pins one country gets the wrong answer for every other one.
+
+This only matters for a number given in national format. `+32 475 123456` and
+`0032 475 123456` carry their own country and are read correctly whatever is configured.
+`0475 123456` read against the Dutch code becomes `+31475123456`, which is nine digits
+after a valid country code, so it is returned as a valid Dutch landline with no error at
+all. That is the failure this prevents.
 
 `Speakable` is the number spelled digit by digit, so a confirmation is actually
 verifiable. Handles `06 12 34 56 78`, `0031612345678`, `+31 6 1234 5678` and the
