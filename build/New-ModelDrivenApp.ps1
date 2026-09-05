@@ -149,10 +149,38 @@ Invoke-Dataverse -Method POST -Path "/api/data/v9.2/PublishXml" -Body @{
     ParameterXml = "<importexportxml><webresources><webresource>$iconId</webresource></webresources></importexportxml>"
 } | Out-Null
 
-Invoke-Dataverse -Method PATCH -Path "/api/data/v9.2/appmodules($AppId)" -SolutionName $SolutionName -Body @{
-    "webresourceid@odata.bind" = "/webresourceset($iconId)"
-} | Out-Null
-Write-Host "  + icon set on the app" -ForegroundColor DarkGray
+# The icon is a lookup, so it is set by binding rather than by writing the column, and
+# the binding needs the navigation property name rather than the attribute name. The two
+# are not the same here: "webresourceid@odata.bind" is rejected, because OData reads the
+# annotation as belonging to a primitive property and fails inside the deserialiser with
+# a stack trace that says nothing about lookups.
+#
+# Read the name rather than guessing it. Guessing produced that stack trace.
+$iconRelationship = (Invoke-Dataverse -Method GET -Path (
+    "/api/data/v9.2/EntityDefinitions(LogicalName='appmodule')/ManyToOneRelationships" +
+    "?`$select=ReferencingAttribute,ReferencingEntityNavigationPropertyName" +
+    "&`$filter=ReferencedEntity eq 'webresource'")).value |
+    Where-Object { $_.ReferencingAttribute -eq "webresourceid" } |
+    Select-Object -First 1
+
+# Not fatal. The icon is cosmetic, and the sitemap below is not, so a failure here must
+# not cost the run. An earlier version threw at this point and never wrote the navigation.
+if (-not $iconRelationship) {
+    Write-Warning "No appmodule to webresource relationship on 'webresourceid'. Icon not set."
+}
+else {
+    $iconNav = $iconRelationship.ReferencingEntityNavigationPropertyName
+    try {
+        Invoke-Dataverse -Method PATCH -Path "/api/data/v9.2/appmodules($AppId)" -SolutionName $SolutionName -Body @{
+            "$iconNav@odata.bind" = "/webresourceset($iconId)"
+        } | Out-Null
+        Write-Host "  + icon set on the app via $iconNav" -ForegroundColor DarkGray
+    }
+    catch {
+        Write-Warning ("Icon not set: $($_.Exception.Message)`n" +
+            "Set it by hand in the app designer, choosing $iconName.")
+    }
+}
 
 # --- Settings views -----------------------------------------------------------
 # Both settings tables are platform tables shared with every other solution in the
