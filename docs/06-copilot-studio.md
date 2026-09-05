@@ -28,6 +28,13 @@ simple: anything that comes out of the conversation is filled by AI, anything th
 policy decision is a custom value. A policy pinned as a custom value cannot be talked out
 of by a caller.
 
+Leave **Completion** on **Don't respond** for every tool. That hands the result back to
+the model, which then follows `RecommendedAction` and reads `Speakable`, which is the
+whole point of the composite endpoint. Anything that replies automatically reads the raw
+output to the caller, so they hear "WaitingNow 14" instead of a wait band, and the
+branching in `RecommendedAction` never happens. Both are rules this toolkit exists to
+enforce.
+
 Add these four and nothing else. Each block is the tool name, what it takes, and the
 description to paste. The description is not documentation, it is the only thing the
 model sees when it decides what to call, so paste it as written. See
