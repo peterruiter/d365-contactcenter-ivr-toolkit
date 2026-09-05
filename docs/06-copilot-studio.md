@@ -20,8 +20,13 @@ until 2.0.0, and functions are not offered there at all, which made the endpoint
 toolkit is built around unreachable from its own default route.
 
 In **Perform an unbound action**, set Environment to your organisation and Action Name to
-the API. The **Action parameters** input stays unresolved until an action is chosen, then
-it takes that action's inputs.
+the API. Both are **Custom value**. The **Action parameters** input stays unresolved until
+an action is chosen, then it takes that action's inputs.
+
+Each parameter is then either filled by the model or pinned to a value. The rule is
+simple: anything that comes out of the conversation is filled by AI, anything that is a
+policy decision is a custom value. A policy pinned as a custom value cannot be talked out
+of by a caller.
 
 Add these four and nothing else. Each block is the tool name, what it takes, and the
 description to paste. The description is not documentation, it is the only thing the
@@ -30,7 +35,9 @@ model sees when it decides what to call, so paste it as written. See
 
 ### pwrp_GetQueueContext
 
-**Inputs:** `Queue` (required). The queue name as the caller said it. Aliases and fuzzy matching are the toolkit's job, not the model's
+| Parameter | Fill using | Value |
+|---|---|---|
+| `Queue` | Dynamically fill with AI | The queue name as the caller said it. Aliases and fuzzy matching are the toolkit's job, not the model's |
 
 **Description:**
 
@@ -38,7 +45,10 @@ model sees when it decides what to call, so paste it as written. See
 
 ### pwrp_ValidatePhoneNumber
 
-**Inputs:** `PhoneNumber` (required), `CountryCode`. Leave `CountryCode` empty to use `pwrp_DefaultCountryCode`
+| Parameter | Fill using | Value |
+|---|---|---|
+| `PhoneNumber` | Dynamically fill with AI | Whatever the caller said, in any format |
+| `CountryCode` | Leave unset | Falls back to `pwrp_DefaultCountryCode`. Setting it here hard codes a country into the agent |
 
 **Description:**
 
@@ -46,7 +56,14 @@ model sees when it decides what to call, so paste it as written. See
 
 ### pwrp_CreateCallback
 
-**Inputs:** `Queue`, `PhoneNumber` (required), `Mode`, `RequestedStartUtc`, `ContactId`, `ConversationId`, `ContextJson`. Leave `Mode` empty for direct
+| Parameter | Fill using | Value |
+|---|---|---|
+| `Queue` | Dynamically fill with AI | |
+| `PhoneNumber` | Dynamically fill with AI | The `E164` that `pwrp_ValidatePhoneNumber` returned, not what the caller said |
+| `Mode` | Custom value `Direct` | Pin it unless the agent really offers booked slots. A model that can choose `Scheduled` will sometimes choose it on a queue that does not allow it |
+| `RequestedStartUtc` | Dynamically fill with AI | Only when `Mode` is `Scheduled`. Leave unset otherwise |
+| `ConversationId` | Custom value `System.Conversation.Id` | Ties the callback to the conversation, which is what makes it traceable afterwards |
+| `ContactId`, `ContextJson` | Leave unset | |
 
 **Description:**
 
@@ -54,7 +71,14 @@ model sees when it decides what to call, so paste it as written. See
 
 ### pwrp_LogIvrOutcome
 
-**Inputs:** `Outcome` (required, one of `Contained`, `Escalated`, `CallbackBooked`, `Abandoned`, `ClosedAnnouncement`), `Queue`, `Intent`, `ConversationId`, `AgentName`, `DurationSeconds`, `ContextJson`
+| Parameter | Fill using | Value |
+|---|---|---|
+| `Outcome` | Dynamically fill with AI | One of `Contained`, `Escalated`, `CallbackBooked`, `Abandoned`, `ClosedAnnouncement`. Put the list in the description so the model cannot invent a sixth |
+| `Queue` | Dynamically fill with AI | |
+| `Intent` | Dynamically fill with AI | What the caller wanted, in a few words. This is what makes the reporting worth reading |
+| `ConversationId` | Custom value `System.Conversation.Id` | |
+| `AgentName` | Custom value | The agent's name. It is the same on every call, so pinning it stops the model inventing one |
+| `DurationSeconds`, `ContextJson` | Leave unset | |
 
 **Description:**
 
@@ -62,13 +86,13 @@ model sees when it decides what to call, so paste it as written. See
 
 ### Add these only when a scenario asks for them
 
-| Tool | Inputs | Add it when | Description |
+| Tool | Fill using | Add it when | Description |
 |---|---|---|---|
-| `pwrp_GetCallbackSlots` | `Queue` (required), `Days`, `MaxResults` | Callers pick a time | Bookable callback windows inside opening hours, with remaining capacity. Offer at most three over the phone. |
-| `pwrp_GetCallbackStatus` | `Reference`, `PhoneNumber`, `CallbackId`, supply one | Callers ask where their callback is | Looks up a callback by reference, phone number or id. |
-| `pwrp_CancelCallback` | `CallbackId` (required) | Callers can cancel | Cancels an open callback request. |
-| `pwrp_RescheduleCallback` | `Queue`, `CallbackId`, `NewStartUtc`, all required | Callers can move a slot | Moves a scheduled callback to a different available slot. |
-| `pwrp_GetQueueHours` | `Queue` (required), `FromDate`, `Days` | Someone asks about a week, not about now | Opening hours for a queue across a date range, holiday exceptions included. |
+| `pwrp_GetCallbackSlots` | `Queue` by AI. `MaxResults` custom `3`, because three is what a caller can hold in their head. `Days` unset | Callers pick a time | Bookable callback windows inside opening hours, with remaining capacity. Offer at most three over the phone. |
+| `pwrp_GetCallbackStatus` | `Reference` and `PhoneNumber` by AI, whichever the caller offers. `CallbackId` unset, a caller never has one | Callers ask where their callback is | Looks up a callback by reference, phone number or id. |
+| `pwrp_CancelCallback` | `CallbackId` by AI, from the booking earlier in the call | Callers can cancel | Cancels an open callback request. |
+| `pwrp_RescheduleCallback` | All three by AI. `NewStartUtc` must be a slot `pwrp_GetCallbackSlots` returned | Callers can move a slot | Moves a scheduled callback to a different available slot. |
+| `pwrp_GetQueueHours` | `Queue` by AI. `Days` custom `7`. `FromDate` unset, it defaults to today | Someone asks about a week, not about now | Opening hours for a queue across a date range, holiday exceptions included. |
 Leave the rest out. `pwrp_ResolveQueue`, `pwrp_IsQueueOpen`, `pwrp_GetNextOpenTime`,
 `pwrp_GetQueueMetrics`, `pwrp_CheckCallbackEligibility` and `pwrp_GetBroadcastMessage` all
 return something `pwrp_GetQueueContext` already gave you. Adding them invites three calls
