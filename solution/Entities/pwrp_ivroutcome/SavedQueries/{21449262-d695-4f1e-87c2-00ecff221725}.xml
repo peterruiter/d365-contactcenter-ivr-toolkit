@@ -10,8 +10,11 @@
     <layoutxml>
       <grid name="resultset" jump="pwrp_name" select="1" icon="1" preview="1">
         <row name="result" id="pwrp_ivroutcomeid">
-          <cell name="pwrp_name" width="300" />
-          <cell name="createdon" width="125" />
+          <cell name="pwrp_name" width="200" />
+          <cell name="pwrp_conversationid" width="150" />
+          <cell name="pwrp_queueid" width="150" />
+          <cell name="pwrp_queuetext" width="150" />
+          <cell name="pwrp_outcome" width="150" />
         </row>
       </grid>
     </layoutxml>
@@ -19,6 +22,10 @@
     <fetchxml>
       <fetch version="1.0" mapping="logical">
         <entity name="pwrp_ivroutcome">
+          <attribute name="pwrp_outcome" />
+          <attribute name="pwrp_queuetext" />
+          <attribute name="pwrp_queueid" />
+          <attribute name="pwrp_conversationid" />
           <attribute name="pwrp_ivroutcomeid" />
           <attribute name="pwrp_name" />
           <attribute name="createdon" />

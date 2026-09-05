@@ -14,6 +14,8 @@
     <RolePrivilege name="prvReadmsdyn_operatinghour" level="Global" />
     <RolePrivilege name="prvReadmsdyn_presence" level="Global" />
     <RolePrivilege name="prvReadmsdyn_queueextension" level="Global" />
+    <RolePrivilege name="prvReadPluginAssembly" level="Global" />
+    <RolePrivilege name="prvReadPluginType" level="Global" />
     <RolePrivilege name="prvReadpwrp_broadcastmessage" level="Global" />
     <RolePrivilege name="prvReadpwrp_callbackrequest" level="Global" />
     <RolePrivilege name="prvReadpwrp_holiday" level="Global" />

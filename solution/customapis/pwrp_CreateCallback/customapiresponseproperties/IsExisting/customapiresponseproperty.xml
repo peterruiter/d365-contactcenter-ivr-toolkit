@@ -1,0 +1,11 @@
+<customapiresponseproperty uniquename="IsExisting">
+  <description default="True when the request already existed and was returned rather than created.">
+    <label description="True when the request already existed and was returned rather than created." languagecode="1033" />
+  </description>
+  <displayname default="IsExisting">
+    <label description="IsExisting" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>IsExisting</name>
+  <type>0</type>
+</customapiresponseproperty>

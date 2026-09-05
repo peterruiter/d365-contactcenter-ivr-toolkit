@@ -7,22 +7,20 @@
     <FormActivationState>1</FormActivationState>
     <form>
       <tabs>
-        <tab verticallayout="true" id="{ccf462b0-4fbd-4028-880f-10dbc498464f}" IsUserDefined="1">
+        <tab verticallayout="true" id="{6eea3116-23d2-66c8-7aef-e705ea66b0f6}" IsUserDefined="1">
           <labels>
             <label description="General" languagecode="1033" />
-            <label description="Algemeen" languagecode="1043" />
           </labels>
           <columns>
             <column width="100%">
               <sections>
-                <section showlabel="false" showbar="false" IsUserDefined="0" id="{df5fd15c-9091-40ed-a30b-8d6f32563f22}">
+                <section showlabel="false" showbar="false" IsUserDefined="0" id="{20e0e6d7-7425-0fa0-477a-9e5348e1218e}">
                   <labels>
                     <label description="General" languagecode="1033" />
-                    <label description="Algemeen" languagecode="1043" />
                   </labels>
                   <rows>
                     <row>
-                      <cell id="{d4966b38-c08f-4157-8c9a-b83b23f73aa8}">
+                      <cell id="{74383cf0-43f0-25ac-ec0a-21c7ad9490cf}">
                         <labels>
                           <label description="Name" languagecode="1033" />
                         </labels>
@@ -30,7 +28,79 @@
                       </cell>
                     </row>
                     <row>
-                      <cell id="{2be42bb5-346e-407b-b2cd-3a6a9d66ed9d}">
+                      <cell id="{1d1dff1c-4025-ec9d-e2c0-7a77390b1c0f}">
+                        <labels>
+                          <label description="Queue" languagecode="1033" />
+                        </labels>
+                        <control id="pwrp_queueid" classid="{270BD3DB-D9AF-4782-9025-509E298DEC0A}" datafieldname="pwrp_queueid" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{aa5cc06a-821c-b4be-1004-6b5086efea3f}">
+                        <labels>
+                          <label description="Speakable name" languagecode="1033" />
+                        </labels>
+                        <control id="pwrp_speakablename" classid="{4273EDBD-AC1D-40d3-9FB2-095C621B552D}" datafieldname="pwrp_speakablename" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{217f0b2e-78c3-e151-eaf5-4abdb02c2762}">
+                        <labels>
+                          <label description="Hours source" languagecode="1033" />
+                        </labels>
+                        <control id="pwrp_hourssource" classid="{3EF39988-22BB-4f0b-BBBE-64B5A3748AEE}" datafieldname="pwrp_hourssource" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{60c2c0f0-a448-c450-2084-6ea2fe5e31bf}">
+                        <labels>
+                          <label description="Time zone" languagecode="1033" />
+                        </labels>
+                        <control id="pwrp_timezone" classid="{4273EDBD-AC1D-40d3-9FB2-095C621B552D}" datafieldname="pwrp_timezone" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{e055dd8a-8703-dd89-7043-d349b04033a3}">
+                        <labels>
+                          <label description="Locale" languagecode="1033" />
+                        </labels>
+                        <control id="pwrp_locale" classid="{4273EDBD-AC1D-40d3-9FB2-095C621B552D}" datafieldname="pwrp_locale" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{8aeb3781-fbc9-096a-4cd5-7637423c6593}">
+                        <labels>
+                          <label description="Country code" languagecode="1033" />
+                        </labels>
+                        <control id="pwrp_countrycode" classid="{4273EDBD-AC1D-40d3-9FB2-095C621B552D}" datafieldname="pwrp_countrycode" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{b3bb39ee-bc7c-13f8-daef-175230afa029}">
+                        <labels>
+                          <label description="Direct callback enabled" languagecode="1033" />
+                        </labels>
+                        <control id="pwrp_directcallbackenabled" classid="{3EF39988-22BB-4f0b-BBBE-64B5A3748AEE}" datafieldname="pwrp_directcallbackenabled" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{1eff9a8f-89cc-4e95-5a2c-ea5fed78acb4}">
+                        <labels>
+                          <label description="Scheduled callback enabled" languagecode="1033" />
+                        </labels>
+                        <control id="pwrp_scheduledcallbackenabled" classid="{3EF39988-22BB-4f0b-BBBE-64B5A3748AEE}" datafieldname="pwrp_scheduledcallbackenabled" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{fdd1e505-fa70-6457-3d5b-f622d910fdeb}">
+                        <labels>
+                          <label description="Slot capacity" languagecode="1033" />
+                        </labels>
+                        <control id="pwrp_slotcapacity" classid="{C6D124CA-7EDA-4a60-AEA9-7FB8D318B68F}" datafieldname="pwrp_slotcapacity" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{4f3d6d34-56b5-f3b3-5a7d-a05249f97904}">
                         <labels>
                           <label description="Owner" languagecode="1033" />
                           <label description="Eigenaar" languagecode="1043" />

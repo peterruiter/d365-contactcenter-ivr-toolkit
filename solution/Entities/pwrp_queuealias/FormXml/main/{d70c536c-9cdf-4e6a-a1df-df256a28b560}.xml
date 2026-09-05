@@ -7,22 +7,20 @@
     <FormActivationState>1</FormActivationState>
     <form>
       <tabs>
-        <tab verticallayout="true" id="{f888b2c1-eaa1-486a-bd9c-00f38e754779}" IsUserDefined="1">
+        <tab verticallayout="true" id="{b57cdd2f-f8ad-79f4-13c9-05897feffc74}" IsUserDefined="1">
           <labels>
             <label description="General" languagecode="1033" />
-            <label description="Algemeen" languagecode="1043" />
           </labels>
           <columns>
             <column width="100%">
               <sections>
-                <section showlabel="false" showbar="false" IsUserDefined="0" id="{11fec241-66f6-46ae-bb4d-7011b2962295}">
+                <section showlabel="false" showbar="false" IsUserDefined="0" id="{50efd57b-1eff-ba9b-834c-589528b406be}">
                   <labels>
                     <label description="General" languagecode="1033" />
-                    <label description="Algemeen" languagecode="1043" />
                   </labels>
                   <rows>
                     <row>
-                      <cell id="{f0bd47dc-2f4c-4478-afe6-eca40ec66336}">
+                      <cell id="{7d209af6-f873-5b2d-578b-da736d6998c8}">
                         <labels>
                           <label description="Alias" languagecode="1033" />
                         </labels>
@@ -30,7 +28,15 @@
                       </cell>
                     </row>
                     <row>
-                      <cell id="{d0476a78-110c-46bf-87f1-bcf03b16138a}">
+                      <cell id="{351e2d5f-7a65-2e35-8384-2fe7e71a59a8}">
+                        <labels>
+                          <label description="Queue" languagecode="1033" />
+                        </labels>
+                        <control id="pwrp_queueid" classid="{270BD3DB-D9AF-4782-9025-509E298DEC0A}" datafieldname="pwrp_queueid" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{55c75843-94e6-69f3-70f3-0521d3123fe2}">
                         <labels>
                           <label description="Owner" languagecode="1033" />
                           <label description="Eigenaar" languagecode="1043" />

@@ -7,22 +7,20 @@
     <FormActivationState>1</FormActivationState>
     <form>
       <tabs>
-        <tab verticallayout="true" id="{cf4bc8e2-204b-4046-88dc-f29180315433}" IsUserDefined="1">
+        <tab verticallayout="true" id="{77fcfbdf-a57d-05d4-d3db-241fc052faac}" IsUserDefined="1">
           <labels>
             <label description="General" languagecode="1033" />
-            <label description="Algemeen" languagecode="1043" />
           </labels>
           <columns>
             <column width="100%">
               <sections>
-                <section showlabel="false" showbar="false" IsUserDefined="0" id="{72701418-62c8-4e3b-af78-4e22b54d25bd}">
+                <section showlabel="false" showbar="false" IsUserDefined="0" id="{563a39dd-bc4c-e2fa-0279-dead932d131b}">
                   <labels>
                     <label description="General" languagecode="1033" />
-                    <label description="Algemeen" languagecode="1043" />
                   </labels>
                   <rows>
                     <row>
-                      <cell id="{050c2279-bd8d-413d-8fca-adde97689595}">
+                      <cell id="{e65aac05-55f9-b6d5-6e89-6fd685346fb9}">
                         <labels>
                           <label description="Name" languagecode="1033" />
                         </labels>
@@ -30,7 +28,39 @@
                       </cell>
                     </row>
                     <row>
-                      <cell id="{961d5671-1636-4d5b-80b7-3af702111227}">
+                      <cell id="{64bbbfc3-8143-d575-0437-abf3896455b6}">
+                        <labels>
+                          <label description="Date" languagecode="1033" />
+                        </labels>
+                        <control id="pwrp_date" classid="{5B773807-9FB2-42db-97C3-7A91EFF8ADFF}" datafieldname="pwrp_date" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{04806e0d-e44e-9377-83cc-fc903976839f}">
+                        <labels>
+                          <label description="Queue" languagecode="1033" />
+                        </labels>
+                        <control id="pwrp_queueid" classid="{270BD3DB-D9AF-4782-9025-509E298DEC0A}" datafieldname="pwrp_queueid" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{5810591f-6072-cdec-2a92-9b69c8883ec1}">
+                        <labels>
+                          <label description="Start" languagecode="1033" />
+                        </labels>
+                        <control id="pwrp_starttime" classid="{4273EDBD-AC1D-40d3-9FB2-095C621B552D}" datafieldname="pwrp_starttime" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{b1209f1f-d5d3-671c-577d-eb532dddea00}">
+                        <labels>
+                          <label description="End" languagecode="1033" />
+                        </labels>
+                        <control id="pwrp_endtime" classid="{4273EDBD-AC1D-40d3-9FB2-095C621B552D}" datafieldname="pwrp_endtime" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{3a4a5e4a-0f94-ebfe-2e3d-1b77391e42dc}">
                         <labels>
                           <label description="Owner" languagecode="1033" />
                           <label description="Eigenaar" languagecode="1043" />

@@ -10,8 +10,8 @@
     <layoutxml>
       <grid name="resultset" jump="pwrp_name" select="1" icon="1" preview="1">
         <row name="result" id="pwrp_queuealiasid">
-          <cell name="pwrp_name" width="300" />
-          <cell name="createdon" width="125" />
+          <cell name="pwrp_name" width="200" />
+          <cell name="pwrp_queueid" width="150" />
         </row>
       </grid>
     </layoutxml>
@@ -19,6 +19,7 @@
     <fetchxml>
       <fetch version="1.0" mapping="logical">
         <entity name="pwrp_queuealias">
+          <attribute name="pwrp_queueid" />
           <attribute name="pwrp_queuealiasid" />
           <attribute name="pwrp_name" />
           <attribute name="createdon" />

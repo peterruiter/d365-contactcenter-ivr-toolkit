@@ -1,6 +1,6 @@
 <customapirequestparameter uniquename="CountryCode">
-  <description default="Defaults to pwrp_DefaultCountryCode.">
-    <label description="Defaults to pwrp_DefaultCountryCode." languagecode="1033" />
+  <description default="Overrides everything. Digits only. Leave empty and let Queue decide.">
+    <label description="Overrides everything. Digits only. Leave empty and let Queue decide." languagecode="1033" />
   </description>
   <displayname default="CountryCode">
     <label description="CountryCode" languagecode="1033" />

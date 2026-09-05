@@ -10,8 +10,11 @@
     <layoutxml>
       <grid name="resultset" jump="pwrp_name" select="1" icon="1" preview="1">
         <row name="result" id="pwrp_queueprofileid">
-          <cell name="pwrp_name" width="300" />
-          <cell name="createdon" width="125" />
+          <cell name="pwrp_name" width="200" />
+          <cell name="pwrp_queueid" width="150" />
+          <cell name="pwrp_speakablename" width="150" />
+          <cell name="pwrp_hourssource" width="150" />
+          <cell name="pwrp_timezone" width="150" />
         </row>
       </grid>
     </layoutxml>
@@ -19,6 +22,10 @@
     <fetchxml>
       <fetch version="1.0" mapping="logical">
         <entity name="pwrp_queueprofile">
+          <attribute name="pwrp_timezone" />
+          <attribute name="pwrp_hourssource" />
+          <attribute name="pwrp_speakablename" />
+          <attribute name="pwrp_queueid" />
           <attribute name="pwrp_queueprofileid" />
           <attribute name="pwrp_name" />
           <attribute name="createdon" />

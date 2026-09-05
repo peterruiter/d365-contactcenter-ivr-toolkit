@@ -1,0 +1,11 @@
+<customapiresponseproperty uniquename="ScheduledCallbackAvailable">
+  <description default="Whether a specific time can be booked.">
+    <label description="Whether a specific time can be booked." languagecode="1033" />
+  </description>
+  <displayname default="ScheduledCallbackAvailable">
+    <label description="ScheduledCallbackAvailable" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>ScheduledCallbackAvailable</name>
+  <type>0</type>
+</customapiresponseproperty>

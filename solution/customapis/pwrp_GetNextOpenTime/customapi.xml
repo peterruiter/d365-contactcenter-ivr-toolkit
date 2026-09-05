@@ -8,7 +8,7 @@
     <label description="Get next open time" languagecode="1033" />
   </displayname>
   <iscustomizable>1</iscustomizable>
-  <isfunction>1</isfunction>
+  <isfunction>0</isfunction>
   <isprivate>0</isprivate>
   <name>pwrp_GetNextOpenTime</name>
   <plugintypeid>

@@ -1,0 +1,11 @@
+<customapiresponseproperty uniquename="DirectCallbackAvailable">
+  <description default="Whether a callback can be offered now. Saves a second call to CheckCallbackEligibility.">
+    <label description="Whether a callback can be offered now. Saves a second call to CheckCallbackEligibility." languagecode="1033" />
+  </description>
+  <displayname default="DirectCallbackAvailable">
+    <label description="DirectCallbackAvailable" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>DirectCallbackAvailable</name>
+  <type>0</type>
+</customapiresponseproperty>

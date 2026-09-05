@@ -7,22 +7,20 @@
     <FormActivationState>1</FormActivationState>
     <form>
       <tabs>
-        <tab verticallayout="true" id="{ac53f6db-eb99-4508-995d-8eba4ba1dab1}" IsUserDefined="1">
+        <tab verticallayout="true" id="{89a8ebe3-de82-09d0-f819-d89ac7a29965}" IsUserDefined="1">
           <labels>
             <label description="General" languagecode="1033" />
-            <label description="Algemeen" languagecode="1043" />
           </labels>
           <columns>
             <column width="100%">
               <sections>
-                <section showlabel="false" showbar="false" IsUserDefined="0" id="{38162214-f706-44bf-a258-b545a0f89c4b}">
+                <section showlabel="false" showbar="false" IsUserDefined="0" id="{db784b96-7150-633c-795d-cb73cdc81161}">
                   <labels>
                     <label description="General" languagecode="1033" />
-                    <label description="Algemeen" languagecode="1043" />
                   </labels>
                   <rows>
                     <row>
-                      <cell id="{95bcb80b-ce51-4b6a-8d50-daf113d64697}">
+                      <cell id="{f92324a6-40c7-b58f-b965-1b306787967d}">
                         <labels>
                           <label description="" languagecode="1033" />
                         </labels>
@@ -30,7 +28,135 @@
                       </cell>
                     </row>
                     <row>
-                      <cell id="{49849bd8-3f78-4e08-b19b-ff5b53629793}">
+                      <cell id="{d0395cda-6e8a-4e4d-569d-47175744841e}">
+                        <labels>
+                          <label description="" languagecode="1033" />
+                        </labels>
+                        <control id="pwrp_phonenumber" classid="{4273EDBD-AC1D-40d3-9FB2-095C621B552D}" datafieldname="pwrp_phonenumber" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{60f6548c-9d29-7aa2-8a17-d88f3c73dac5}">
+                        <labels>
+                          <label description="" languagecode="1033" />
+                        </labels>
+                        <control id="pwrp_numbertype" classid="{4273EDBD-AC1D-40d3-9FB2-095C621B552D}" datafieldname="pwrp_numbertype" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{bfb2d205-627c-6861-84da-da107e5ba8ef}">
+                        <labels>
+                          <label description="" languagecode="1033" />
+                        </labels>
+                        <control id="pwrp_queueid" classid="{270BD3DB-D9AF-4782-9025-509E298DEC0A}" datafieldname="pwrp_queueid" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{4932624a-e9f8-15d5-6056-3503e60df00d}">
+                        <labels>
+                          <label description="" languagecode="1033" />
+                        </labels>
+                        <control id="pwrp_contactid" classid="{270BD3DB-D9AF-4782-9025-509E298DEC0A}" datafieldname="pwrp_contactid" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{d943e55a-b1d0-0f08-5f47-b4fb0930491c}">
+                        <labels>
+                          <label description="" languagecode="1033" />
+                        </labels>
+                        <control id="pwrp_mode" classid="{3EF39988-22BB-4f0b-BBBE-64B5A3748AEE}" datafieldname="pwrp_mode" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{6d0d7e60-af93-f782-a21d-213112f9ba38}">
+                        <labels>
+                          <label description="" languagecode="1033" />
+                        </labels>
+                        <control id="pwrp_status" classid="{3EF39988-22BB-4f0b-BBBE-64B5A3748AEE}" datafieldname="pwrp_status" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{9caf5bbe-42f5-9bf3-c10e-03b0968ddddb}">
+                        <labels>
+                          <label description="" languagecode="1033" />
+                        </labels>
+                        <control id="pwrp_requestedstart" classid="{5B773807-9FB2-42db-97C3-7A91EFF8ADFF}" datafieldname="pwrp_requestedstart" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{8cad8b64-6f52-fd1f-c167-5ea7bdece704}">
+                        <labels>
+                          <label description="" languagecode="1033" />
+                        </labels>
+                        <control id="pwrp_queuedon" classid="{5B773807-9FB2-42db-97C3-7A91EFF8ADFF}" datafieldname="pwrp_queuedon" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{b66472fa-4274-3cff-388d-24b3246906fc}">
+                        <labels>
+                          <label description="" languagecode="1033" />
+                        </labels>
+                        <control id="pwrp_lastattemptedon" classid="{5B773807-9FB2-42db-97C3-7A91EFF8ADFF}" datafieldname="pwrp_lastattemptedon" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{4d64311d-186b-eba7-7d65-39add261531e}">
+                        <labels>
+                          <label description="" languagecode="1033" />
+                        </labels>
+                        <control id="pwrp_completedon" classid="{5B773807-9FB2-42db-97C3-7A91EFF8ADFF}" datafieldname="pwrp_completedon" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{d4681805-4841-bb5a-3959-df3ab4915a90}">
+                        <labels>
+                          <label description="" languagecode="1033" />
+                        </labels>
+                        <control id="pwrp_attempts" classid="{C6D124CA-7EDA-4a60-AEA9-7FB8D318B68F}" datafieldname="pwrp_attempts" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{daa5ca09-e3e1-d6a0-7214-47eda223fcf1}">
+                        <labels>
+                          <label description="" languagecode="1033" />
+                        </labels>
+                        <control id="pwrp_failurereason" classid="{4273EDBD-AC1D-40d3-9FB2-095C621B552D}" datafieldname="pwrp_failurereason" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{675fd5be-e9be-3094-5426-03e0e507c126}">
+                        <labels>
+                          <label description="" languagecode="1033" />
+                        </labels>
+                        <control id="pwrp_workstreamid" classid="{4273EDBD-AC1D-40d3-9FB2-095C621B552D}" datafieldname="pwrp_workstreamid" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{40127e85-b800-d7e0-7a34-d8b14f791b30}">
+                        <labels>
+                          <label description="" languagecode="1033" />
+                        </labels>
+                        <control id="pwrp_locale" classid="{4273EDBD-AC1D-40d3-9FB2-095C621B552D}" datafieldname="pwrp_locale" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{90e28098-ec98-789c-caa2-3216411a959b}">
+                        <labels>
+                          <label description="" languagecode="1033" />
+                        </labels>
+                        <control id="pwrp_conversationid" classid="{4273EDBD-AC1D-40d3-9FB2-095C621B552D}" datafieldname="pwrp_conversationid" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{b4909b45-d918-8d34-0b82-3a80ffbaf069}">
+                        <labels>
+                          <label description="" languagecode="1033" />
+                        </labels>
+                        <control id="pwrp_context" classid="{E0DECE4B-6FC8-4a8f-A065-082708572369}" datafieldname="pwrp_context" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{1e21d810-0483-1640-b479-6fcc53bd7314}">
                         <labels>
                           <label description="" languagecode="1033" />
                         </labels>

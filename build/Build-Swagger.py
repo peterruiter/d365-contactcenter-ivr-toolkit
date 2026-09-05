@@ -127,7 +127,13 @@ def main():
         ("security", [{"oauth2_auth": []}]),
     ])
 
-    OUTPUT.write_text(json.dumps(swagger, indent=2) + "\n")
+    # newline="\n" is not decoration. write_text opens in text mode, which rewrites every
+    # newline as CRLF on Windows and leaves it as LF everywhere else, so the same contract
+    # produced two different files depending on who ran the generator. The build compares
+    # this file against the committed one to catch a stale connector, and that comparison
+    # is only meaningful if the output is byte for byte reproducible.
+    with open(OUTPUT, "w", encoding="utf-8", newline="\n") as handle:
+        handle.write(json.dumps(swagger, indent=2) + "\n")
     print("Wrote %s: %d operations, %d definitions" % (OUTPUT.name, len(paths), len(definitions)))
     return 0
 

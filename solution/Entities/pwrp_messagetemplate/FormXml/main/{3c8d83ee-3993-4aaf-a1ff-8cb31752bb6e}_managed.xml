@@ -7,22 +7,20 @@
     <FormActivationState>1</FormActivationState>
     <form>
       <tabs>
-        <tab verticallayout="true" id="{31fe57d3-011d-4b44-8c7c-f0ecc45c3735}" IsUserDefined="1">
+        <tab verticallayout="true" id="{d12f3671-397f-4678-f8b0-4406a79aa5f4}" IsUserDefined="1">
           <labels>
             <label description="General" languagecode="1033" />
-            <label description="Algemeen" languagecode="1043" />
           </labels>
           <columns>
             <column width="100%">
               <sections>
-                <section showlabel="false" showbar="false" IsUserDefined="0" id="{0977ace3-d645-417e-85d9-e8f3d7fd176f}">
+                <section showlabel="false" showbar="false" IsUserDefined="0" id="{e93f4b07-d571-ef06-dbfe-68cc79b44bf0}">
                   <labels>
                     <label description="General" languagecode="1033" />
-                    <label description="Algemeen" languagecode="1043" />
                   </labels>
                   <rows>
                     <row>
-                      <cell id="{e09d9249-a64b-4cb9-b4bc-7a65c2715a31}">
+                      <cell id="{c6857a48-bb89-292d-3ae5-409fe8f1581d}">
                         <labels>
                           <label description="" languagecode="1033" />
                         </labels>
@@ -30,7 +28,23 @@
                       </cell>
                     </row>
                     <row>
-                      <cell id="{fb3302cb-6d4d-4a57-9bd5-e282324980f2}">
+                      <cell id="{e9f8a160-88ec-de51-3354-8e502a42707e}">
+                        <labels>
+                          <label description="" languagecode="1033" />
+                        </labels>
+                        <control id="pwrp_locale" classid="{4273EDBD-AC1D-40d3-9FB2-095C621B552D}" datafieldname="pwrp_locale" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{08afbe52-f403-eb2b-5ae3-5de2fea15b13}">
+                        <labels>
+                          <label description="" languagecode="1033" />
+                        </labels>
+                        <control id="pwrp_text" classid="{E0DECE4B-6FC8-4a8f-A065-082708572369}" datafieldname="pwrp_text" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{9851c92e-ad81-4e13-9933-a19b574ed9a2}">
                         <labels>
                           <label description="" languagecode="1033" />
                         </labels>
