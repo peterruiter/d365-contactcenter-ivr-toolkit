@@ -37,6 +37,11 @@ Semantic versioning. The Custom API contract is stable within a major version.
 - `New-Schema.ps1` retried only the metadata cache race. It now also retries the platform
   dropping the connection while somebody else's schema customisation runs, which is
   transient and can land on any call
+- `Invoke-Dataverse` retries solution contention, so a run no longer dies at step forty
+  because someone started an import. A publish is refused outright while another import
+  is running, and refused means nothing was applied, which is what makes the retry safe.
+  When the retries run out the message says to check Solution History rather than leaving
+  the platform's wording to be read as a bug in the toolkit
 
 ## [3.1.0]
 

@@ -89,6 +89,15 @@ function Connect-DataverseAsApp {
     Failures throw with the message Dataverse actually returned. A non-zero exit code from
     a native command does not throw in PowerShell, which is how the original calls managed
     to fail silently inside a try/catch and still report success.
+
+    Contention is retried rather than thrown. An environment where somebody is importing a
+    solution rejects a publish outright, and a schema customisation elsewhere can drop the
+    session mid statement. Neither is a fault in the call and neither applies a partial
+    change: the operation is refused before it starts. What they do is kill a long
+    provisioning run at step forty, which is expensive to be halfway through.
+
+    A retry is only safe because of that. Do not widen the pattern to cover errors where
+    the platform may have already done some of the work.
 #>
 function Invoke-Dataverse {
     param(
@@ -96,7 +105,8 @@ function Invoke-Dataverse {
         [Parameter(Mandatory = $true)][string]$Path,
         $Body,
         [string]$SolutionName,
-        [switch]$Representation
+        [switch]$Representation,
+        [int]$Attempts = 6
     )
 
     if (-not $script:DataverseHeaders) { throw "Call Connect-Dataverse before Invoke-Dataverse." }
@@ -105,16 +115,40 @@ function Invoke-Dataverse {
     if ($SolutionName) { $headers["MSCRM.SolutionUniqueName"] = $SolutionName }
     if ($Representation) { $headers["Prefer"] = "return=representation" }
 
-    try {
-        if ($null -ne $Body) {
-            $json = if ($Body -is [string]) { $Body } else { $Body | ConvertTo-Json -Depth 15 -Compress }
-            return Invoke-RestMethod -Method $Method -Uri "$script:DataverseOrgUrl$Path" -Headers $headers -Body $json
+    # An import can run for minutes, so the waits are long enough to outlast a small one
+    # without pretending this is a substitute for waiting. Total is a little over four
+    # minutes across six attempts.
+    $transient = "because there is another \[[A-Za-z]+\] running|" +
+                 "installation or removal of another solution|" +
+                 "database session was disconnected|" +
+                 "schema customization request is currently being ran"
+
+    for ($attempt = 1; ; $attempt++) {
+        try {
+            if ($null -ne $Body) {
+                $json = if ($Body -is [string]) { $Body } else { $Body | ConvertTo-Json -Depth 15 -Compress }
+                return Invoke-RestMethod -Method $Method -Uri "$script:DataverseOrgUrl$Path" -Headers $headers -Body $json
+            }
+            return Invoke-RestMethod -Method $Method -Uri "$script:DataverseOrgUrl$Path" -Headers $headers
         }
-        return Invoke-RestMethod -Method $Method -Uri "$script:DataverseOrgUrl$Path" -Headers $headers
-    }
-    catch {
-        $reason = if ($_.ErrorDetails.Message -match '"message":\s*"([^"]+)"') { $Matches[1] } else { $_.Exception.Message }
-        throw "$Method $Path failed: $reason"
+        catch {
+            $detail = $_.ErrorDetails.Message
+            $reason = if ($detail -match '"message":\s*"([^"]+)"') { $Matches[1] } else { $_.Exception.Message }
+
+            if ($attempt -lt $Attempts -and ($detail -match $transient -or $reason -match $transient)) {
+                $wait = 15 * $attempt
+                Write-Host "  ... environment busy, waiting $wait s and retrying ($attempt of $($Attempts - 1))" -ForegroundColor DarkGray
+                Start-Sleep -Seconds $wait
+                continue
+            }
+
+            if ($reason -match $transient) {
+                throw "$Method $Path failed: $reason`n" +
+                      "Another solution operation is still running. Check Solution History in the " +
+                      "maker portal, wait for it to finish, then run this script again."
+            }
+            throw "$Method $Path failed: $reason"
+        }
     }
 }
 
