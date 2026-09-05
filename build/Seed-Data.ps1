@@ -95,20 +95,57 @@ if (-not $SkipHolidays) {
 if (-not $SkipTemplates) {
     Write-Host "`nLoading message templates" -ForegroundColor Cyan
 
+    # Every key the formatter understands, in both built in locales. Seeding all of them
+    # means an administrator can see the whole vocabulary in the app and edit any phrase,
+    # rather than guessing at key names that exist only in the source.
+    #
+    # These match the built in wording exactly, so seeding changes nothing until someone
+    # edits a row. Placeholders are per key and are listed in docs/04-configuration.md.
     $templates = @(
         @{ Key = "open_now";          Locale = "nl-NL"; Text = "We zijn nu open tot {close}." }
         @{ Key = "closed_next";       Locale = "nl-NL"; Text = "We zijn nu gesloten. We zijn weer open {next}." }
         @{ Key = "closed_indefinite"; Locale = "nl-NL"; Text = "We zijn nu gesloten." }
         @{ Key = "holiday";           Locale = "nl-NL"; Text = "We zijn vandaag gesloten in verband met een feestdag." }
+        @{ Key = "day_open";          Locale = "nl-NL"; Text = "{day} van {windows}" }
+        @{ Key = "day_closed";        Locale = "nl-NL"; Text = "{day} gesloten" }
         @{ Key = "wait_short";        Locale = "nl-NL"; Text = "U wordt zo geholpen." }
         @{ Key = "wait_moderate";     Locale = "nl-NL"; Text = "De wachttijd is op dit moment een paar minuten." }
         @{ Key = "wait_long";         Locale = "nl-NL"; Text = "De wachttijd is op dit moment langer dan normaal." }
         @{ Key = "wait_verylong";     Locale = "nl-NL"; Text = "Het is nu erg druk en de wachttijd is lang." }
+        @{ Key = "today";             Locale = "nl-NL"; Text = "vandaag" }
+        @{ Key = "tomorrow";          Locale = "nl-NL"; Text = "morgen" }
+        @{ Key = "at";                Locale = "nl-NL"; Text = "om" }
+        @{ Key = "and";               Locale = "nl-NL"; Text = "en" }
         @{ Key = "callback_booked";   Locale = "nl-NL"; Text = "We bellen u terug {when} op {number}." }
         @{ Key = "callback_queued";   Locale = "nl-NL"; Text = "We bellen u terug op {number} zodra er een medewerker vrij is." }
+
+        @{ Key = "open_now";          Locale = "en-GB"; Text = "We are open now until {close}." }
+        @{ Key = "closed_next";       Locale = "en-GB"; Text = "We are closed right now. We open again {next}." }
+        @{ Key = "closed_indefinite"; Locale = "en-GB"; Text = "We are closed right now." }
+        @{ Key = "holiday";           Locale = "en-GB"; Text = "We are closed today for a public holiday." }
+        @{ Key = "day_open";          Locale = "en-GB"; Text = "{day} from {windows}" }
+        @{ Key = "day_closed";        Locale = "en-GB"; Text = "{day} closed" }
+        @{ Key = "wait_short";        Locale = "en-GB"; Text = "You will be connected shortly." }
+        @{ Key = "wait_moderate";     Locale = "en-GB"; Text = "The wait is a few minutes at the moment." }
+        @{ Key = "wait_long";         Locale = "en-GB"; Text = "The wait is longer than usual at the moment." }
+        @{ Key = "wait_verylong";     Locale = "en-GB"; Text = "It is very busy and the wait is long." }
+        @{ Key = "today";             Locale = "en-GB"; Text = "today" }
+        @{ Key = "tomorrow";          Locale = "en-GB"; Text = "tomorrow" }
+        @{ Key = "at";                Locale = "en-GB"; Text = "at" }
+        @{ Key = "and";               Locale = "en-GB"; Text = "and" }
+        @{ Key = "callback_booked";   Locale = "en-GB"; Text = "We will call you back {when} on {number}." }
+        @{ Key = "callback_queued";   Locale = "en-GB"; Text = "We will call you back on {number} as soon as someone is free." }
     )
 
     foreach ($template in $templates) {
+        # Existing rows are left alone, so a reseed never overwrites edited wording.
+        $existing = (Invoke-Dataverse -Method GET -Path ("/api/data/v9.2/pwrp_messagetemplates" +
+            "?`$select=pwrp_messagetemplateid&`$filter=pwrp_name eq '$($template.Key)' and pwrp_locale eq '$($template.Locale)'")).value
+        if ($existing.Count -gt 0) {
+            Write-Host "  = $($template.Key) $($template.Locale)" -ForegroundColor DarkGray
+            continue
+        }
+
         Send-Record -Path "/api/data/v9.2/pwrp_messagetemplates" -Body @{
             pwrp_name   = $template.Key
             pwrp_locale = $template.Locale

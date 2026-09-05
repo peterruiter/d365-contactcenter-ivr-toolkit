@@ -27,6 +27,9 @@ namespace PowerPete.IvrToolkit.Common
 
             try
             {
+                // Wording overrides, cached, before anything formats a phrase.
+                Speech.SpeakableFormatter.LoadOverrides(service, request.Config);
+
                 Handle(request);
                 SetOutput(context, "Success", true);
                 SetOutput(context, "ErrorCode", string.Empty);

@@ -9,6 +9,26 @@ Semantic versioning. The Custom API contract is stable within a major version.
 | Internal fix, same contract | Patch |
 | Removed or renamed output, changed enum, changed meaning | Major |
 
+## [3.1.0]
+
+### Fixed
+
+- `pwrp_messagetemplate` is read. The table was created, seeded, put on the app and
+  documented as the way to change wording without a deployment, and nothing in the plugin
+  ever looked at it. Every override silently did nothing
+
+A phrase now resolves most specific first: an override for the queue's locale, an override
+for `en-GB`, the built in phrase for the locale, then the built in English. Overrides are
+cached for `pwrp_HoursCacheSeconds`.
+
+### Added
+
+- `Seed-Data.ps1` loads all sixteen keys in both `nl-NL` and `en-GB`, matching the built in
+  wording, so the vocabulary is visible in the app instead of existing only in source. It
+  skips rows that already exist, so a reseed never overwrites edited wording
+- The keys and the placeholders each one accepts are documented in
+  `docs/04-configuration.md`. They were not written down anywhere
+
 ## [3.0.0]
 
 ### Changed, and it breaks callers

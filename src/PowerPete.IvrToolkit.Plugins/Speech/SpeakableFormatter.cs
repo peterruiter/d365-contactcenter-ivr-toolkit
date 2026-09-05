@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using PowerPete.IvrToolkit.Common;
 using PowerPete.IvrToolkit.Model;
+using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Query;
 
 namespace PowerPete.IvrToolkit.Speech
 {
@@ -60,10 +63,67 @@ namespace PowerPete.IvrToolkit.Speech
             }
         };
 
+        /// <summary>
+        /// Wording from pwrp_messagetemplate, keyed by "locale|key". Replaced wholesale
+        /// rather than mutated, so a read is never half updated.
+        /// </summary>
+        private static volatile Dictionary<string, string> _overrides = new Dictionary<string, string>();
+
+        /// <summary>
+        /// Loads the wording overrides. Call once per request, before formatting anything.
+        /// </summary>
+        /// <remarks>
+        /// This table was created, seeded, put on the app and documented as the way to
+        /// change wording without a deployment, and until now nothing read it. Every
+        /// override silently did nothing.
+        /// </remarks>
+        public static void LoadOverrides(IOrganizationService service, ConfigReader config)
+        {
+            var ttl = config.GetInt(ConfigKeys.HoursCacheSeconds, 300);
+
+            _overrides = CacheStore.GetOrAdd("templates:all", ttl, () =>
+            {
+                var loaded = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+                var query = new QueryExpression("pwrp_messagetemplate")
+                {
+                    ColumnSet = new ColumnSet("pwrp_name", "pwrp_locale", "pwrp_text"),
+                    Criteria = { Conditions = { new ConditionExpression("statecode", ConditionOperator.Equal, 0) } }
+                };
+
+                foreach (var row in service.RetrieveMultiple(query).Entities)
+                {
+                    var key = row.GetAttributeValue<string>("pwrp_name");
+                    var locale = row.GetAttributeValue<string>("pwrp_locale");
+                    var text = row.GetAttributeValue<string>("pwrp_text");
+                    if (string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(text)) continue;
+
+                    loaded[(locale ?? "en-GB").Trim() + "|" + key.Trim()] = text;
+                }
+
+                return loaded;
+            });
+        }
+
+        /// <summary>
+        /// A phrase, most specific first: an override for this locale, an override for
+        /// en-GB, the built in phrase for this locale, then the built in English.
+        /// </summary>
         private static string S(string locale, string key)
         {
+            var overrides = _overrides;
+            string custom;
+            if (overrides.TryGetValue((locale ?? "en-GB") + "|" + key, out custom)) return custom;
+            if (overrides.TryGetValue("en-GB|" + key, out custom)) return custom;
+
             var table = Strings.ContainsKey(locale ?? string.Empty) ? Strings[locale] : Strings["en-GB"];
             return table.ContainsKey(key) ? table[key] : Strings["en-GB"][key];
+        }
+
+        /// <summary>Every key that can be overridden, for documentation and validation.</summary>
+        public static IEnumerable<string> Keys
+        {
+            get { return Strings["en-GB"].Keys; }
         }
 
         public static string DescribeDay(DayHours day, string locale)

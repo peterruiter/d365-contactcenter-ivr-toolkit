@@ -153,8 +153,47 @@ Cached for 30 seconds, so a change reaches callers inside a minute.
 
 ## Message wording (`pwrp_messagetemplate`)
 
-Overrides the built in phrases without a code change. Key plus locale plus text.
-Placeholders `{close}`, `{next}`, `{when}` and `{number}` are substituted.
+Overrides the built in phrases without a code change. One row per key per locale.
+`Seed-Data.ps1` loads every key in `nl-NL` and `en-GB` with the built in wording, so the
+whole vocabulary is visible in the app and nothing changes until a row is edited.
 
-Change wording here, not in the agent instructions. Wording in one place stays
-consistent across every topic.
+Change wording here, not in the agent instructions. Wording in one place stays consistent
+across every topic.
+
+A phrase is resolved most specific first: an override for the queue's locale, an override
+for `en-GB`, the built in phrase for the locale, then the built in English. An unknown key
+is ignored, so a typo silently does nothing rather than breaking a call.
+
+### The keys, and what each may contain
+
+A placeholder only works in the key that defines it. `{number}` in `open_now` stays
+`{number}`, spoken literally to a caller.
+
+| Key | Placeholders | Said when |
+|---|---|---|
+| `open_now` | `{close}` | The queue is open. `{close}` is the closing time |
+| `closed_next` | `{next}` | Closed, and the next opening is known. `{next}` is a relative day and time |
+| `closed_indefinite` | none | Closed with no next opening within the fortnight ahead |
+| `holiday` | none | Closed for a holiday |
+| `day_open` | `{day}`, `{windows}` | One line of a multi day answer. `{windows}` is the times, joined by `and` |
+| `day_closed` | `{day}` | One line of a multi day answer, for a closed day |
+| `wait_short` | none | Wait is inside the first threshold |
+| `wait_moderate` | none | Wait is past the first threshold |
+| `wait_long` | none | Wait is past the second |
+| `wait_verylong` | none | Wait is past the third |
+| `callback_booked` | `{when}`, `{number}` | A scheduled callback is booked |
+| `callback_queued` | `{number}` | A direct callback is queued |
+| `today` | none | Word for a time later today. Used inside `{next}` and `{when}` |
+| `tomorrow` | none | Word for a time tomorrow |
+| `at` | none | Joins a day and a time, as in "tomorrow at 09:00" |
+| `and` | none | Joins two opening windows on one day |
+
+The last four are fragments rather than sentences. They are overridable because a language
+that joins words differently cannot be fixed by editing the sentences alone.
+
+### Wording is per locale, and the locale comes from the queue
+
+Set `pwrp_locale` on the queue profile. An agent serving English callers from a queue left
+at `nl-NL` gets Dutch phrases, whatever the agent's own language is. `en-GB` and `nl-NL`
+are built in; another locale needs a full set of rows, and falls back to English until it
+has them.
