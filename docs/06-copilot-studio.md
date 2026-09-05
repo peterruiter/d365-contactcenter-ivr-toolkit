@@ -28,13 +28,19 @@ simple: anything that comes out of the conversation is filled by AI, anything th
 policy decision is a custom value. A policy pinned as a custom value cannot be talked out
 of by a caller.
 
-Every parameter has to be set to something. There is no way to omit one, so where a
-parameter is not wanted, choose **Custom value** and leave the box empty. The plugin
-treats an empty string as not supplied and applies its own default, and an empty date the
-same way. If the designer refuses to save a blank, put the default in explicitly.
+Every parameter has to be set to something. The designer will not save a blank, and there
+is no way to omit one, so an optional parameter needs a value that means "not supplied".
+Two behaviours in the plugin make that safe:
+
+- A string that is empty or only whitespace is treated as absent, so the default applies
+- A date of `0001-01-01T00:00:00Z` is treated as absent, for the same reason
+
+So a placeholder is not a workaround here, it is the supported way to say nothing. The
+values in the tables below are chosen on that basis and none of them writes bad data.
 
 Never fill an optional parameter with AI just to have something in it. A model asked for
-a country code will offer `+31`, `NL` or `Netherlands`, and the toolkit wants `31`.
+a country code will offer `+31`, `NL` or `Netherlands`, and the toolkit wants `31`. A
+model asked for a duration will invent one.
 
 Leave **Completion** on **Don't respond** for every tool. That hands the result back to
 the model, which then follows `RecommendedAction` and reads `Speakable`, which is the
@@ -63,7 +69,7 @@ model sees when it decides what to call, so paste it as written. See
 | Parameter | Fill using | Value |
 |---|---|---|
 | `PhoneNumber` | Dynamically fill with AI | Whatever the caller said, in any format |
-| `CountryCode` | Custom value, empty | Falls back to `pwrp_DefaultCountryCode`. Put `31` here only if the designer will not save a blank, and know that it then hard codes a country into the agent |
+| `CountryCode` | Custom value `31` | The country you serve. It duplicates `pwrp_DefaultCountryCode`, which is unavoidable when a blank cannot be saved. Change both together |
 
 **Description:**
 
@@ -76,9 +82,10 @@ model sees when it decides what to call, so paste it as written. See
 | `Queue` | Dynamically fill with AI | |
 | `PhoneNumber` | Dynamically fill with AI | The `E164` that `pwrp_ValidatePhoneNumber` returned, not what the caller said |
 | `Mode` | Custom value `Direct` | Pin it unless the agent really offers booked slots. A model that can choose `Scheduled` will sometimes choose it on a queue that does not allow it |
-| `RequestedStartUtc` | Custom value, empty | Switch to AI only when the agent offers booked slots. An empty date is read as not supplied |
+| `RequestedStartUtc` | Custom value `0001-01-01T00:00:00Z` | Read as not supplied, and ignored entirely when `Mode` is `Direct`. Switch to AI only when the agent offers booked slots |
 | `ConversationId` | Custom value `System.Conversation.Id` | Ties the callback to the conversation, which is what makes it traceable afterwards |
-| `ContactId`, `ContextJson` | Custom value, empty | |
+| `ContactId` | Custom value `-` | Not a GUID, so it is read as no contact |
+| `ContextJson` | Custom value `{}` | |
 
 **Description:**
 
@@ -93,7 +100,8 @@ model sees when it decides what to call, so paste it as written. See
 | `Intent` | Dynamically fill with AI | What the caller wanted, in a few words. This is what makes the reporting worth reading |
 | `ConversationId` | Custom value `System.Conversation.Id` | |
 | `AgentName` | Custom value | The agent's name. It is the same on every call, so pinning it stops the model inventing one |
-| `DurationSeconds`, `ContextJson` | Custom value, empty | |
+| `DurationSeconds` | Custom value `0` | Zero means unknown. Do not let the model guess a duration, it will |
+| `ContextJson` | Custom value `{}` | |
 
 **Description:**
 
@@ -103,11 +111,11 @@ model sees when it decides what to call, so paste it as written. See
 
 | Tool | Fill using | Add it when | Description |
 |---|---|---|---|
-| `pwrp_GetCallbackSlots` | `Queue` by AI. `MaxResults` custom `3`, because three is what a caller can hold in their head. `Days` custom, empty | Callers pick a time | Bookable callback windows inside opening hours, with remaining capacity. Offer at most three over the phone. |
-| `pwrp_GetCallbackStatus` | `Reference` and `PhoneNumber` by AI, whichever the caller offers. `CallbackId` custom, empty, a caller never has one | Callers ask where their callback is | Looks up a callback by reference, phone number or id. |
+| `pwrp_GetCallbackSlots` | `Queue` by AI. `MaxResults` custom `3`, because three is what a caller can hold in their head. `Days` custom `3` | Callers pick a time | Bookable callback windows inside opening hours, with remaining capacity. Offer at most three over the phone. |
+| `pwrp_GetCallbackStatus` | `Reference` and `PhoneNumber` by AI, whichever the caller offers. `CallbackId` custom `-`, a caller never has one | Callers ask where their callback is | Looks up a callback by reference, phone number or id. |
 | `pwrp_CancelCallback` | `CallbackId` by AI, from the booking earlier in the call | Callers can cancel | Cancels an open callback request. |
 | `pwrp_RescheduleCallback` | All three by AI. `NewStartUtc` must be a slot `pwrp_GetCallbackSlots` returned | Callers can move a slot | Moves a scheduled callback to a different available slot. |
-| `pwrp_GetQueueHours` | `Queue` by AI. `Days` custom `7`. `FromDate` custom, empty, which means today | Someone asks about a week, not about now | Opening hours for a queue across a date range, holiday exceptions included. |
+| `pwrp_GetQueueHours` | `Queue` by AI. `Days` custom `7`. `FromDate` custom `0001-01-01T00:00:00Z`, which the plugin reads as today | Someone asks about a week, not about now | Opening hours for a queue across a date range, holiday exceptions included. |
 Leave the rest out. `pwrp_ResolveQueue`, `pwrp_IsQueueOpen`, `pwrp_GetNextOpenTime`,
 `pwrp_GetQueueMetrics`, `pwrp_CheckCallbackEligibility` and `pwrp_GetBroadcastMessage` all
 return something `pwrp_GetQueueContext` already gave you. Adding them invites three calls
