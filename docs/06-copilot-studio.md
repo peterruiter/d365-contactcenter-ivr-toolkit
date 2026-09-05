@@ -131,6 +131,39 @@ in the picklist at all. They belong to the promotion flow.
 Copy `samples/copilot-studio/realtime-agent-instructions.md` into the Instructions
 box and replace `{ORGANISATION}`.
 
+### A diagnostics path, for a test agent
+
+`samples/copilot-studio/debug-mode-instructions.md` adds a mode that reads the raw values
+back rather than the caller facing phrasing: the resolved queue id, the broadcast message,
+the wait band alongside the seconds behind it, representatives online and available,
+`RecommendedAction`, and `DurationMs` against the latency budget. It can also book and
+cancel callbacks in either mode.
+
+It is quicker than reading a trace log and it exercises the same path a caller takes,
+which a script calling the Web API does not.
+
+Append it below the normal instructions, and take it out before a real caller can reach
+the agent. It deliberately breaks the two rules the toolkit exists to enforce, reading
+numbers of waiting callers and seconds of waiting out loud. A caller who hears "fourteen
+people ahead of you" hangs up, which is the whole reason `WaitBand` exists.
+
+It needs tools the four core ones do not cover:
+
+| Tool | Fill using | For |
+|---|---|---|
+| `pwrp_GetQueueMetrics` | `Queue` by AI | The seconds and counts behind the band |
+| `pwrp_GetCallbackSlots` | `Queue` by AI, `MaxResults` custom `3` | Testing scheduled callback |
+| `pwrp_GetCallbackStatus` | `Reference` and `PhoneNumber` by AI | Checking a booking |
+| `pwrp_CancelCallback` | `CallbackId` by AI | Undoing a test booking |
+| `pwrp_GetQueueHours` | `Queue` by AI, `Days` custom `7` | Checking a calendar |
+| `pwrp_HealthCheck` | no inputs | Validating an install by voice |
+
+`pwrp_CreateCallback` also needs `Mode` filled by AI rather than pinned to `Direct`, so
+both modes can be tested. That is the one change to make to a core tool, and the reason to
+keep a separate test agent rather than adding diagnostics to the one callers reach: a
+model that can choose `Scheduled` will sometimes choose it on a queue that does not allow
+it.
+
 ### Latency
 
 Use a static greeting. A dynamic greeting with variables adds latency to the very
