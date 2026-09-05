@@ -31,9 +31,12 @@ Semantic versioning. The Custom API contract is stable within a major version.
 
 ### Fixed
 
-- `New-Schema.ps1` called `Invoke-Dataverse` without ever calling `Connect-Dataverse`.
-  It builds its own headers for the metadata retry and never needed the shared transport
-  until now
+- `New-Schema.ps1` treated any failure creating an environment variable definition as
+  proof that one already existed. A transient platform error was swallowed and the script
+  then tried to patch a definition that had never been created. Existence is now looked up
+- `New-Schema.ps1` retried only the metadata cache race. It now also retries the platform
+  dropping the connection while somebody else's schema customisation runs, which is
+  transient and can land on any call
 
 ## [3.1.0]
 

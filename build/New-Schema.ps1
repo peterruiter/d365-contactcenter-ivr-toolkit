@@ -36,11 +36,6 @@ $orgUrl = $EnvironmentUrl.TrimEnd('/')
 # of its own. Common.ps1 caches that token, so the sign in prompt is a first run thing.
 $accessToken = Get-DataverseToken -Resource $orgUrl
 
-# Send-Metadata below builds its own headers because it needs the retry on the metadata
-# cache. Connect-Dataverse is still needed for the plain Invoke-Dataverse calls further
-# down, and the token is cached, so this costs nothing.
-Connect-Dataverse -EnvironmentUrl $EnvironmentUrl
-
 $baseHeaders = @{
     Authorization      = "Bearer $accessToken"
     "OData-MaxVersion" = "4.0"
@@ -69,8 +64,14 @@ function Send-Metadata {
             # A table created seconds ago is not in the metadata cache yet, so the first
             # thing that references it, a lookup above all, fails. It is a race, not a bad
             # request, so back off and try again rather than losing the whole run.
-            if ($attempt -lt $Attempts -and $detail -match "MetadataCache") {
-                Write-Host "         ... metadata cache catching up, retry $attempt" -ForegroundColor DarkGray
+            #
+            # "database session was disconnected" is the same kind of thing from the other
+            # direction: someone else's schema customisation is running and the platform
+            # drops the connection mid statement. It is transient and it can land on any
+            # call, including one that has nothing to do with schema.
+            $transient = "MetadataCache|database session was disconnected|schema customization request"
+            if ($attempt -lt $Attempts -and $detail -match $transient) {
+                Write-Host "         ... environment busy, retry $attempt" -ForegroundColor DarkGray
                 Start-Sleep -Seconds (5 * $attempt)
                 continue
             }
@@ -308,31 +309,38 @@ foreach ($table in $schema.tables) {
 Write-Host "`nCreating environment variable definitions" -ForegroundColor Cyan
 $typeCode = @{ "String" = 100000000; "Number" = 100000001; "Boolean" = 100000002; "JSON" = 100000003 }
 
+# The description is the guidance an administrator reads on the settings screen, and it
+# is the only explanation they get, so it is refreshed on every run rather than written
+# once at creation. Wording changes in schema.json, not in the environment.
+#
+# Existence is looked up rather than inferred from a failed POST. Treating any error as
+# "already exists" swallowed a transient platform failure and then tried to patch a
+# definition that had never been created.
 foreach ($variable in $schema.environmentVariables) {
-    try {
-        Send-Metadata -Method POST -Path "/api/data/v9.2/environmentvariabledefinitions" -Body @{
-            schemaname   = $variable.name
-            displayname  = $variable.displayName
-            type         = $typeCode[$variable.type]
-            defaultvalue = $variable.default
-            description  = $variable.description
-        } | Out-Null
-        Write-Host "  + $($variable.name)" -ForegroundColor DarkGray
-    }
-    catch {
-        # Already there, so refresh the guidance. The description is what an administrator
-        # reads on the settings screen, and it is the only explanation they get.
-        $definition = (Invoke-Dataverse -Method GET -Path ("/api/data/v9.2/environmentvariabledefinitions" +
-            "?`$select=environmentvariabledefinitionid&`$filter=schemaname eq '$($variable.name)'")).value
-        if ($definition.Count -gt 0 -and $variable.description) {
-            Invoke-Dataverse -Method PATCH -SolutionName $SolutionName `
-                -Path "/api/data/v9.2/environmentvariabledefinitions($($definition[0].environmentvariabledefinitionid))" -Body @{
-                    description = $variable.description
-                    displayname = $variable.displayName
-                } | Out-Null
-        }
+    $existing = (Send-Metadata -Method GET -Path ("/api/data/v9.2/environmentvariabledefinitions" +
+        "?`$select=environmentvariabledefinitionid&`$filter=schemaname eq '$($variable.name)'")).value
+
+    if ($existing.Count -gt 0) {
+        Send-Metadata -Method PATCH -Body @{
+            displayname = $variable.displayName
+            description = $variable.description
+        } -Path ("/api/data/v9.2/environmentvariabledefinitions(" +
+            "$($existing[0].environmentvariabledefinitionid))") | Out-Null
         Write-Host "  = $($variable.name) exists, guidance refreshed" -ForegroundColor DarkGray
+        continue
     }
+
+    # defaultvalue only applies at creation. Changing it later does nothing to an
+    # environment where a value has already been set, which is every environment that
+    # has been configured, so it is not part of the refresh above.
+    Send-Metadata -Method POST -Path "/api/data/v9.2/environmentvariabledefinitions" -Body @{
+        schemaname   = $variable.name
+        displayname  = $variable.displayName
+        type         = $typeCode[$variable.type]
+        defaultvalue = $variable.default
+        description  = $variable.description
+    } | Out-Null
+    Write-Host "  + $($variable.name)" -ForegroundColor DarkGray
 }
 
 # --- Security role ------------------------------------------------------------
