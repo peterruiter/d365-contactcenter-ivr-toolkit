@@ -565,6 +565,11 @@
           "type": "string",
           "x-ms-summary": "QueueId"
         },
+        "BroadcastMessage": {
+          "type": "string",
+          "x-ms-summary": "BroadcastMessage",
+          "description": "An outage or notice to read before anything else. Empty when there is none."
+        },
         "IsOpen": {
           "type": "boolean",
           "x-ms-summary": "IsOpen"
@@ -587,7 +592,7 @@
         "RecommendedAction": {
           "type": "string",
           "x-ms-summary": "RecommendedAction",
-          "description": "Serve, OfferCallback, OfferVoicemail, AnnounceClosed or AnnounceOutage."
+          "description": "Serve, OfferCallback, OfferVoicemail or AnnounceClosed."
         },
         "Speakable": {
           "type": "string",

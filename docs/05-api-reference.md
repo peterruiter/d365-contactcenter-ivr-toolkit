@@ -56,11 +56,12 @@ a recommended action in one round trip.
 |---|---|---|
 | `Context` | String | Full JSON payload |
 | `QueueId` | String | Hold this in a variable and reuse it |
+| `BroadcastMessage` | String | An outage or notice. Read it first, then still follow `RecommendedAction` |
 | `IsOpen` | Boolean | |
 | `WaitBand` | String | `Short`, `Moderate`, `Long`, `VeryLong` |
 | `DirectCallbackAvailable` | Boolean | Offer a callback without a second lookup |
 | `ScheduledCallbackAvailable` | Boolean | Whether a specific time can be booked |
-| `RecommendedAction` | String | `Serve`, `OfferCallback`, `OfferVoicemail`, `AnnounceClosed`, `AnnounceOutage` |
+| `RecommendedAction` | String | `Serve`, `OfferCallback`, `OfferVoicemail`, `AnnounceClosed` |
 | `Speakable` | String | Read this |
 
 Metrics are the only part allowed to fail silently. If the live read fails, the
@@ -227,6 +228,10 @@ and validates the new time against available slots.
 ## pwrp_ValidatePhoneNumber
 
 **Inputs:** `PhoneNumber` (required), `Queue` (optional), `CountryCode` (optional)
+
+Send the number exactly as the caller said it, here and to `pwrp_CreateCallback`. Both
+normalise it themselves. `Speakable` spells it back in the caller's own format, so
+someone who said "0653740141" hears that and not a country code they never gave.
 
 **Outputs:** `IsValid`, `E164`, `NumberType` (`Mobile`, `Landline`, `Unknown`),
 `Reason`, `Speakable`

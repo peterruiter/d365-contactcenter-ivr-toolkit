@@ -86,6 +86,7 @@ namespace PowerPete.IvrToolkit.CustomApis
 
             request.SetOutput("Context", JsonConvert.SerializeObject(context));
             request.SetOutput("QueueId", queue.QueueId.ToString());
+            request.SetOutput("BroadcastMessage", context.BroadcastMessage ?? string.Empty);
             request.SetOutput("IsOpen", context.OpenState.IsOpen);
             request.SetOutput("WaitBand", context.Metrics.WaitBand);
             // Promoted out of the Context payload. An agent binds to outputs, and having
@@ -103,11 +104,12 @@ namespace PowerPete.IvrToolkit.CustomApis
         /// </summary>
         private static string Recommend(QueueContext context)
         {
-            if (!string.IsNullOrWhiteSpace(context.BroadcastMessage)) return "AnnounceOutage";
             if (!context.OpenState.IsOpen) return "AnnounceClosed";
 
-            var band = context.Metrics.WaitBand;
-            if (band == "VeryLong" || band == "Long")
+            // Anything but Short means the caller waits longer than the first threshold in
+            // pwrp_WaitBandThresholds, which is where the tuning lives. Offering a callback
+            // is about the wait, so the wait decides it.
+            if (context.Metrics.WaitBand != "Short")
             {
                 if (context.ScheduledCallbackAvailable || context.DirectCallbackAvailable) return "OfferCallback";
                 return "OfferVoicemail";
@@ -116,14 +118,19 @@ namespace PowerPete.IvrToolkit.CustomApis
             return "Serve";
         }
 
+        /// <summary>
+        /// What to say about the queue itself.
+        /// </summary>
+        /// <remarks>
+        /// A broadcast message used to be returned here and as AnnounceOutage, which meant
+        /// an announcement replaced the wait entirely: a caller heard "we are busy" and was
+        /// never told how long or offered a callback. An announcement is something to read,
+        /// not something to do, so it comes back as its own output and this describes the
+        /// queue as it always did.
+        /// </remarks>
         private static string BuildSpeakable(QueueContext context)
         {
             var locale = context.Queue.Locale;
-
-            if (!string.IsNullOrWhiteSpace(context.BroadcastMessage))
-            {
-                return context.BroadcastMessage;
-            }
 
             if (!context.OpenState.IsOpen)
             {

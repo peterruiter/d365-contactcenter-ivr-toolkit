@@ -9,6 +9,32 @@ Semantic versioning. The Custom API contract is stable within a major version.
 | Internal fix, same contract | Patch |
 | Removed or renamed output, changed enum, changed meaning | Major |
 
+## [3.0.0]
+
+### Changed, and it breaks callers
+
+- `pwrp_GetQueueContext` returns `BroadcastMessage` as an output, and no longer returns
+  `AnnounceOutage` as a `RecommendedAction`
+
+An announcement was being treated as an action. A queue with an outage notice returned
+`AnnounceOutage` and a `Speakable` containing the notice, which threw away the wait band
+that had just been calculated. A caller heard "we are busy" and was never told how long
+or offered anything. Read `BroadcastMessage` first, then act on `RecommendedAction`.
+
+- A callback is offered whenever the wait is not `Short`, rather than only at `Long` and
+  `VeryLong`. The threshold lives in `pwrp_WaitBandThresholds`, which is where it belongs
+
+### Fixed
+
+- `pwrp_ValidatePhoneNumber` spells the number back in the format the caller used. It
+  spelled the stored E.164, so someone who said "0653740141" heard "3 1 6 5 3 7 4 0 1 4 1"
+  and could not tell whether a digit had been missed
+
+Seen in a real call: the agent read nine of the eleven digits, rebuilt the number from
+what it had read, and sent `+653740141` to `pwrp_CreateCallback`. That is a valid looking
+Singapore number, so it was stored and would have been dialled. The sample instructions
+now say to send the caller's own words to both endpoints and never to rebuild a number.
+
 ## [2.1.0]
 
 ### Added

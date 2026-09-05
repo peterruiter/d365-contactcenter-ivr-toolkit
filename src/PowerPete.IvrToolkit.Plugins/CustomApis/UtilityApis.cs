@@ -31,15 +31,19 @@ namespace PowerPete.IvrToolkit.CustomApis
                 }
             }
 
+            var raw = request.RequireString("PhoneNumber");
             var result = PhoneNumberValidator.Validate(
-                request.RequireString("PhoneNumber"),
+                raw,
                 country ?? request.Config.GetString(ConfigKeys.DefaultCountryCode, "31"));
 
             request.SetOutput("IsValid", result.IsValid);
             request.SetOutput("E164", result.E164 ?? string.Empty);
             request.SetOutput("NumberType", result.NumberType);
             request.SetOutput("Reason", result.Reason ?? string.Empty);
-            request.SetOutput("Speakable", SpeakableFormatter.SpellNumber(result.E164));
+            // Spelled back as the caller said it, not as it is stored. Someone who says
+            // "0653740141" and hears "3 1 6 5 3 7 4 0 1 4 1" thinks a digit was missed.
+            // E164 is what gets written; this is what gets verified.
+            request.SetOutput("Speakable", SpeakableFormatter.SpellNumber(result.IsValid ? raw : null));
         }
     }
 
