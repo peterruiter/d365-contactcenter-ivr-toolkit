@@ -19,15 +19,64 @@ Every endpoint is an action, so all of them appear in that picklist. They were f
 until 2.0.0, and functions are not offered there at all, which made the endpoint this
 toolkit is built around unreachable from its own default route.
 
-Add these four and nothing else:
+In **Perform an unbound action**, set Environment to your organisation and Action Name to
+the API. The **Action parameters** input stays unresolved until an action is chosen, then
+it takes that action's inputs.
 
-- `pwrp_GetQueueContext`
-- `pwrp_ValidatePhoneNumber`
-- `pwrp_CreateCallback`
-- `pwrp_LogIvrOutcome`
+Add these four and nothing else. Each block is the tool name, what it takes, and the
+description to paste. The description is not documentation, it is the only thing the
+model sees when it decides what to call, so paste it as written. See
+[14 Tool descriptions](14-tool-descriptions.md) before you reword one.
 
-Add the rest only when a scenario needs them. Every extra tool is another thing the
-orchestrator can pick wrongly.
+### pwrp_GetQueueContext
+
+**Inputs:** `Queue` (required). The queue name as the caller said it. Aliases and fuzzy matching are the toolkit's job, not the model's
+
+**Description:**
+
+> Returns opening state, live wait band, outage message, callback availability and a recommended action in one call. Use this at the start of a voice conversation instead of several separate lookups.
+
+### pwrp_ValidatePhoneNumber
+
+**Inputs:** `PhoneNumber` (required), `CountryCode`. Leave `CountryCode` empty to use `pwrp_DefaultCountryCode`
+
+**Description:**
+
+> Normalises a spoken or typed phone number to E.164 and returns a digit by digit spelling for confirmation.
+
+### pwrp_CreateCallback
+
+**Inputs:** `Queue`, `PhoneNumber` (required), `Mode`, `RequestedStartUtc`, `ContactId`, `ConversationId`, `ContextJson`. Leave `Mode` empty for direct
+
+**Description:**
+
+> Books a callback. Mode Direct queues it for the next free representative. Mode Scheduled books a specific slot. Repeated calls for the same number and queue return the existing request rather than creating a duplicate.
+
+### pwrp_LogIvrOutcome
+
+**Inputs:** `Outcome` (required, one of `Contained`, `Escalated`, `CallbackBooked`, `Abandoned`, `ClosedAnnouncement`), `Queue`, `Intent`, `ConversationId`, `AgentName`, `DurationSeconds`, `ContextJson`
+
+**Description:**
+
+> Records what the agent did so containment and deflection can be reported. Call once at the end of every conversation.
+
+### Add these only when a scenario asks for them
+
+| Tool | Inputs | Add it when | Description |
+|---|---|---|---|
+| `pwrp_GetCallbackSlots` | `Queue` (required), `Days`, `MaxResults` | Callers pick a time | Bookable callback windows inside opening hours, with remaining capacity. Offer at most three over the phone. |
+| `pwrp_GetCallbackStatus` | `Reference`, `PhoneNumber`, `CallbackId`, supply one | Callers ask where their callback is | Looks up a callback by reference, phone number or id. |
+| `pwrp_CancelCallback` | `CallbackId` (required) | Callers can cancel | Cancels an open callback request. |
+| `pwrp_RescheduleCallback` | `Queue`, `CallbackId`, `NewStartUtc`, all required | Callers can move a slot | Moves a scheduled callback to a different available slot. |
+| `pwrp_GetQueueHours` | `Queue` (required), `FromDate`, `Days` | Someone asks about a week, not about now | Opening hours for a queue across a date range, holiday exceptions included. |
+Leave the rest out. `pwrp_ResolveQueue`, `pwrp_IsQueueOpen`, `pwrp_GetNextOpenTime`,
+`pwrp_GetQueueMetrics`, `pwrp_CheckCallbackEligibility` and `pwrp_GetBroadcastMessage` all
+return something `pwrp_GetQueueContext` already gave you. Adding them invites three calls
+where one would do, and each call is silence the caller hears. `pwrp_GetQueues` lists
+queues, which no caller wants. `pwrp_HealthCheck` is for operations.
+
+`pwrp_PromoteDueCallbacks` and `pwrp_RecordCallbackOutcome` are private and do not appear
+in the picklist at all. They belong to the promotion flow.
 
 ### Instructions
 
