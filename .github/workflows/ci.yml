@@ -1,0 +1,55 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    # Windows, not Ubuntu. The assembly merge signs its output and signing is unsupported
+    # under the cross platform build host, so the plugin cannot be built on Linux at all.
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install the Power Platform CLI
+        run: dotnet tool install --global Microsoft.PowerApps.CLI.Tool
+
+      - name: Build and test
+        shell: pwsh
+        # A throwaway signing key. It is never released, so it does not matter that it
+        # differs per run. Releases use the stored key, see release.yml.
+        run: ./build/build.ps1 -Version 1.0.0
+
+      - name: Check the connector swagger is not stale
+        shell: pwsh
+        # customapis.json is the contract and three artefacts generate from it. A pull
+        # request that edits the contract without regenerating would otherwise ship a
+        # connector that disagrees with the APIs.
+        run: |
+          python3 build/Build-Swagger.py
+          $drift = git status --porcelain connector/
+          if ($drift) {
+            Write-Host "The swagger is stale. Run python3 build/Build-Swagger.py and commit."
+            git diff connector/
+            exit 1
+          }
+
+      - name: Check the scripts parse
+        shell: pwsh
+        run: |
+          $failed = 0
+          Get-ChildItem build/*.ps1 | ForEach-Object {
+            $errors = $null; $tokens = $null
+            [System.Management.Automation.Language.Parser]::ParseFile($_.FullName, [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors.Count -gt 0) {
+              Write-Host "$($_.Name) does not parse"
+              $errors | Select-Object -First 3 | Format-List
+              $failed = 1
+            }
+          }
+          exit $failed

@@ -561,10 +561,16 @@
           "required": true
         },
         {
+          "name": "Queue",
+          "type": "String",
+          "required": false,
+          "description": "Resolves the country from the queue profile. Prefer this over CountryCode."
+        },
+        {
           "name": "CountryCode",
           "type": "String",
           "required": false,
-          "description": "Defaults to pwrp_DefaultCountryCode."
+          "description": "Overrides everything. Digits only. Leave empty and let Queue decide."
         }
       ],
       "outputs": [

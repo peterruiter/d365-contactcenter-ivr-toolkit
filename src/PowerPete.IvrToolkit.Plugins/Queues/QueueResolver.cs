@@ -127,7 +127,7 @@ namespace PowerPete.IvrToolkit.Queues
 
                 var profile = query.AddLink("pwrp_queueprofile", "queueid", "pwrp_queueid", JoinOperator.LeftOuter);
                 profile.EntityAlias = "p";
-                profile.Columns = new ColumnSet("pwrp_queueprofileid", "pwrp_speakablename", "pwrp_timezone", "pwrp_locale");
+                profile.Columns = new ColumnSet("pwrp_queueprofileid", "pwrp_speakablename", "pwrp_timezone", "pwrp_locale", "pwrp_countrycode");
 
                 var results = _service.RetrieveMultiple(query).Entities
                     .Select(e => new QueueRef
@@ -138,6 +138,7 @@ namespace PowerPete.IvrToolkit.Queues
                         ChannelType = MapChannel(e.GetAttributeValue<OptionSetValue>("msdyn_queuetype")),
                         TimeZone = Alias<string>(e, "p.pwrp_timezone") ?? _config.GetString(ConfigKeys.DefaultTimeZone, "W. Europe Standard Time"),
                         Locale = Alias<string>(e, "p.pwrp_locale") ?? _config.GetString(ConfigKeys.DefaultLocale, "nl-NL"),
+                        CountryCode = Alias<string>(e, "p.pwrp_countrycode") ?? _config.GetString(ConfigKeys.DefaultCountryCode, "31"),
                         ProfileId = Alias<Guid?>(e, "p.pwrp_queueprofileid")
                     })
                     .ToList();

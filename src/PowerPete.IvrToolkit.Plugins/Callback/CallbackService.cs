@@ -109,7 +109,10 @@ namespace PowerPete.IvrToolkit.Callback
 
         public CallbackRecord Create(QueueRef queue, string rawNumber, DateTime? requestedStartUtc, string mode, string contextJson, Guid? contactId, string conversationId)
         {
-            var phone = PhoneNumberValidator.Validate(rawNumber, _config.GetString(ConfigKeys.DefaultCountryCode, "31"));
+            // The queue decides the country. A national format number means a different
+            // number in each market, and reading it against the wrong one produces a valid
+            // looking number in the right one rather than an error.
+            var phone = PhoneNumberValidator.Validate(rawNumber, queue.CountryCode);
             if (!phone.IsValid)
             {
                 throw new ToolkitException(ErrorCodes.InvalidPhoneNumber, phone.Reason);
@@ -210,6 +213,9 @@ namespace PowerPete.IvrToolkit.Callback
             }
             else if (!string.IsNullOrWhiteSpace(phoneNumber))
             {
+                // No queue here: a caller looking up a callback gives a number and nothing
+                // else. The organisation default is the best available guess, and a lookup
+                // that misses is harmless where a booking against the wrong number is not.
                 var phone = PhoneNumberValidator.Validate(phoneNumber, _config.GetString(ConfigKeys.DefaultCountryCode, "31"));
                 query.Criteria.AddCondition("pwrp_phonenumber", ConditionOperator.Equal, phone.E164 ?? phoneNumber);
             }

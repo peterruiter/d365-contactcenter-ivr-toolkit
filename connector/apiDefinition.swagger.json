@@ -1284,10 +1284,15 @@
           "type": "string",
           "x-ms-summary": "PhoneNumber"
         },
+        "Queue": {
+          "type": "string",
+          "x-ms-summary": "Queue",
+          "description": "Resolves the country from the queue profile. Prefer this over CountryCode."
+        },
         "CountryCode": {
           "type": "string",
           "x-ms-summary": "CountryCode",
-          "description": "Defaults to pwrp_DefaultCountryCode."
+          "description": "Overrides everything. Digits only. Leave empty and let Queue decide."
         }
       },
       "required": [

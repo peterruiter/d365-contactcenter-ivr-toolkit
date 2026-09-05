@@ -63,6 +63,13 @@
           "description": "Overrides pwrp_DefaultLocale. e.g. nl-NL"
         },
         {
+          "name": "pwrp_countrycode",
+          "type": "String",
+          "maxLength": 5,
+          "displayName": "Country code",
+          "description": "Country calling code for phone normalisation, digits only. Overrides pwrp_DefaultCountryCode."
+        },
+        {
           "name": "pwrp_directcallbackenabled",
           "type": "Boolean",
           "displayName": "Direct callback enabled",

@@ -12,6 +12,17 @@ namespace PowerPete.IvrToolkit.Model
         public string ChannelType { get; set; }
         public string TimeZone { get; set; }
         public string Locale { get; set; }
+
+        /// <summary>
+        /// Country calling code for phone normalisation, digits only.
+        /// </summary>
+        /// <remarks>
+        /// Per queue because a national format number means a different thing in each
+        /// market. "0475 123456" read against the wrong country becomes a valid looking
+        /// number in the right one, with no error and a callback booked to a stranger.
+        /// </remarks>
+        public string CountryCode { get; set; }
+
         public Guid? ProfileId { get; set; }
     }
 

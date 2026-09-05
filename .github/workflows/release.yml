@@ -1,0 +1,101 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Assembly version, on the 1.0.x line"
+        required: true
+        default: "1.0.0"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Work out the version
+        id: version
+        shell: pwsh
+        run: |
+          $version = if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+            "${{ github.event.inputs.version }}"
+          } else {
+            "${{ github.ref_name }}" -replace '^v', ''
+          }
+          if ($version -notmatch '^\d+\.\d+\.\d+$') {
+            throw "Version '$version' is not major.minor.patch."
+          }
+          "value=$version" >> $env:GITHUB_OUTPUT
+          Write-Host "Building $version"
+
+      - name: Restore the signing key
+        shell: pwsh
+        env:
+          SIGNING_KEY: ${{ secrets.PWRP_SIGNING_KEY }}
+        # The key has to be the same for every release. A plugin assembly is identified by
+        # its public key token as well as its name, so a key generated per build produces
+        # an assembly the platform sees as unrelated to the last one, and upgrading a
+        # client environment fails. Store it once as a base64 secret and reuse it.
+        run: |
+          if (-not $env:SIGNING_KEY) {
+            throw @'
+          PWRP_SIGNING_KEY is not set. Generate a key once, then store it as a
+          repository secret of that name:
+
+            $k = [System.Security.Cryptography.RSACryptoServiceProvider]::new(2048)
+            [IO.File]::WriteAllBytes("key.snk", $k.ExportCspBlob($true))
+            [Convert]::ToBase64String([IO.File]::ReadAllBytes("key.snk"))
+
+          Keep key.snk somewhere safe and out of the repository. Losing it means every
+          future release is a different assembly as far as the platform is concerned,
+          and upgrading an environment that has the old one will fail.
+          '@
+          }
+          [IO.File]::WriteAllBytes("build/PowerPete.IvrToolkit.snk", [Convert]::FromBase64String($env:SIGNING_KEY))
+          Write-Host "Signing key restored"
+
+      - name: Install the Power Platform CLI
+        run: dotnet tool install --global Microsoft.PowerApps.CLI.Tool
+
+      - name: Build, test and pack
+        shell: pwsh
+        run: ./build/build.ps1 -Version ${{ steps.version.outputs.value }}
+
+      - name: Confirm the assembly is signed
+        shell: pwsh
+        # An unsigned assembly is rejected by the sandbox, and it is easier to catch here
+        # than in whoever installs the release.
+        run: |
+          $dll = "src/PowerPete.IvrToolkit.Plugins/bin/Release/net462/merged/PowerPete.IvrToolkit.Plugins.dll"
+          $name = [System.Reflection.AssemblyName]::GetAssemblyName((Resolve-Path $dll).Path)
+          $token = ($name.GetPublicKeyToken() | ForEach-Object { $_.ToString("x2") }) -join ""
+          if (-not $token) { throw "The assembly is not strong named." }
+          Write-Host "$($name.Name) $($name.Version) publickeytoken=$token"
+
+      - name: Publish the release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            out/PowerPeteIvrToolkitCore_${{ steps.version.outputs.value }}_Managed.zip
+            out/PowerPeteIvrToolkitCore_${{ steps.version.outputs.value }}_Unmanaged.zip
+          generate_release_notes: true
+          body: |
+            Install the **managed** solution in anything that is not a development
+            environment. Unmanaged is for a development environment you intend to edit.
+
+            ```powershell
+            pac solution import --path PowerPeteIvrToolkitCore_${{ steps.version.outputs.value }}_Managed.zip --activate-plugins --publish-changes
+            ./build/Register-CustomApis.ps1 -EnvironmentUrl https://yourorg.crm4.dynamics.com
+            ./build/New-ApplicationUser.ps1 -EnvironmentUrl https://yourorg.crm4.dynamics.com
+            ```
+
+            See [docs/03-installation.md](docs/03-installation.md). Run
+            `Test-Endpoints.ps1` with the application credentials afterwards: as an
+            administrator everything passes whether the security role is right or not.

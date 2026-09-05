@@ -17,9 +17,23 @@ namespace PowerPete.IvrToolkit.CustomApis
     {
         protected override void Handle(ToolkitRequest request)
         {
+            // Country, most specific first: an explicit CountryCode, then the queue's own,
+            // then the organisation default. Queue is the one an agent should send, because
+            // a market is a queue rather than a setting on the agent.
+            var country = request.GetString("CountryCode");
+            if (country == null)
+            {
+                var queueName = request.GetString("Queue");
+                if (queueName != null)
+                {
+                    country = new QueueResolver(request.Service, request.Config, request.Tracing)
+                        .Resolve(queueName).CountryCode;
+                }
+            }
+
             var result = PhoneNumberValidator.Validate(
                 request.RequireString("PhoneNumber"),
-                request.GetString("CountryCode", request.Config.GetString(ConfigKeys.DefaultCountryCode, "31")));
+                country ?? request.Config.GetString(ConfigKeys.DefaultCountryCode, "31"));
 
             request.SetOutput("IsValid", result.IsValid);
             request.SetOutput("E164", result.E164 ?? string.Empty);
