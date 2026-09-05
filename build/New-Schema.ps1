@@ -36,6 +36,11 @@ $orgUrl = $EnvironmentUrl.TrimEnd('/')
 # of its own. Common.ps1 caches that token, so the sign in prompt is a first run thing.
 $accessToken = Get-DataverseToken -Resource $orgUrl
 
+# Send-Metadata below builds its own headers because it needs the retry on the metadata
+# cache. Connect-Dataverse is still needed for the plain Invoke-Dataverse calls further
+# down, and the token is cached, so this costs nothing.
+Connect-Dataverse -EnvironmentUrl $EnvironmentUrl
+
 $baseHeaders = @{
     Authorization      = "Bearer $accessToken"
     "OData-MaxVersion" = "4.0"
@@ -310,11 +315,23 @@ foreach ($variable in $schema.environmentVariables) {
             displayname  = $variable.displayName
             type         = $typeCode[$variable.type]
             defaultvalue = $variable.default
+            description  = $variable.description
         } | Out-Null
         Write-Host "  + $($variable.name)" -ForegroundColor DarkGray
     }
     catch {
-        Write-Host "  = $($variable.name) exists" -ForegroundColor DarkGray
+        # Already there, so refresh the guidance. The description is what an administrator
+        # reads on the settings screen, and it is the only explanation they get.
+        $definition = (Invoke-Dataverse -Method GET -Path ("/api/data/v9.2/environmentvariabledefinitions" +
+            "?`$select=environmentvariabledefinitionid&`$filter=schemaname eq '$($variable.name)'")).value
+        if ($definition.Count -gt 0 -and $variable.description) {
+            Invoke-Dataverse -Method PATCH -SolutionName $SolutionName `
+                -Path "/api/data/v9.2/environmentvariabledefinitions($($definition[0].environmentvariabledefinitionid))" -Body @{
+                    description = $variable.description
+                    displayname = $variable.displayName
+                } | Out-Null
+        }
+        Write-Host "  = $($variable.name) exists, guidance refreshed" -ForegroundColor DarkGray
     }
 }
 

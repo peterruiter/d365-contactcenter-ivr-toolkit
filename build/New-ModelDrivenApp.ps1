@@ -53,6 +53,15 @@ $areas = @(
     @{ Entity = "pwrp_messagetemplate";  Title = "Message templates";  Icon = "person" }
 )
 
+# Settings sit in their own group. They are environment variables rather than toolkit
+# tables, and an administrator otherwise has to find them under the solution, which is
+# not a place anyone looks. The guidance for each one is its description, written by
+# New-Schema.ps1 from schema.json, and it shows on the form.
+$settingsAreas = @(
+    @{ Entity = "environmentvariabledefinition"; Title = "Settings";        Icon = "settings" }
+    @{ Entity = "environmentvariablevalue";      Title = "Setting values";  Icon = "briefcase" }
+)
+
 # --- App shell ----------------------------------------------------------------
 # An app is matched on display name. "pac model create" invents its own unique name, so
 # checking for one of ours by unique name would never match and every run would add
@@ -95,17 +104,169 @@ $app = Invoke-Dataverse -Method GET `
     -Path "/api/data/v9.2/appmodules($AppId)?`$select=appmoduleid,appmoduleidunique,name,uniquename"
 Write-Host "  '$($app.name)' [$($app.uniquename)]" -ForegroundColor DarkGray
 
+# --- App icon -----------------------------------------------------------------
+# Without this the app shows the platform's default tile in the app selector, which is
+# the same one several other apps use. The icon is an SVG web resource in this solution,
+# so it travels with the export rather than being set by hand after every import.
+#
+# Line art in a single accent colour is not a style choice. The selector renders the tile
+# on dark navy and the maker portal renders it on white, and a filled icon designed for
+# one is unreadable on the other.
+Write-Host "`nApp icon" -ForegroundColor Cyan
+
+$iconPath = Join-Path $PSScriptRoot "assets/app-icon.svg"
+if (-not (Test-Path $iconPath)) { throw "App icon not found at $iconPath." }
+
+$iconName = "pwrp_/icons/ivrtoolkit.svg"
+$iconContent = [Convert]::ToBase64String([IO.File]::ReadAllBytes($iconPath))
+
+$iconBody = @{
+    name           = $iconName
+    displayname    = "Contact Center IVR Toolkit icon"
+    description    = "App tile icon. Source of truth is build/assets/app-icon.svg."
+    webresourcetype = 11   # SVG
+    content        = $iconContent
+}
+
+$iconResource = (Invoke-Dataverse -Method GET `
+    -Path "/api/data/v9.2/webresourceset?`$select=webresourceid&`$filter=name eq '$iconName'").value
+
+if ($iconResource.Count -gt 0) {
+    $iconId = $iconResource[0].webresourceid
+    Invoke-Dataverse -Method PATCH -Path "/api/data/v9.2/webresourceset($iconId)" `
+        -SolutionName $SolutionName -Body $iconBody | Out-Null
+    Write-Host "  = web resource $iconName" -ForegroundColor DarkGray
+}
+else {
+    $iconId = (Invoke-Dataverse -Method POST -Path "/api/data/v9.2/webresourceset" `
+        -SolutionName $SolutionName -Body $iconBody).webresourceid
+    Write-Host "  + web resource $iconName" -ForegroundColor DarkGray
+}
+
+# A web resource has to be published before anything can reference it. Setting the app
+# icon to an unpublished resource leaves the tile blank rather than failing.
+Invoke-Dataverse -Method POST -Path "/api/data/v9.2/PublishXml" -Body @{
+    ParameterXml = "<importexportxml><webresources><webresource>$iconId</webresource></webresources></importexportxml>"
+} | Out-Null
+
+Invoke-Dataverse -Method PATCH -Path "/api/data/v9.2/appmodules($AppId)" -SolutionName $SolutionName -Body @{
+    "webresourceid@odata.bind" = "/webresourceset($iconId)"
+} | Out-Null
+Write-Host "  + icon set on the app" -ForegroundColor DarkGray
+
+# --- Settings views -----------------------------------------------------------
+# Both settings tables are platform tables shared with every other solution in the
+# environment. Their stock views list every environment variable there is, so an
+# administrator sent to "Settings" to change a wait threshold arrives at a list of
+# other people's variables. These two views cut that down to pwrp_ only.
+#
+# The views are added to the app rather than made the table default. Changing the
+# default would hide other solutions' variables from everyone, everywhere.
+function Set-FilteredView {
+    param(
+        [string]$Entity,
+        [string]$Name,
+        [string]$Description,
+        [string]$FetchXml,
+        [string]$LayoutXml
+    )
+
+    # object= in the layout is the entity's type code. A wrong one is accepted on save
+    # and then renders an empty grid, so it is read rather than guessed.
+    $otc = (Invoke-Dataverse -Method GET `
+        -Path "/api/data/v9.2/EntityDefinitions(LogicalName='$Entity')?`$select=ObjectTypeCode").ObjectTypeCode
+
+    $existing = (Invoke-Dataverse -Method GET `
+        -Path "/api/data/v9.2/savedqueries?`$select=savedqueryid&`$filter=name eq '$Name' and returnedtypecode eq '$Entity'").value
+
+    $body = @{
+        name             = $Name
+        description      = $Description
+        returnedtypecode = $Entity
+        fetchxml         = $FetchXml
+        layoutxml        = $LayoutXml -replace 'OBJECTTYPECODE', $otc
+        querytype        = 0
+    }
+
+    if ($existing.Count -gt 0) {
+        $viewId = $existing[0].savedqueryid
+        Invoke-Dataverse -Method PATCH -Path "/api/data/v9.2/savedqueries($viewId)" `
+            -SolutionName $SolutionName -Body $body | Out-Null
+        Write-Host "  = view '$Name'" -ForegroundColor DarkGray
+    }
+    else {
+        $created = Invoke-Dataverse -Method POST -Path "/api/data/v9.2/savedqueries" `
+            -SolutionName $SolutionName -Body $body
+        $viewId = $created.savedqueryid
+        Write-Host "  + view '$Name'" -ForegroundColor DarkGray
+    }
+
+    # Adding the view to the app is what puts it in the app's view picker. It is not
+    # fatal when it fails: the view still exists and the table still opens.
+    try {
+        Invoke-Dataverse -Method POST -Path "/api/data/v9.2/AddAppComponents" -Body @{
+            AppId      = $AppId
+            Components = @(@{ "@odata.type" = "Microsoft.Dynamics.CRM.savedquery"; savedqueryid = $viewId })
+        } | Out-Null
+    }
+    catch {
+        Write-Warning "View '$Name' was not added to the app: $($_.Exception.Message)"
+    }
+}
+
+Write-Host "`nFiltered settings views" -ForegroundColor Cyan
+
+Set-FilteredView -Entity "environmentvariabledefinition" -Name "IVR toolkit settings" `
+    -Description "Environment variables belonging to the Contact Center IVR Toolkit." `
+    -FetchXml ('<fetch version="1.0" mapping="logical" returntotalrecordcount="true">' +
+        '<entity name="environmentvariabledefinition">' +
+        '<attribute name="displayname" /><attribute name="schemaname" />' +
+        '<attribute name="defaultvalue" /><attribute name="description" />' +
+        '<attribute name="environmentvariabledefinitionid" />' +
+        '<order attribute="displayname" descending="false" />' +
+        '<filter type="and"><condition attribute="schemaname" operator="like" value="pwrp\_%" /></filter>' +
+        '</entity></fetch>') `
+    -LayoutXml ('<grid name="resultset" object="OBJECTTYPECODE" jump="displayname" select="1" icon="1" preview="1">' +
+        '<row name="result" id="environmentvariabledefinitionid">' +
+        '<cell name="displayname" width="220" />' +
+        '<cell name="defaultvalue" width="140" />' +
+        '<cell name="description" width="520" />' +
+        '<cell name="schemaname" width="220" />' +
+        '</row></grid>')
+
+Set-FilteredView -Entity "environmentvariablevalue" -Name "IVR toolkit setting values" `
+    -Description "Values set for Contact Center IVR Toolkit environment variables." `
+    -FetchXml ('<fetch version="1.0" mapping="logical" returntotalrecordcount="true">' +
+        '<entity name="environmentvariablevalue">' +
+        '<attribute name="value" /><attribute name="environmentvariablevalueid" />' +
+        '<attribute name="environmentvariabledefinitionid" />' +
+        '<order attribute="environmentvariabledefinitionid" descending="false" />' +
+        '<link-entity name="environmentvariabledefinition" from="environmentvariabledefinitionid" ' +
+        'to="environmentvariabledefinitionid" alias="def" link-type="inner">' +
+        '<attribute name="displayname" />' +
+        '<filter type="and"><condition attribute="schemaname" operator="like" value="pwrp\_%" /></filter>' +
+        '</link-entity></entity></fetch>') `
+    -LayoutXml ('<grid name="resultset" object="OBJECTTYPECODE" jump="environmentvariabledefinitionid" select="1" icon="1" preview="1">' +
+        '<row name="result" id="environmentvariablevalueid">' +
+        '<cell name="def.displayname" width="260" disableSorting="1" />' +
+        '<cell name="value" width="320" />' +
+        '</row></grid>')
+
 # --- Sitemap ------------------------------------------------------------------
 # Shape copied from a working app in the same organisation. The Client and Sku attributes
 # are not decoration: a SubArea without them is dropped by the Unified Interface.
-$subAreas = ($areas | ForEach-Object {
-    $suffix = $_.Entity -replace '^pwrp_', ''
-    "<SubArea Id=`"pwrp_sub_$suffix`" VectorIcon=`"/_imgs/TableIconsFluentV9/$($_.Icon).svg`" " +
-    "Icon=`"/_imgs/imagestrips/transparent_spacer.gif`" " +
-    "Entity=`"$($_.Entity)`" Client=`"All,Outlook,OutlookLaptopClient,OutlookWorkstationClient,Web`" " +
-    "AvailableOffline=`"true`" PassParams=`"false`" Sku=`"All,OnPremise,Live,SPLA`">" +
-    "<Titles><Title LCID=`"1033`" Title=`"$($_.Title)`" /></Titles></SubArea>"
-}) -join ""
+function New-SubArea {
+    param($Area)
+    $suffix = $Area.Entity -replace '^pwrp_', ''
+    return "<SubArea Id=`"pwrp_sub_$suffix`" VectorIcon=`"/_imgs/TableIconsFluentV9/$($Area.Icon).svg`" " +
+        "Icon=`"/_imgs/imagestrips/transparent_spacer.gif`" " +
+        "Entity=`"$($Area.Entity)`" Client=`"All,Outlook,OutlookLaptopClient,OutlookWorkstationClient,Web`" " +
+        "AvailableOffline=`"true`" PassParams=`"false`" Sku=`"All,OnPremise,Live,SPLA`">" +
+        "<Titles><Title LCID=`"1033`" Title=`"$($Area.Title)`" /></Titles></SubArea>"
+}
+
+$subAreas = ($areas | ForEach-Object { New-SubArea -Area $_ }) -join ""
+$settingsSubAreas = ($settingsAreas | ForEach-Object { New-SubArea -Area $_ }) -join ""
 
 $sitemapXml = "<SiteMap IntroducedVersion=`"7.0.0.0`">" +
     "<Area Id=`"pwrp_area_ivrtoolkit`" ResourceId=`"SitemapDesigner.NewTitle`" " +
@@ -116,6 +277,12 @@ $sitemapXml = "<SiteMap IntroducedVersion=`"7.0.0.0`">" +
     "ToolTipResourseId=`"SitemapDesigner.Unknown`">" +
     "<Titles><Title LCID=`"1033`" Title=`"Configuration`" /></Titles>" +
     $subAreas +
+    "</Group>" +
+    "<Group Id=`"pwrp_group_settings`" ResourceId=`"SitemapDesigner.NewGroup`" " +
+    "DescriptionResourceId=`"SitemapDesigner.NewGroup`" IntroducedVersion=`"7.0.0.0`" IsProfile=`"false`" " +
+    "ToolTipResourseId=`"SitemapDesigner.Unknown`">" +
+    "<Titles><Title LCID=`"1033`" Title=`"Settings`" /></Titles>" +
+    $settingsSubAreas +
     "</Group></Area></SiteMap>"
 
 $sitemapComponent = (Invoke-Dataverse -Method GET `
@@ -130,8 +297,8 @@ Invoke-Dataverse -Method PATCH -Path "/api/data/v9.2/sitemaps($sitemapId)" -Solu
     sitemapxml = $sitemapXml
 } | Out-Null
 
-Write-Host "+ sitemap written, $($areas.Count) areas" -ForegroundColor DarkGray
-foreach ($area in $areas) { Write-Host "    $($area.Title)" -ForegroundColor DarkGray }
+Write-Host "+ sitemap written, $($areas.Count + $settingsAreas.Count) areas" -ForegroundColor DarkGray
+foreach ($area in ($areas + $settingsAreas)) { Write-Host "    $($area.Title)" -ForegroundColor DarkGray }
 
 # --- Publish ------------------------------------------------------------------
 # An unpublished sitemap is invisible, so this is part of creating the app rather than
@@ -139,7 +306,11 @@ foreach ($area in $areas) { Write-Host "    $($area.Title)" -ForegroundColor Dar
 Write-Host "`nPublishing" -ForegroundColor Cyan
 Invoke-Dataverse -Method POST -Path "/api/data/v9.2/PublishXml" -Body @{
     ParameterXml = "<importexportxml><appmodules><appmodule>$AppId</appmodule></appmodules>" +
-                   "<sitemaps><sitemap>$sitemapId</sitemap></sitemaps></importexportxml>"
+                   "<sitemaps><sitemap>$sitemapId</sitemap></sitemaps>" +
+                   # The settings views are saved queries, and a saved query only goes live
+                   # when its table is published.
+                   "<entities><entity>environmentvariabledefinition</entity>" +
+                   "<entity>environmentvariablevalue</entity></entities></importexportxml>"
 } | Out-Null
 
 Write-Host "`nApp ready. Open it from the Power Apps maker portal, or Dynamics 365 home." -ForegroundColor Green

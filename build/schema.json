@@ -616,79 +616,92 @@
       "name": "pwrp_DefaultLocale",
       "displayName": "Default locale",
       "type": "String",
-      "default": "nl-NL"
+      "default": "nl-NL",
+      "description": "Language for spoken output when a queue profile does not set its own. nl-NL and en-GB are built in. Set it per queue on the queue profile instead when queues serve different languages, because the queue decides what a caller hears, not the agent."
     },
     {
       "name": "pwrp_DefaultTimeZone",
       "displayName": "Default time zone",
       "type": "String",
-      "default": "W. Europe Standard Time"
+      "default": "W. Europe Standard Time",
+      "description": "Windows time zone id used for opening hours when a queue profile does not set its own, for example W. Europe Standard Time. Get this wrong and the IVR is confidently open at the wrong times."
     },
     {
       "name": "pwrp_DefaultCountryCode",
       "displayName": "Default country code",
       "type": "String",
-      "default": "31"
+      "default": "31",
+      "description": "Country calling code in digits, no plus, for turning a spoken number into a full one. 31 for the Netherlands, 32 for Belgium. Only used for numbers given in national form. Set it per queue on the queue profile when you serve more than one country: a Belgian number read against the Dutch code becomes a valid looking Dutch number with no error."
     },
     {
       "name": "pwrp_WaitBandThresholds",
       "displayName": "Wait band thresholds (s)",
       "type": "String",
-      "default": "60,180,420"
+      "default": "60,180,420",
+      "description": "Three numbers of seconds, rising, separated by commas. Under the first is Short, then Moderate, then Long, and above the third is VeryLong. A callback is offered whenever the wait is not Short, so the first number is the one that decides when callers stop being put through. Tune it to what your callers actually tolerate, not to the SLA."
     },
     {
       "name": "pwrp_MetricsCacheSeconds",
       "displayName": "Metrics cache (s)",
       "type": "Number",
-      "default": "15"
+      "default": "15",
+      "description": "How long live queue metrics are reused before reading them again. Lower is fresher and slower. Raise it on a busy queue, where a fifteen second old number is no less true and the read is expensive."
     },
     {
       "name": "pwrp_HoursCacheSeconds",
       "displayName": "Hours cache (s)",
       "type": "Number",
-      "default": "300"
+      "default": "300",
+      "description": "How long opening hours, queue profiles and message wording are reused. Safe to raise, since hours rarely change. Lower it while editing wording, because an edit will not be heard until this expires."
     },
     {
       "name": "pwrp_MetricsWindowMinutes",
       "displayName": "Metrics window (min)",
       "type": "Number",
-      "default": "60"
+      "default": "60",
+      "description": "How far back to look when averaging how long callers waited before being answered. Too short on a quiet queue and there is nothing to average, which shows as a stale metric."
     },
     {
       "name": "pwrp_EnableScheduledCallback",
       "displayName": "Enable scheduled callback",
       "type": "Boolean",
-      "default": "false"
+      "default": "false",
+      "description": "Master switch for callbacks at a chosen time. Off means only direct callback is offered, whatever a queue profile says. Both this and pwrp_scheduledcallbackenabled on the queue profile must be on, which is why turning it on for one queue alone appears to do nothing."
     },
     {
       "name": "pwrp_OutboundWorkstreamId",
       "displayName": "Outbound workstream id",
       "type": "String",
-      "default": ""
+      "default": "",
+      "description": "The outbound workstream proactive engagement uses to place scheduled callbacks. Required once scheduled callback is on, and the health check fails without it. The toolkit books the callback, it does not dial it."
     },
     {
       "name": "pwrp_MaxCallbackAttempts",
       "displayName": "Max callback attempts",
       "type": "Number",
-      "default": "3"
+      "default": "3",
+      "description": "How many times to try a callback before giving up and marking it failed. Three is a reasonable default. Higher annoys people who did not answer on purpose."
     },
     {
       "name": "pwrp_CallbackRetryMinutes",
       "displayName": "Callback retry gap (min)",
       "type": "Number",
-      "default": "20"
+      "default": "20",
+      "description": "Minutes between callback attempts. Too short and you call back while they are still busy, too long and they have stopped caring."
     },
     {
       "name": "pwrp_CallbackSlotMinutes",
       "displayName": "Callback slot length (min)",
       "type": "Number",
-      "default": "30"
+      "default": "30",
+      "description": "Length of a bookable callback window, used only by scheduled callback. Thirty minutes means a caller is offered nine o'clock or half past, not an exact minute. Shorter looks precise and is a promise you cannot keep."
     },
     {
       "name": "pwrp_TelemetryEnabled",
       "displayName": "Telemetry enabled",
       "type": "Boolean",
-      "default": "true"
+      "default": "true",
+      "description": "Whether each call writes its duration to the trace log. Leave it on. It is how you find out the IVR became slow before a caller tells you."
     }
   ]
 }

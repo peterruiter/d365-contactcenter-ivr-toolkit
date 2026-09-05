@@ -9,6 +9,32 @@ Semantic versioning. The Custom API contract is stable within a major version.
 | Internal fix, same contract | Patch |
 | Removed or renamed output, changed enum, changed meaning | Major |
 
+## [3.2.0]
+
+### Added
+
+- A **Settings** group in the model driven app, holding the environment variable
+  definitions and their values. There was no way to reach a setting from the app at all.
+  An administrator had to know that settings are environment variables, that environment
+  variables live under the solution, and where the solution is
+- Guidance on every one of the thirteen settings. None of them had a description, in the
+  environment or anywhere else, so `New-Schema.ps1` now writes one from `schema.json` and
+  refreshes it on a rerun. The text says what the setting does and what goes wrong when it
+  is set badly, including the pairing that catches everyone: `pwrp_EnableScheduledCallback`
+  and the queue profile flag are both required, so turning one on alone appears to do
+  nothing
+- Two filtered views, added to the app rather than made table defaults, so Settings lists
+  thirteen rows instead of every environment variable in the environment
+- An app tile icon, `build/assets/app-icon.svg`, uploaded as a solution web resource. The
+  app previously showed the platform default tile, which is shared with several other apps
+  in the app selector
+
+### Fixed
+
+- `New-Schema.ps1` called `Invoke-Dataverse` without ever calling `Connect-Dataverse`.
+  It builds its own headers for the metadata retry and never needed the shared transport
+  until now
+
 ## [3.1.0]
 
 ### Fixed

@@ -20,6 +20,38 @@ Nothing client specific belongs in code. Everything here is data.
 | `pwrp_CallbackSlotMinutes` | `30` | Slot length for scheduled callback |
 | `pwrp_TelemetryEnabled` | `true` | Duration tracing |
 
+### Where to set them
+
+Open the **Contact Center IVR Toolkit** app and go to **Settings**. The two entries there
+are filtered to this toolkit, so you see thirteen settings rather than every environment
+variable in the environment.
+
+- **Settings** lists the definitions. Each one carries the guidance for that setting in
+  its Description, which is the same text as the table above in longer form. Read it
+  before changing anything.
+- **Setting values** lists the values that have actually been set. A definition with no
+  value uses its default.
+
+The distinction matters and catches people out. A definition holds the default that
+shipped with the solution. A value overrides it for this environment. Changing the
+default on the definition does nothing to a setting that already has a value.
+
+To change one:
+
+1. Open **Setting values** and look for the setting
+2. If it is there, edit the **Value** and save
+3. If it is not, choose **New**, pick the setting in **Environment Variable**, set the
+   value and save
+
+A value is a text field whatever the setting is. A boolean takes `true` or `false` in
+lower case. A number takes digits with no unit.
+
+Changes take effect within a minute, sooner on a quiet environment, because the plugin
+caches configuration for the same period as `pwrp_HoursCacheSeconds`.
+
+The Description also travels with the solution, so an administrator in a downstream
+environment gets the same guidance without this document.
+
 ### Tuning the wait bands
 
 The defaults suit a general service queue. Adjust to what the client's callers

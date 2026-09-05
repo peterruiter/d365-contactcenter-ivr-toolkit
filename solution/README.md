@@ -121,14 +121,38 @@ matters, because admins live in two of these areas and visit the rest rarely:
 7. IVR outcomes
 8. Message templates
 
+A second group, **Settings**, holds the two platform tables behind environment variables:
+
+9. Settings, `environmentvariabledefinition`
+10. Setting values, `environmentvariablevalue`
+
 `pwrp_broadcastmessage` shows the active messages view by default. An admin publishing an
 outage message under pressure should not have to filter first.
+
+The settings tables are shared with every other solution in the environment, so the script
+creates two filtered views, **IVR toolkit settings** and **IVR toolkit setting values**,
+and adds them to the app. Both filter on a `pwrp_` schema name. They are app views rather
+than table defaults: making them the default would hide other solutions' variables from
+everyone in the environment, not just from this app.
+
+Guidance for each setting is the Description on its definition, written by
+`build/New-Schema.ps1` from `build/schema.json`. Change the wording there rather than in
+the environment, or the next run overwrites it.
 
 Icons come from the platform's own set under `/_imgs/TableIconsFluentV9`. It is a short
 list, and a path that does not resolve renders as a blank square rather than failing, so
 check any new one before using it. Do not borrow an icon from another solution's web
 resources: they work, and they make this solution depend on Field Service or Omnichannel
 being installed.
+
+The app's own tile icon is different: it is an SVG web resource, `pwrp_/icons/ivrtoolkit.svg`,
+uploaded from `build/assets/app-icon.svg`. Without it the app shows the platform default
+tile, which several other apps also show. Edit the SVG in the repository and re-run
+`New-ModelDrivenApp.ps1`; do not edit the web resource in the environment.
+
+It is line art in one accent colour on a transparent ground. The app selector renders the
+tile on dark navy and the maker portal renders it on white, and an icon designed for one
+of those is unreadable on the other.
 
 ## Workflows
 
