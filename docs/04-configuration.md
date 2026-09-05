@@ -138,6 +138,31 @@ A queue specific row beats an organisation wide one for the same date.
 Load the national holidays for the next two years at install. Nobody remembers to do
 it in December.
 
+## Turning callback on
+
+Two kinds, with different switches, and they share nothing.
+
+**Direct** needs only `pwrp_directcallbackenabled` on the queue profile. Someone is called
+back when a representative is free. There is no time and no slots.
+
+**Scheduled** needs the `pwrp_EnableScheduledCallback` environment variable **and**
+`pwrp_scheduledcallbackenabled` on the queue profile. Both, and the environment variable
+is `false` by default, so setting the queue flag alone does nothing and
+`ScheduledCallbackAvailable` stays false with no explanation.
+
+It also needs `pwrp_OutboundWorkstreamId`, because proactive engagement places the calls.
+The health check fails when the switch is on and the workstream is missing.
+
+### Slots
+
+Only scheduled callback uses them. `pwrp_GetCallbackSlots` divides the queue's opening
+hours into windows of `pwrp_CallbackSlotMinutes`, drops any already holding
+`pwrp_slotcapacity` bookings, and returns the ones still ahead of now. A queue open 08:00
+to 17:00 with the defaults offers 08:00, 08:30, 09:00 and so on, five callbacks each.
+
+The capacity cap is the point. Without it an IVR will promise fifty people the same ten
+minutes.
+
 ## Broadcast messages (`pwrp_broadcastmessage`)
 
 An admin publishes one row when something is wrong. The agent reads it before

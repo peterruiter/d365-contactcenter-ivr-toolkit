@@ -158,6 +158,10 @@ It needs tools the four core ones do not cover:
 | `pwrp_GetQueueHours` | `Queue` by AI, `Days` custom `7` | Checking a calendar |
 | `pwrp_HealthCheck` | no inputs | Validating an install by voice |
 
+Leave `pwrp_LogIvrOutcome` off this agent entirely. Told plainly not to log a diagnostics
+call, a model logged one anyway, and the row sits in the containment reporting as though a
+caller had been served. Removing the tool is the only reliable control.
+
 `pwrp_CreateCallback` also needs `Mode` filled by AI rather than pinned to `Direct`, so
 both modes can be tested. That is the one change to make to a core tool, and the reason to
 keep a separate test agent rather than adding diagnostics to the one callers reach: a
