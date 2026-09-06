@@ -16,8 +16,8 @@ Regenerate after any contract change:
 python3 build/Build-Swagger.py
 ```
 
-Private operations (`pwrp_PromoteDueCallbacks`, `pwrp_RecordCallbackOutcome`) are
-excluded. They are for flows, not agents.
+Operations marked `internal` in the contract (`pwrp_PromoteDueCallbacks`,
+`pwrp_RecordCallbackOutcome`) are excluded. They are for flows, not agents.
 
 ## Deploy
 

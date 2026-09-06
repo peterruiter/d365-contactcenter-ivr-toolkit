@@ -144,6 +144,29 @@ Work through in order:
 
 If records reach `Queued` and still nobody is called, it is 6 or 7, and 7 is the usual one.
 
+### `Failed to retrieve dynamic inputs` on the promotion flow action
+
+```
+Failed to retrieve dynamic inputs. Error details: 'Request to XRM API failed with
+error: 'Message: Code: InnerError: '.'
+```
+
+The connection is fine. The designer is asking Dataverse to describe
+`pwrp_PromoteDueCallbacks` so it can draw its parameters, and Dataverse will not.
+
+Before 3.4.1 that API was registered with the platform's `isprivate` flag set. A private
+message is deliberately hidden from the metadata connectors read, so the Dataverse
+connector cannot describe it and cannot call it either. The flow was calling something it
+was not allowed to see.
+
+Re-register against the current contract:
+
+```powershell
+pwsh build/Register-CustomApis.ps1 -EnvironmentUrl https://yourorg.crm4.dynamics.com
+```
+
+Then reopen the flow. Nothing in the flow itself needs changing.
+
 ### The promotion flow shows errors the moment you open it
 
 Two banners, both expected on a flow that has just been created:

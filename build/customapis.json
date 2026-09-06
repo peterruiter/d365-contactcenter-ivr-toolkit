@@ -715,7 +715,7 @@
       "type": "PowerPete.IvrToolkit.CustomApis.PromoteDueCallbacks",
       "description": "Moves due scheduled callbacks into the outbound workstream, applies the retry policy and expires stale requests. Called by the Power Pete Promote Due Callbacks flow. Not for agents.",
       "isFunction": false,
-      "isPrivate": true,
+      "internal": true,
       "inputs": [
         {
           "name": "LookAheadMinutes",
@@ -753,7 +753,7 @@
       "type": "PowerPete.IvrToolkit.CustomApis.RecordCallbackOutcome",
       "description": "Records the result of a callback dial so the retry policy can act. Wire into the proactive engagement completion path.",
       "isFunction": false,
-      "isPrivate": true,
+      "internal": true,
       "inputs": [
         {
           "name": "CallbackId",

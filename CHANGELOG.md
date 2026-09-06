@@ -12,6 +12,26 @@ Semantic versioning. The Custom API contract is stable within a major version.
 Versions here are `MAJOR.MINOR.PATCH`. The fourth part in `VERSION` is a build number that
 `build.ps1` raises on every run, and a build is not a release, so it never appears below.
 
+## [3.4.1]
+
+### Fixed
+
+- `pwrp_PromoteDueCallbacks` and `pwrp_RecordCallbackOutcome` are no longer registered as
+  private Dataverse messages. A private message is hidden from the metadata connectors
+  read, so the Dataverse connector could not describe `pwrp_PromoteDueCallbacks` and the
+  promotion flow reported `Failed to retrieve dynamic inputs` and could not call it. Both
+  are called by flows, which makes them external clients whatever the intent was. Re-run
+  `build/Register-CustomApis.ps1` to correct an existing environment
+
+### Changed
+
+- The contract flag that keeps an API out of the connector and the MCP catalogue is now
+  `internal`, separate from the platform's `isprivate`. One key was doing both jobs and
+  they contradict each other: not publishing something to agents is a decision about the
+  connector, while `isprivate` withdraws it from every client including the flow that has
+  to call it. No API sets `isprivate` now, and `Register-CustomApis.ps1` writes it false.
+  The connector and the MCP tool list are unchanged, 17 operations either way
+
 ## [3.4.0]
 
 ### Added

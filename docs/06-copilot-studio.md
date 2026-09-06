@@ -155,8 +155,10 @@ return something `pwrp_GetQueueContext` already gave you. Adding them invites th
 where one would do, and each call is silence the caller hears. `pwrp_GetQueues` lists
 queues, which no caller wants. `pwrp_HealthCheck` is for operations.
 
-`pwrp_PromoteDueCallbacks` and `pwrp_RecordCallbackOutcome` are private and do not appear
-in the picklist at all. They belong to the promotion flow.
+`pwrp_PromoteDueCallbacks` and `pwrp_RecordCallbackOutcome` are internal and are left out
+of the connector, so they do not appear in the picklist at all. They belong to the
+promotion flow. Internal here means unpublished, not the platform's private flag: a flow
+calling them through the Dataverse connector is an external client and needs to see them.
 
 ### Instructions
 

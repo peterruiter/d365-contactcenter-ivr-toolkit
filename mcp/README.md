@@ -51,5 +51,5 @@ until you ask for them via `Mcp__ExposedTools`.
 The catalogue is generated from `build/customapis.json` at startup, so the MCP surface
 cannot drift from the Custom API contract. Change the contract, rebuild, done.
 
-Private APIs (`pwrp_PromoteDueCallbacks`, `pwrp_RecordCallbackOutcome`) are never
-exposed. They are for flows, not agents.
+APIs marked `internal` in the contract (`pwrp_PromoteDueCallbacks`,
+`pwrp_RecordCallbackOutcome`) are never exposed. They are for flows, not agents.

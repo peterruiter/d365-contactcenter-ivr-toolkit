@@ -200,7 +200,14 @@ foreach ($api in $definition.apis) {
         bindingtype                     = 0        # Global. IVR calls are unbound.
         allowedcustomprocessingsteptype = 0        # None. Keep the surface tight.
         isfunction                      = [bool]$api.isFunction
-        isprivate                       = [bool]$api.isPrivate
+        # Never private, including the two the agent must not see. A private message is
+        # hidden from the metadata connectors read, so the Dataverse connector cannot
+        # describe it and a cloud flow cannot call it. pwrp_PromoteDueCallbacks is called
+        # by a flow, which makes it an external client whatever we intend it to be. Use
+        # "internal" in customapis.json to keep something out of the connector and the
+        # MCP catalogue. That is a publishing decision. This is a visibility flag, and
+        # setting it breaks the only caller.
+        isprivate                       = $false
         workflowsdkstepenabled          = $false
         "PluginTypeId@odata.bind"       = "/plugintypes($($pluginTypes[$api.type]))"
     }

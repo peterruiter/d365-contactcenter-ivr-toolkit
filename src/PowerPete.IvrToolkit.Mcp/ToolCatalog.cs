@@ -13,7 +13,7 @@ namespace PowerPete.IvrToolkit.Mcp;
 /// </summary>
 public sealed class ToolCatalog
 {
-    public record ToolDefinition(string Name, string Description, JsonObject InputSchema, bool IsFunction, bool IsPrivate);
+    public record ToolDefinition(string Name, string Description, JsonObject InputSchema, bool IsFunction, bool IsInternal);
 
     private readonly List<ToolDefinition> _tools = new();
     private readonly Dictionary<string, ToolDefinition> _byName = new(StringComparer.OrdinalIgnoreCase);
@@ -55,8 +55,8 @@ public sealed class ToolCatalog
             var api = node!.AsObject();
             var name = api["name"]!.GetValue<string>();
 
-            var isPrivate = api["isPrivate"]?.GetValue<bool>() ?? false;
-            if (isPrivate || !exposed.Contains(name, StringComparer.OrdinalIgnoreCase))
+            var isInternal = api["internal"]?.GetValue<bool>() ?? false;
+            if (isInternal || !exposed.Contains(name, StringComparer.OrdinalIgnoreCase))
             {
                 continue;
             }
@@ -93,7 +93,7 @@ public sealed class ToolCatalog
                 BuildDescription(api),
                 schema,
                 api["isFunction"]?.GetValue<bool>() ?? true,
-                isPrivate);
+                isInternal);
 
             _tools.Add(tool);
             _byName[name] = tool;

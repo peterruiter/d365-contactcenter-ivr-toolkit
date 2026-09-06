@@ -41,8 +41,9 @@ def main():
     definitions = collections.OrderedDict()
 
     for api in contract["apis"]:
-        # Private APIs are for flows, not agents. They never reach the connector.
-        if api.get("isPrivate"):
+        # Internal APIs are for flows, not agents. They never reach the connector.
+        # Note this is not the platform's isprivate flag, see Register-CustomApis.ps1.
+        if api.get("internal"):
             continue
 
         name = api["name"]

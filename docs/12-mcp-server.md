@@ -54,8 +54,8 @@ extra tool is another thing the orchestrator can get wrong.
 returned in `OpenState`, so it was the one seat to give up when the callback lifecycle
 needed one.
 
-Override with `Mcp__ExposedTools` as a comma separated list. Private APIs are never
-exposed regardless.
+Override with `Mcp__ExposedTools` as a comma separated list. APIs marked `internal` in
+the contract are never exposed regardless.
 
 ## Deploy
 
