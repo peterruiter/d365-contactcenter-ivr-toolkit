@@ -117,7 +117,43 @@ if (-not $SkipTests) {
     if ($LASTEXITCODE -ne 0) { throw "Tests failed. Fix them before deploying." }
 }
 
-# 4. Pack solution
+# 4. Web resources into the solution folder
+# The Settings page exists twice: src/webresources/pwrp_settings.html, which is edited,
+# and solution/WebResources/pwrp_settings, which is packed. The second is written by
+# Export-Solution.ps1 and by nothing else, so every edit to the first was packed only if
+# somebody happened to export afterwards. They diverged for two releases, and the built
+# solution shipped a page older than the repository, managed zips included.
+#
+# Copying before the pack makes src the source of truth and the packed copy a build
+# artefact. It stays checked in, because pac solution pack needs the whole folder and the
+# .data.xml sidecar beside it carries the id and type that are not in the HTML.
+Write-Host "Syncing web resources into the solution" -ForegroundColor Cyan
+
+$webResources = @(
+    @{ From = "$root/src/webresources/pwrp_settings.html"; To = "$root/solution/WebResources/pwrp_settings" }
+    @{ From = "$root/build/assets/app-icon.svg";           To = "$root/solution/WebResources/pwrp_/icons/ivrtoolkit.svg" }
+)
+
+foreach ($resource in $webResources) {
+    if (-not (Test-Path $resource.From)) { throw "Web resource source not found at $($resource.From)." }
+    if (-not (Test-Path $resource.To)) { throw "No packed copy at $($resource.To). Export the solution first, so the .data.xml sidecar exists." }
+
+    # Compared as bytes rather than copied blindly, so the build says when the two had
+    # drifted. Silence here means an export has kept up; a line means it had not, which is
+    # the state that shipped a stale page.
+    $from = [IO.File]::ReadAllBytes($resource.From)
+    $to = [IO.File]::ReadAllBytes($resource.To)
+
+    if ([Convert]::ToBase64String($from) -eq [Convert]::ToBase64String($to)) {
+        Write-Host "  = $(Split-Path $resource.To -Leaf)" -ForegroundColor DarkGray
+    }
+    else {
+        [IO.File]::WriteAllBytes($resource.To, $from)
+        Write-Host "  ~ $(Split-Path $resource.To -Leaf), was out of date" -ForegroundColor Yellow
+    }
+}
+
+# 5. Pack solution
 New-Item -ItemType Directory -Force -Path $OutputPath | Out-Null
 
 foreach ($type in @("Managed", "Unmanaged")) {

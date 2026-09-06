@@ -41,13 +41,18 @@ Versions here are `MAJOR.MINOR.PATCH`. The fourth part in `VERSION` is a build n
 
 ### Fixed
 
-- `deploy.ps1` now uploads and publishes the Settings page. It is source, in
-  `src/webresources/`, but not part of the packed solution, so it was only ever deployed by
-  `New-ModelDrivenApp.ps1`, an install time script. Every deploy since shipped a plugin
-  update and left the page as it was on day one. A stale page is worse than a missing one
-  because it works: the workstream dropdown kept reporting a query fault that had been
-  fixed in source two releases earlier. `build/Update-WebResources.ps1` does the upload and
-  the publish, and both scripts call it
+- `build.ps1` copies `src/webresources` into `solution/WebResources` before packing. The
+  Settings page existed twice: the file that is edited, and the packed copy inside the
+  solution, which only `Export-Solution.ps1` ever wrote. Nothing kept them in step, so an
+  edit reached a deployment only if somebody happened to export afterwards. They diverged
+  for two releases and the built solution shipped a page older than the repository,
+  managed zips included. A stale page is worse than a missing one because it works: the
+  workstream dropdown kept reporting a query fault that had been fixed in source two
+  releases earlier. `src` is now the source of truth and the packed copy a build artefact,
+  and the build says when the two had drifted
+- `build/Update-WebResources.ps1` uploads and publishes the page on its own, for editing it
+  without a full build and deploy, and for repairing an environment whose page is older
+  than its solution
 
 ### Changed
 

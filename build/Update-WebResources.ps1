@@ -3,18 +3,19 @@
     Uploads the web resources from src/webresources and publishes them.
 
 .DESCRIPTION
-    The Settings page is source, in src/webresources/pwrp_settings.html, but it is not part
-    of the packed solution: it is pushed through the Web API like every other component
-    this repo creates. That left it deployed by New-ModelDrivenApp.ps1 alone, which is a
-    script you run once when you install, so every deploy after that shipped a plugin
-    update and left the page as it was on day one.
+    The fast path for a page change. The Settings page is a solution component and a full
+    build and deploy ships it correctly, but that is two minutes to change a label. This
+    uploads and publishes it on its own, in seconds.
 
-    A stale page is worse than an obviously missing one, because it works. A corrected
-    query, a new setting, a better hint: none of it appears, and the page carries on
-    behaving the way it did months ago while the source says otherwise.
+    build.ps1 copies src/webresources into solution/WebResources before packing, so the
+    packed solution is always current. That copy is what a release ships. This script is
+    for the loop while you are editing the page, and for repairing an environment whose
+    page is older than its solution.
 
-    So deploy.ps1 calls this every run, and New-ModelDrivenApp.ps1 calls it too. Safe to
-    run repeatedly and on its own.
+    New-ModelDrivenApp.ps1 also calls it, because the app cannot bind a subarea to a web
+    resource that does not exist yet.
+
+    Safe to run repeatedly. Unchanged resources are not republished.
 
 .EXAMPLE
     ./Update-WebResources.ps1 -EnvironmentUrl https://mydev.crm4.dynamics.com

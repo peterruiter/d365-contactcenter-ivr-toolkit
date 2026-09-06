@@ -41,10 +41,6 @@ if ($LASTEXITCODE -ne 0) { throw "Solution import failed." }
 Write-Host "Registering custom API metadata" -ForegroundColor Cyan
 & "$PSScriptRoot/Register-CustomApis.ps1" -EnvironmentUrl $EnvironmentUrl
 
-# The Settings page is source but not part of the packed solution, so importing the
-# solution does not update it. Left to New-ModelDrivenApp.ps1, which is an install time
-# script, it stayed as it was on day one while the source moved on for months.
-& "$PSScriptRoot/Update-WebResources.ps1" -EnvironmentUrl $EnvironmentUrl
 
 if (-not $SkipHealthCheck) {
     Write-Host "Running health check" -ForegroundColor Cyan

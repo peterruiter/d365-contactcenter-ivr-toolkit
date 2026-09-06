@@ -208,9 +208,16 @@ The list could not be read, so this is a free text box: Could not find a propert
 named 'msdyn_liveworkstreamId' on type 'Microsoft.Dynamics.CRM.msdyn_liveworkstream'.
 ```
 
-The page in the environment is older than the page in the repository. It is source but not
-part of the packed solution, so before 3.5.0 importing the solution did not touch it and
-only `New-ModelDrivenApp.ps1` ever uploaded it, which you run once at install.
+The page in the environment is older than the page in the repository.
+
+The page is a solution component, so a deployment does ship it. What it ships is
+`solution/WebResources/pwrp_settings`, a second copy of
+`src/webresources/pwrp_settings.html` that only `Export-Solution.ps1` ever wrote. Before
+3.5.0 nothing kept the two in step, so an edit reached an environment only if somebody
+exported in between. `build.ps1` now copies source over the packed copy before packing and
+prints a line when they had drifted.
+
+Rebuild and deploy, or update just the page:
 
 ```powershell
 pwsh build/Update-WebResources.ps1 -EnvironmentUrl https://yourorg.crm4.dynamics.com
@@ -218,7 +225,7 @@ pwsh build/Update-WebResources.ps1 -EnvironmentUrl https://yourorg.crm4.dynamics
 
 Then reload with Ctrl+Shift+R. An uploaded web resource is not the served one until it is
 published, and the browser caches it after that, which together look exactly like the
-upload not having worked. `deploy.ps1` runs this every time from 3.5.0.
+upload not having worked.
 
 ### The promotion flow shows errors the moment you open it
 

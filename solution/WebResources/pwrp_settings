@@ -36,6 +36,10 @@
   .example td.band { font-weight: 600; }
   .example .note { color: #616161; margin-top: 4px; }
   .example .bad { color: #c50f1f; }
+  .deflt { font-size: 12px; color: #616161; margin-top: 5px; }
+  .deflt code, .example code { background: #f3f2f1; border-radius: 3px; padding: 1px 5px; font-family: Consolas, monospace; }
+  .deflt .none { font-style: italic; }
+  .deflt .differs { color: #0f6cbd; }
 </style>
 </head>
 <body>
@@ -83,9 +87,9 @@ const GROUPS = [
     blurb: "The bands decide when the toolkit stops putting callers through and offers to ring them back instead.",
     vars: ["pwrp_WaitBandThresholds"] },
   { title: "Callbacks",
-    blurb: "Direct callback needs only the queue profile flag. Scheduled callback needs the master switch here as well, which is why turning it on for a single queue appears to do nothing.",
-    vars: ["pwrp_EnableScheduledCallback", "pwrp_OutboundWorkstreamId", "pwrp_CallbackSlotMinutes",
-           "pwrp_MaxCallbackAttempts", "pwrp_CallbackRetryMinutes"] },
+    blurb: "Direct callback needs only the queue profile flag. Scheduled callback needs the master switch here as well, which is why turning it on for a single queue appears to do nothing. Proactive engagement places the calls, and the toolkit finds it on the outbound workstream, so leave the engagement empty unless that workstream runs more than one.",
+    vars: ["pwrp_EnableScheduledCallback", "pwrp_OutboundWorkstreamId", "pwrp_ProactiveEngagementConfigId",
+           "pwrp_CallbackSlotMinutes", "pwrp_MaxCallbackAttempts", "pwrp_CallbackRetryMinutes"] },
   { title: "Performance",
     blurb: "Caching. Raise these on a busy environment. Lower them while you are editing wording or hours and want to hear the change.",
     vars: ["pwrp_MetricsCacheSeconds", "pwrp_HoursCacheSeconds", "pwrp_MetricsWindowMinutes"] },
@@ -107,16 +111,37 @@ const STREAMSOURCES = { 192370000: "voice", 192440000: "voice call", 192340000: 
 
 const LOOKUPS = {
   pwrp_OutboundWorkstreamId: {
+    // Lowercase throughout. The Web API takes logical names, and the entity reference
+    // documents this key under its SchemaName, msdyn_liveworkstreamId, which the API
+    // rejects. The same trap applies to every id column on an msdyn_ table.
     path: "msdyn_liveworkstreams" +
-      "?$select=msdyn_name,msdyn_liveworkstreamId,msdyn_direction,msdyn_streamsource" +
+      "?$select=msdyn_name,msdyn_liveworkstreamid,msdyn_direction,msdyn_streamsource" +
       "&$filter=statecode eq 0 and (msdyn_direction eq 1 or msdyn_direction eq 3 or msdyn_direction eq 4)" +
       "&$orderby=msdyn_name",
     map: w => {
       const parts = [DIRECTIONS[w.msdyn_direction] || "direction " + w.msdyn_direction];
       if (STREAMSOURCES[w.msdyn_streamsource]) parts.push(STREAMSOURCES[w.msdyn_streamsource]);
-      return { value: w.msdyn_liveworkstreamId, label: w.msdyn_name + "  (" + parts.join(", ") + ")" };
+      return { value: w.msdyn_liveworkstreamid, label: w.msdyn_name + "  (" + parts.join(", ") + ")" };
     },
-    empty: "No active outbound workstream in this environment. Create one, with preview dial mode, before turning scheduled callback on."
+    empty: "No active outbound workstream in this environment. Create one, with a proactive engagement on it, before turning scheduled callback on."
+  },
+  pwrp_ProactiveEngagementConfigId: {
+    // Usually left empty. The toolkit finds the engagement on the outbound workstream by
+    // itself, so this is only for an environment running several on one workstream, where
+    // guessing which one rings customers would be the wrong thing to do.
+    path: "msdyn_proactive_engagement_configs" +
+      "?$select=msdyn_name,msdyn_description,msdyn_proactive_engagement_configid" +
+      "&$expand=msdyn_workstream($select=msdyn_name)" +
+      "&$filter=statecode eq 0" +
+      "&$orderby=msdyn_name",
+    map: e => {
+      const workstream = e.msdyn_workstream ? e.msdyn_workstream.msdyn_name : "no workstream";
+      return {
+        value: e.msdyn_proactive_engagement_configid,
+        label: e.msdyn_name + "  (" + workstream + ")"
+      };
+    },
+    empty: "No active proactive engagement in this environment. Create one on the outbound workstream, in whichever dial mode suits."
   }
 };
 
@@ -200,20 +225,52 @@ function fieldHtml(def) {
         '<button class="reset" data-reset="' + def.schemaname + '">Use default</button>' +
       '</div>' +
       inputFor(def) +
+      '<div class="deflt" id="def_' + def.schemaname + '"></div>' +
       (EXAMPLES[def.schemaname] ? '<div class="example" id="ex_' + def.schemaname + '"></div>' : '') +
       (def.description ? '<div class="hint">' + escapeHtml(def.description) + '</div>' : '') +
       lookupHint(def) +
-      '<div class="schema">' + def.schemaname +
-        (def.defaultvalue ? ' &middot; default ' + escapeHtml(def.defaultvalue) : '') + '</div>' +
+      '<div class="schema">' + def.schemaname + '</div>' +
     '</div>';
+}
+
+// Shown on every setting, whether or not it has been overridden. On a setting that has
+// been changed it is the only way to see what it was, and "what did this used to be"
+// is the first question anyone asks when a queue starts behaving oddly.
+//
+// An empty default is a real state and says something: pwrp_OutboundWorkstreamId ships
+// empty because it cannot ship with a guess, and the toolkit reads empty as unconfigured.
+function defaultHtml(def) {
+  const fallback = def.defaultvalue == null ? "" : String(def.defaultvalue).trim();
+  const shipped = fallback
+    ? "<code>" + escapeHtml(labelFor(def, fallback)) + "</code>"
+    : '<span class="none">empty, which the toolkit reads as not configured</span>';
+
+  const current = def.valueId ? (def.value || "").trim() : fallback;
+  const differs = def.valueId && current !== fallback;
+
+  return "Default " + shipped +
+    (differs ? ' <span class="differs">&middot; overridden here</span>' : "");
+}
+
+// A raw id means nothing to a reader, so show the name when the dropdown knows one.
+function labelFor(def, value) {
+  const lookup = lookups[def.schemaname];
+  if (!lookup || lookup.failed) return value;
+  const match = lookup.items.find(i => i.value === value);
+  return match ? match.label : value;
 }
 
 function lookupHint(def) {
   const lookup = lookups[def.schemaname];
   if (!lookup) return "";
   if (lookup.failed) {
+    // Naming the likely cause matters more here than the error does. A query that was
+    // wrong when this page was deployed stays wrong until a newer copy is deployed, and
+    // the message underneath then describes a fault source control says was fixed.
     return '<div class="hint bad">The list could not be read, so this is a free text box: ' +
-      escapeHtml(lookup.reason) + "</div>";
+      escapeHtml(lookup.reason) +
+      '<br>If the source says otherwise, this page is out of date. Run ' +
+      '<code>build/Update-WebResources.ps1</code>, then reload with Ctrl+Shift+R.</div>';
   }
   if (!lookup.items.length) return '<div class="hint bad">' + escapeHtml(lookup.empty) + "</div>";
   return "";
@@ -283,6 +340,7 @@ function paint(def) {
   badge.textContent = def.valueId ? "set here" : "default";
   badge.className = def.valueId ? "badge set" : "badge";
   document.querySelector('[data-reset="' + def.schemaname + '"]').disabled = !def.valueId;
+  document.getElementById("def_" + def.schemaname).innerHTML = defaultHtml(def);
   if (EXAMPLES[def.schemaname]) refreshExample(def.schemaname);
 }
 
