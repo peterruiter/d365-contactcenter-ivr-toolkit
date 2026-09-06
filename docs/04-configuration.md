@@ -28,10 +28,18 @@ That page is the supported way to change any of them. It lists the thirteen sett
 groups, with the guidance for each one underneath the box, and it says whether a setting
 is on its default or has been set here.
 
-Three things it does that the maker portal does not:
+Four things it does that the maker portal does not:
 
 - **Reads the guidance from the solution.** Labels, help text, types and defaults come
   from the environment variable definitions, so the page cannot drift from what shipped
+- **Offers a list where a setting is an id.** `pwrp_OutboundWorkstreamId` is a dropdown of
+  the active outbound workstreams in the environment, by name. Nobody transcribes a GUID.
+  Reading that list needs a read privilege on `msdyn_liveworkstream`, which an
+  administrator has; without it the field falls back to a text box and says why
+- **Shows a worked example where the wording cannot.** `pwrp_WaitBandThresholds` is three
+  positional numbers, so the page turns whatever you type into the four bands a caller
+  would actually land in, and refuses to pretend that three numbers that do not rise mean
+  anything
 - **Puts a setting back on its default.** Clearing the box and saving does not do this.
   An empty string is a value, and the platform refuses one on some types. **Use default**
   deletes the value so the default applies again

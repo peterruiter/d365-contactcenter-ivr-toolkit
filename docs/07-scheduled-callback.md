@@ -52,7 +52,8 @@ profile.
 
 ### 2. Outbound workstream
 
-Create a workstream with the Outbound option. Note its id.
+Create a workstream with the Outbound option. You do not need its id: the Settings page
+lists every active outbound workstream by name and writes the id for you.
 
 ### 3. Proactive engagement
 
@@ -62,13 +63,18 @@ the whole point of a scheduled callback.
 
 ### 4. Toolkit configuration
 
+In the Contact Center IVR Toolkit app, go to **Settings**:
+
 ```
 pwrp_EnableScheduledCallback = true
-pwrp_OutboundWorkstreamId    = <workstream guid>
+pwrp_OutboundWorkstreamId    = pick the workstream from step 2
 pwrp_CallbackSlotMinutes     = 30
 pwrp_MaxCallbackAttempts     = 3
 pwrp_CallbackRetryMinutes    = 20
 ```
+
+Then press **Run health check** on the same page. It fails when scheduled callback is on
+and the workstream is not set, which is the mistake this ordering exists to catch.
 
 Then set `pwrp_scheduledcallbackenabled = true` and a sensible `pwrp_slotcapacity` on
 each queue profile that should offer it.

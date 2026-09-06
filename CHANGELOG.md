@@ -27,6 +27,12 @@ Semantic versioning. The Custom API contract is stable within a major version.
   saving never did this. An empty string is a value, and the platform refuses one on some
   types, so there was no way back to a default short of deleting the record by hand
 - **Run health check** on the page, calling `pwrp_HealthCheck` and listing each check
+- `pwrp_OutboundWorkstreamId` is a dropdown of the environment's active outbound
+  workstreams, by name, rather than a box to transcribe a GUID into. A configured
+  workstream that has since been deactivated is kept as an option, because a dropdown
+  silently dropping a value it has no option for would turn saving into clearing
+- A live worked example under `pwrp_WaitBandThresholds`, turning the three numbers into
+  the four bands a caller lands in, and saying so when they do not rise
 - An app tile icon, `build/assets/app-icon.svg`, uploaded as a solution web resource. The
   app previously showed the platform default tile, shared with several other apps in the
   selector

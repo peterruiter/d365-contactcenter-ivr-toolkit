@@ -30,6 +30,12 @@
   .fail { background: #fdf3f4; border-left: 3px solid #c50f1f; }
   .check { padding: 6px 0; border-top: 1px solid #f0f0f0; }
   .pass { color: #107c10; } .failed { color: #c50f1f; }
+  .example { margin-top: 6px; background: #f8f8f8; border: 1px solid #ececec; border-radius: 4px; padding: 8px 10px; font-size: 12px; }
+  .example table { border-collapse: collapse; margin-top: 4px; }
+  .example td { padding: 1px 12px 1px 0; }
+  .example td.band { font-weight: 600; }
+  .example .note { color: #616161; margin-top: 4px; }
+  .example .bad { color: #c50f1f; }
 </style>
 </head>
 <body>
@@ -88,6 +94,77 @@ const GROUPS = [
     vars: ["pwrp_TelemetryEnabled"] }
 ];
 
+// Settings whose value is an id of something else in the environment. Typing a GUID by
+// hand is not configuration, it is transcription, and the health check only tells you it
+// was wrong after the fact.
+//
+// msdyn_direction: 0 Inbound, 1 Outbound, 2 Direct Inbound, 3 Direct Outbound,
+// 4 ProactiveOutbound. All three outbound kinds are offered rather than only the one
+// this toolkit expects, because an environment that named its workstream something
+// unexpected is better served by seeing it and choosing than by an empty list.
+const DIRECTIONS = { 0: "inbound", 1: "outbound", 2: "direct inbound", 3: "direct outbound", 4: "proactive outbound" };
+const STREAMSOURCES = { 192370000: "voice", 192440000: "voice call", 192340000: "SMS", 192360000: "live chat" };
+
+const LOOKUPS = {
+  pwrp_OutboundWorkstreamId: {
+    path: "msdyn_liveworkstreams" +
+      "?$select=msdyn_name,msdyn_liveworkstreamId,msdyn_direction,msdyn_streamsource" +
+      "&$filter=statecode eq 0 and (msdyn_direction eq 1 or msdyn_direction eq 3 or msdyn_direction eq 4)" +
+      "&$orderby=msdyn_name",
+    map: w => {
+      const parts = [DIRECTIONS[w.msdyn_direction] || "direction " + w.msdyn_direction];
+      if (STREAMSOURCES[w.msdyn_streamsource]) parts.push(STREAMSOURCES[w.msdyn_streamsource]);
+      return { value: w.msdyn_liveworkstreamId, label: w.msdyn_name + "  (" + parts.join(", ") + ")" };
+    },
+    empty: "No active outbound workstream in this environment. Create one, with preview dial mode, before turning scheduled callback on."
+  }
+};
+
+const lookups = {};
+
+// Worked examples, rendered under the field and recalculated as it is typed. A setting
+// whose meaning is positional, like three comma separated numbers, cannot be explained
+// in a sentence as well as it can be shown.
+const EXAMPLES = {
+  pwrp_WaitBandThresholds: value => {
+    const parts = String(value || "").split(",").map(p => p.trim());
+    const numbers = parts.map(Number);
+
+    if (parts.length !== 3 || numbers.some(n => !isFinite(n) || n <= 0)) {
+      return '<span class="bad">Three whole numbers of seconds, rising, separated by commas.</span> ' +
+        'For example <code>60,180,420</code>.';
+    }
+    if (!(numbers[0] < numbers[1] && numbers[1] < numbers[2])) {
+      return '<span class="bad">The three numbers must rise.</span> ' +
+        numbers.join(", ") + ' does not, so a band above the first is unreachable.';
+    }
+
+    const rows = [
+      ["Short", "under " + duration(numbers[0]), "put the caller through"],
+      ["Moderate", duration(numbers[0]) + " to " + duration(numbers[1]), "offer a callback"],
+      ["Long", duration(numbers[1]) + " to " + duration(numbers[2]), "offer a callback"],
+      ["VeryLong", "over " + duration(numbers[2]), "offer a callback"]
+    ];
+
+    return "<b>" + numbers.join(",") + "</b> means a caller hears:" +
+      "<table>" + rows.map(r =>
+        '<tr><td class="band">' + r[0] + "</td><td>" + r[1] + "</td><td>" + r[2] + "</td></tr>").join("") +
+      "</table>" +
+      '<div class="note">Only the first number decides when callers stop being put straight through. ' +
+      "The other two change what the agent says about the wait, not what it offers. " +
+      "Sales or retention tolerate less: try <code>30,90,240</code>. Technical support with long " +
+      "handle times: <code>120,300,900</code>. With a hard SLA, put the second number on the SLA " +
+      "target so a callback is offered before you breach it.</div>";
+  }
+};
+
+function duration(seconds) {
+  if (seconds < 60) return seconds + " sec";
+  const minutes = Math.floor(seconds / 60);
+  const rest = seconds % 60;
+  return minutes + " min" + (rest ? " " + rest + " sec" : "");
+}
+
 let defs = [];
 
 function escapeHtml(text) {
@@ -100,6 +177,17 @@ function inputFor(def) {
     return '<select data-schema="' + def.schemaname + '">' +
       '<option value="true">true</option><option value="false">false</option></select>';
   }
+
+  const lookup = lookups[def.schemaname];
+  // A failed lookup falls back to the text box. Reading the source table needs a
+  // privilege this page's reader may not have, and losing the ability to set a value at
+  // all would be a worse page than the one that only had a text box.
+  if (lookup && !lookup.failed) {
+    return '<select data-schema="' + def.schemaname + '"><option value="">Not set</option>' +
+      lookup.items.map(i => '<option value="' + escapeHtml(i.value) + '">' +
+        escapeHtml(i.label) + "</option>").join("") + "</select>";
+  }
+
   return '<input type="' + (def.type === NUMBER ? "number" : "text") + '" ' +
     'data-schema="' + def.schemaname + '" placeholder="' + escapeHtml(def.defaultvalue) + '" />';
 }
@@ -112,10 +200,30 @@ function fieldHtml(def) {
         '<button class="reset" data-reset="' + def.schemaname + '">Use default</button>' +
       '</div>' +
       inputFor(def) +
+      (EXAMPLES[def.schemaname] ? '<div class="example" id="ex_' + def.schemaname + '"></div>' : '') +
       (def.description ? '<div class="hint">' + escapeHtml(def.description) + '</div>' : '') +
+      lookupHint(def) +
       '<div class="schema">' + def.schemaname +
         (def.defaultvalue ? ' &middot; default ' + escapeHtml(def.defaultvalue) : '') + '</div>' +
     '</div>';
+}
+
+function lookupHint(def) {
+  const lookup = lookups[def.schemaname];
+  if (!lookup) return "";
+  if (lookup.failed) {
+    return '<div class="hint bad">The list could not be read, so this is a free text box: ' +
+      escapeHtml(lookup.reason) + "</div>";
+  }
+  if (!lookup.items.length) return '<div class="hint bad">' + escapeHtml(lookup.empty) + "</div>";
+  return "";
+}
+
+function refreshExample(schema) {
+  const target = document.getElementById("ex_" + schema);
+  if (!target) return;
+  const el = control(schema);
+  target.innerHTML = EXAMPLES[schema](el ? el.value : "");
 }
 
 function render() {
@@ -142,6 +250,13 @@ function render() {
   defs.forEach(paint);
   Array.prototype.forEach.call(document.querySelectorAll("[data-reset]"), b =>
     b.addEventListener("click", () => resetToDefault(b.getAttribute("data-reset")).catch(e => show(false, e.message))));
+
+  Object.keys(EXAMPLES).forEach(schema => {
+    const el = control(schema);
+    if (!el) return;
+    el.addEventListener("input", () => refreshExample(schema));
+    refreshExample(schema);
+  });
 }
 
 function control(schema) { return document.querySelector('[data-schema="' + schema + '"]'); }
@@ -149,15 +264,44 @@ function control(schema) { return document.querySelector('[data-schema="' + sche
 function paint(def) {
   const el = control(def.schemaname);
   if (!el) return;
-  const raw = def.valueId ? def.value : def.defaultvalue;
-  el.value = (raw == null ? "" : String(raw)).trim();
+  const raw = ((def.valueId ? def.value : def.defaultvalue) == null
+    ? "" : String(def.valueId ? def.value : def.defaultvalue)).trim();
+
+  // A dropdown silently drops a value it has no option for, which would turn saving into
+  // clearing the setting. This happens for real: a workstream that has been deactivated
+  // is still the configured one, and is no longer in the list.
+  if (el.tagName === "SELECT" && raw &&
+      !Array.prototype.some.call(el.options, o => o.value === raw)) {
+    const option = document.createElement("option");
+    option.value = raw;
+    option.textContent = raw + "  (not in the list, possibly deactivated)";
+    el.appendChild(option);
+  }
+
+  el.value = raw;
   const badge = document.getElementById("badge_" + def.schemaname);
   badge.textContent = def.valueId ? "set here" : "default";
   badge.className = def.valueId ? "badge set" : "badge";
   document.querySelector('[data-reset="' + def.schemaname + '"]').disabled = !def.valueId;
+  if (EXAMPLES[def.schemaname]) refreshExample(def.schemaname);
+}
+
+async function loadLookups() {
+  for (const schema of Object.keys(LOOKUPS)) {
+    const spec = LOOKUPS[schema];
+    try {
+      const r = await api(spec.path);
+      lookups[schema] = { items: r.value.map(spec.map), empty: spec.empty };
+    }
+    catch (e) {
+      lookups[schema] = { failed: true, reason: e.message };
+    }
+  }
 }
 
 async function load() {
+  await loadLookups();
+
   const r = await api("environmentvariabledefinitions" +
     "?$select=schemaname,displayname,description,defaultvalue,type" +
     "&$filter=startswith(schemaname,'pwrp_')" +
