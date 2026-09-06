@@ -33,6 +33,20 @@ nine tool budget holds.
 
 ### Fixed
 
+- `docs/07-scheduled-callback.md` said the promotion flow ships in the solution and runs
+  every five minutes. It does not ship, and there is no flow: `solution/Workflows/` holds a
+  definition file that is not a solution component, and `Solution.xml` has no workflow root
+  component. The document now says to build it, and gives the two steps
+
+- The contact is matched from the callback number when no usable `ContactId` is supplied.
+  A caller gives their number, and if one contact holds it the callback links to them
+  whether or not the conversation recognised the caller. Two matches links neither: a
+  callback attached to the wrong customer puts a stranger's history in front of the
+  representative who answers
+- `pwrp_HealthCheck` fails a new **Callback promotion** check when scheduled callbacks are
+  more than fifteen minutes overdue and still `Requested`. The promotion flow is not part
+  of the solution, so the ordinary way for scheduled callback to fail is that nobody built
+  it, and until now nothing said so
 - A `ContactId` that is not a readable contact is dropped instead of failing the booking.
   The natural thing to bind that input to is the conversation's customer, and that customer
   is an account about as often as a contact, so a well formed GUID pointing at the wrong

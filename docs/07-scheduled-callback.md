@@ -81,11 +81,25 @@ each queue profile that should offer it.
 
 ### 5. The promotion flow
 
-Ships in the solution as **Power Pete Promote Due Callbacks**. Runs every five minutes,
-picks up `Requested` records due within the slot window, moves them to `Queued` and
-hands them to the outbound workstream.
+**You have to build this. It is not in the solution.** Everything above books a callback
+and nothing dispatches it, so records sit at `Requested` for ever and the caller is never
+rung. `solution/Workflows/PowerPete-Promote-Due-Callbacks.json` is the definition to work
+from, not an importable component.
+
+Make a cloud flow in the same solution:
+
+1. Trigger: **Recurrence**, every 5 minutes.
+2. Action: Dataverse **Perform an unbound action**, action name `pwrp_PromoteDueCallbacks`.
+
+That is the whole flow. It is deliberately a timer that calls one action: the date maths,
+the slot window and the retry rules live in the plugin where they are unit tested and can
+be read in a pull request. The same logic drawn as flow steps is unreviewable.
 
 Turn it on after step 4. It does nothing while `pwrp_EnableScheduledCallback` is false.
+
+`pwrp_HealthCheck` fails the **Callback promotion** check when scheduled callbacks are more
+than fifteen minutes past their time and still `Requested`, which is what a missing flow
+looks like from the outside.
 
 ## The slot model
 

@@ -169,9 +169,14 @@ namespace PowerPete.IvrToolkit.Callback
                 ["pwrp_conversationid"] = conversationId
             };
 
-            if (contactId.HasValue && ContactExists(contactId.Value))
+            // The id the agent sent, when it is usable, otherwise whoever owns the number.
+            var resolved = contactId.HasValue && ContactExists(contactId.Value)
+                ? contactId
+                : ResolveContactByPhone(phone, rawNumber, queue);
+
+            if (resolved.HasValue)
             {
-                record["pwrp_contactid"] = new EntityReference("contact", contactId.Value);
+                record["pwrp_contactid"] = new EntityReference("contact", resolved.Value);
             }
 
             var id = _service.Create(record);
@@ -197,6 +202,74 @@ namespace PowerPete.IvrToolkit.Callback
                     rawNumber,
                     queue.Locale)
             };
+        }
+
+        /// <summary>
+        /// Finds the contact who owns this number, or null when that is not one person.
+        /// </summary>
+        /// <remarks>
+        /// A caller rings in and gives their number. If a contact holds that number the
+        /// callback should be linked to them, whether or not the agent knew who they were.
+        /// That is most of the value of the contact column, and no configuration can supply
+        /// it: the conversation only knows the customer when the caller is recognised.
+        ///
+        /// Dataverse stores whatever was typed, so the number is matched against the shapes
+        /// people actually store, plus an ends with on the significant digits for the
+        /// unformatted case. It does not match a number stored with spaces inside it. That
+        /// is a data quality problem to fix in the data, not something to paper over with a
+        /// wider query that starts matching the wrong people.
+        ///
+        /// Two matches means two contacts claim the number and this cannot know which is
+        /// calling, so it links neither. A callback attached to the wrong customer is worse
+        /// than one attached to none: it puts a stranger's history in front of the
+        /// representative who answers.
+        /// </remarks>
+        private Guid? ResolveContactByPhone(PhoneNumberValidator.Result phone, string rawNumber, QueueRef queue)
+        {
+            if (!phone.IsValid) return null;
+
+            var cc = PhoneNumberValidator.NormaliseCountryCode(queue.CountryCode) ?? "31";
+            var digits = phone.E164.TrimStart('+');
+            var national = digits.StartsWith(cc) ? digits.Substring(cc.Length) : digits;
+
+            var candidates = new List<string> { phone.E164, digits, "0" + national, national };
+            if (!string.IsNullOrWhiteSpace(rawNumber)) candidates.Add(rawNumber.Trim());
+            var exact = candidates.Distinct().ToArray();
+
+            var any = new FilterExpression(LogicalOperator.Or);
+            foreach (var column in new[] { "telephone1", "telephone2", "mobilephone" })
+            {
+                any.AddCondition(column, ConditionOperator.In, exact);
+                any.AddCondition(column, ConditionOperator.EndsWith, national);
+            }
+
+            // Two is all this needs to know. One is an answer, more than one is not.
+            var query = new QueryExpression("contact")
+            {
+                ColumnSet = new ColumnSet("contactid"),
+                TopCount = 2
+            };
+            query.Criteria.AddCondition("statecode", ConditionOperator.Equal, 0);
+            query.Criteria.AddFilter(any);
+
+            try
+            {
+                var found = _service.RetrieveMultiple(query).Entities;
+                if (found.Count == 1)
+                {
+                    _tracing.Trace("Matched contact {0} on the callback number.", found[0].Id);
+                    return found[0].Id;
+                }
+
+                _tracing.Trace("No single contact owns this number, {0} matched.", found.Count);
+                return null;
+            }
+            catch (Exception ex)
+            {
+                // Booking the callback matters more than knowing who it belongs to.
+                _tracing.Trace("Contact lookup by phone failed, booking without one: {0}", ex.Message);
+                return null;
+            }
         }
 
         /// <summary>

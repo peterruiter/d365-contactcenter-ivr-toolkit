@@ -193,6 +193,36 @@ namespace PowerPete.IvrToolkit.CustomApis
                     ? "Scheduled callback is on. pwrp_OutboundWorkstreamId must point at an outbound workstream."
                     : "Scheduled callback is off.");
 
+            // Config being right proves nothing about anything running. Scheduled callback
+            // needs a recurrence flow calling pwrp_PromoteDueCallbacks, and that flow is not
+            // part of the solution, so the ordinary way for this feature to fail is that
+            // nobody built it. Records then sit at Requested for ever and the only person
+            // who finds out is the caller who was never rung.
+            if (scheduled)
+            {
+                var overdue = new QueryExpression("pwrp_callbackrequest")
+                {
+                    ColumnSet = new ColumnSet("pwrp_callbackrequestid"),
+                    TopCount = 50,
+                    Criteria =
+                    {
+                        Conditions =
+                        {
+                            new ConditionExpression("pwrp_status", ConditionOperator.Equal, 1),
+                            new ConditionExpression("pwrp_requestedstart", ConditionOperator.OnOrBefore,
+                                DateTime.UtcNow.AddMinutes(-15))
+                        }
+                    }
+                };
+
+                var stuck = request.Service.RetrieveMultiple(overdue).Entities.Count;
+                Add("Callback promotion", stuck == 0,
+                    stuck == 0
+                        ? "No scheduled callback is overdue. Whatever promotes them is running."
+                        : $"{stuck} scheduled callbacks are more than 15 minutes past their time and still Requested. " +
+                          "Nothing is calling pwrp_PromoteDueCallbacks. Build the recurrence flow.");
+            }
+
             Add("Default locale", !string.IsNullOrWhiteSpace(request.Config.GetString(ConfigKeys.DefaultLocale)),
                 $"pwrp_DefaultLocale = {request.Config.GetString(ConfigKeys.DefaultLocale, "not set")}");
 
