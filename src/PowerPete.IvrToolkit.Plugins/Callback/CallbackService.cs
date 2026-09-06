@@ -187,9 +187,14 @@ namespace PowerPete.IvrToolkit.Callback
                 ScheduledStartUtc = requestedStartUtc,
                 Status = "Requested",
                 Attempts = 0,
+                // rawNumber, not phone.E164. The stored number carries the country code and
+                // spelling it back turns "0 6 5 3 ..." into "3 1 6 5 3 ...", which a caller
+                // hears as a wrong number read out in the sentence confirming their booking.
+                // pwrp_ValidatePhoneNumber has always spelled the raw number for this reason;
+                // this is the same rule at the point it actually matters.
                 Speakable = SpeakableFormatter.DescribeCallback(
                     requestedStartUtc.HasValue ? TimeZoneInfo.ConvertTimeFromUtc(requestedStartUtc.Value, tz) : (DateTime?)null,
-                    phone.E164,
+                    rawNumber,
                     queue.Locale)
             };
         }

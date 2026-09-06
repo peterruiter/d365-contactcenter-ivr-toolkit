@@ -33,6 +33,11 @@ nine tool budget holds.
 
 ### Fixed
 
+- The booking confirmation spells the number the caller gave, not the stored E.164. A
+  caller who said "0653740141" was told "we will call you back today at 14:30 on
+  3 1 6 5 3 7 4 0 1 4 1", which reads as a wrong number in the one sentence that confirms
+  their booking. `pwrp_ValidatePhoneNumber` has always spelled the raw number for this
+  reason; the rule now also holds where it matters most
 - A callback slot on offer is spoken as a time, not as a booking with the number left
   blank. `pwrp_GetCallbackSlots` called the booked-callback phrase with an empty number,
   so three slots came back as "We will call you back today at 12:00 on ." and a caller
