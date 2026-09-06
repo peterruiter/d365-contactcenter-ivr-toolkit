@@ -49,7 +49,7 @@ output to the caller, so they hear "WaitingNow 14" instead of a wait band, and t
 branching in `RecommendedAction` never happens. Both are rules this toolkit exists to
 enforce.
 
-Add these four and nothing else. Each block is the tool name, what it takes, and the
+Add these five and nothing else. Each block is the tool name, what it takes, and the
 description to paste. The description is not documentation, it is the only thing the
 model sees when it decides what to call, so paste it as written. See
 [14 Tool descriptions](14-tool-descriptions.md) before you reword one.
@@ -76,14 +76,33 @@ model sees when it decides what to call, so paste it as written. See
 
 > Normalises a spoken or typed phone number to E.164 and returns a digit by digit spelling for confirmation.
 
+### pwrp_GetCallbackSlots
+
+| Parameter | Fill using | Value |
+|---|---|---|
+| `Queue` | Dynamically fill with AI | The same queue name sent to `pwrp_GetQueueContext` |
+| `Days` | Custom value `3` | How far ahead to look. Three days is long enough to find a slot and short enough that the first ones offered are the useful ones |
+| `MaxResults` | Custom value `3` | The endpoint defaults to six. Six is fine on a screen and wrong on a phone: a caller cannot hold six times in their head, and reading them turns a thirty second booking into two minutes |
+
+**Description:**
+
+> Bookable callback windows inside opening hours, with remaining capacity. Offer at most three over the phone.
+
+Only useful where scheduled callback is on. It needs both the
+`pwrp_EnableScheduledCallback` setting and `pwrp_scheduledcallbackenabled` on the queue
+profile, and it is off by default. Add the tool anyway: an agent that has it can say
+scheduled callback is not available for this queue, and an agent without it says it
+cannot retrieve the slots, which sounds like an outage and leaves the caller waiting for
+a fix that is not coming.
+
 ### pwrp_CreateCallback
 
 | Parameter | Fill using | Value |
 |---|---|---|
 | `Queue` | Dynamically fill with AI | |
 | `PhoneNumber` | Dynamically fill with AI | The number as the caller said it, the same string you sent to `pwrp_ValidatePhoneNumber`. Not the `E164`, and never rebuilt from the digits you read back |
-| `Mode` | Custom value `Direct` | Pin it unless the agent really offers booked slots. A model that can choose `Scheduled` will sometimes choose it on a queue that does not allow it |
-| `RequestedStartUtc` | Custom value `0001-01-01T00:00:00Z` | Read as not supplied, and ignored entirely when `Mode` is `Direct`. Switch to AI only when the agent offers booked slots |
+| `Mode` | Dynamically fill with AI | `Direct` or `Scheduled`, whichever the caller chose. Safe to let the model pick, because `pwrp_CreateCallback` refuses `Scheduled` on a queue that does not allow it and returns `CALLBACK_DISABLED`. Pin it to `Direct` only if you deliberately never offer booked times |
+| `RequestedStartUtc` | Dynamically fill with AI | The slot the caller chose, exactly as `pwrp_GetCallbackSlots` returned it. Ignored when `Mode` is `Direct`, and a time that is not one of the returned slots is rejected |
 | `ConversationId` | Custom value `System.Conversation.Id` | Ties the callback to the conversation, which is what makes it traceable afterwards |
 | `ContactId` | Custom value `-` | Not a GUID, so it is read as no contact |
 | `ContextJson` | Custom value `{}` | |
@@ -112,11 +131,11 @@ model sees when it decides what to call, so paste it as written. See
 
 | Tool | Fill using | Add it when | Description |
 |---|---|---|---|
-| `pwrp_GetCallbackSlots` | `Queue` by AI. `MaxResults` custom `3`, because three is what a caller can hold in their head. `Days` custom `3` | Callers pick a time | Bookable callback windows inside opening hours, with remaining capacity. Offer at most three over the phone. |
 | `pwrp_GetCallbackStatus` | `Reference` and `PhoneNumber` by AI, whichever the caller offers. `CallbackId` custom `-`, a caller never has one | Callers ask where their callback is | Looks up a callback by reference, phone number or id. |
 | `pwrp_CancelCallback` | `CallbackId` by AI, from the booking earlier in the call | Callers can cancel | Cancels an open callback request. |
 | `pwrp_RescheduleCallback` | All three by AI. `NewStartUtc` must be a slot `pwrp_GetCallbackSlots` returned | Callers can move a slot | Moves a scheduled callback to a different available slot. |
 | `pwrp_GetQueueHours` | `Queue` by AI. `Days` custom `7`. `FromDate` custom `0001-01-01T00:00:00Z`, which the plugin reads as today | Someone asks about a week, not about now | Opening hours for a queue across a date range, holiday exceptions included. |
+
 Leave the rest out. `pwrp_ResolveQueue`, `pwrp_IsQueueOpen`, `pwrp_GetNextOpenTime`,
 `pwrp_GetQueueMetrics`, `pwrp_CheckCallbackEligibility` and `pwrp_GetBroadcastMessage` all
 return something `pwrp_GetQueueContext` already gave you. Adding them invites three calls
@@ -147,12 +166,11 @@ the agent. It deliberately breaks the two rules the toolkit exists to enforce, r
 numbers of waiting callers and seconds of waiting out loud. A caller who hears "fourteen
 people ahead of you" hangs up, which is the whole reason `WaitBand` exists.
 
-It needs tools the four core ones do not cover:
+It needs tools the five core ones do not cover:
 
 | Tool | Fill using | For |
 |---|---|---|
 | `pwrp_GetQueueMetrics` | `Queue` by AI | The seconds and counts behind the band |
-| `pwrp_GetCallbackSlots` | `Queue` by AI, `MaxResults` custom `3` | Testing scheduled callback |
 | `pwrp_GetCallbackStatus` | `Reference` and `PhoneNumber` by AI | Checking a booking |
 | `pwrp_CancelCallback` | `CallbackId` by AI | Undoing a test booking |
 | `pwrp_GetQueueHours` | `Queue` by AI, `Days` custom `7` | Checking a calendar |
@@ -162,11 +180,8 @@ Leave `pwrp_LogIvrOutcome` off this agent entirely. Told plainly not to log a di
 call, a model logged one anyway, and the row sits in the containment reporting as though a
 caller had been served. Removing the tool is the only reliable control.
 
-`pwrp_CreateCallback` also needs `Mode` filled by AI rather than pinned to `Direct`, so
-both modes can be tested. That is the one change to make to a core tool, and the reason to
-keep a separate test agent rather than adding diagnostics to the one callers reach: a
-model that can choose `Scheduled` will sometimes choose it on a queue that does not allow
-it.
+No change to any core tool. `Mode` on `pwrp_CreateCallback` is already filled by AI, so
+both modes can be tested as they ship.
 
 ### Latency
 

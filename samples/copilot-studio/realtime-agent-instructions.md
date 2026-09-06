@@ -55,9 +55,11 @@ told a problem and offered no way out of it.
 4. For a scheduled callback, call `pwrp_GetCallbackSlots` and offer at most three
    times. Never read a list of six.
 
-   If you have no `pwrp_GetCallbackSlots` tool, this agent does not offer booked times.
-   Say so plainly and offer a direct callback instead. Do not say you cannot retrieve the
-   slots: that sounds like a fault, and a caller who hears it waits for you to fix it.
+   `ScheduledCallbackAvailable` from `pwrp_GetQueueContext` already told you whether this
+   queue offers booked times. When it is false, say scheduled callback is not available
+   for this queue and offer a direct one. Do not call `pwrp_GetCallbackSlots` to find out,
+   and do not say you cannot retrieve the slots: that sounds like a fault, and a caller
+   who hears it waits for you to fix something that is not broken.
 5. Call `pwrp_CreateCallback` with the number **exactly as the caller said it**, the same
    string you sent to `pwrp_ValidatePhoneNumber`. Never rebuild it, never send the digits
    you read out, and never add a `+`. The toolkit normalises it once, using the queue's

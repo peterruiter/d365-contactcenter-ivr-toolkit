@@ -27,6 +27,16 @@ Semantic versioning. The Custom API contract is stable within a major version.
 
 ### Changed
 
+- `pwrp_GetCallbackSlots` is one of the tools to set up by default, not an extra to add
+  when a scenario asks for it. Scheduled callback is a headline feature of the toolkit and
+  the Copilot Studio route had it filed under optional, which is why an agent built by
+  following the documentation could not offer a booked time. The MCP server has exposed it
+  by default since it was written; the connector route was the inconsistent one
+- `Mode` and `RequestedStartUtc` on `pwrp_CreateCallback` are filled by AI rather than
+  pinned to `Direct` and to a year one date. `Mode` was pinned because a model that can
+  choose `Scheduled` will sometimes choose it on a queue that forbids it. It will, and
+  `pwrp_CreateCallback` already refuses it with `CALLBACK_DISABLED`, so the pin duplicated
+  an enforcement that exists and disabled the feature outright
 - The `PhoneNumber` input description for `pwrp_CreateCallback` said to send the `E164`
   that validation returned. The agent instructions said to send the number as the caller
   said it and never to rebuild it. Both were in the product, they contradict each other,
