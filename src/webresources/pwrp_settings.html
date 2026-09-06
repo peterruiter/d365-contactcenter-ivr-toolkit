@@ -111,14 +111,17 @@ const STREAMSOURCES = { 192370000: "voice", 192440000: "voice call", 192340000: 
 
 const LOOKUPS = {
   pwrp_OutboundWorkstreamId: {
+    // Lowercase throughout. The Web API takes logical names, and the entity reference
+    // documents this key under its SchemaName, msdyn_liveworkstreamId, which the API
+    // rejects. The same trap applies to every id column on an msdyn_ table.
     path: "msdyn_liveworkstreams" +
-      "?$select=msdyn_name,msdyn_liveworkstreamId,msdyn_direction,msdyn_streamsource" +
+      "?$select=msdyn_name,msdyn_liveworkstreamid,msdyn_direction,msdyn_streamsource" +
       "&$filter=statecode eq 0 and (msdyn_direction eq 1 or msdyn_direction eq 3 or msdyn_direction eq 4)" +
       "&$orderby=msdyn_name",
     map: w => {
       const parts = [DIRECTIONS[w.msdyn_direction] || "direction " + w.msdyn_direction];
       if (STREAMSOURCES[w.msdyn_streamsource]) parts.push(STREAMSOURCES[w.msdyn_streamsource]);
-      return { value: w.msdyn_liveworkstreamId, label: w.msdyn_name + "  (" + parts.join(", ") + ")" };
+      return { value: w.msdyn_liveworkstreamid, label: w.msdyn_name + "  (" + parts.join(", ") + ")" };
     },
     empty: "No active outbound workstream in this environment. Create one, with preview dial mode, before turning scheduled callback on."
   }
