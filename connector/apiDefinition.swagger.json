@@ -223,7 +223,7 @@
     "/pwrp_GetCallbackSlots": {
       "post": {
         "summary": "Get callback slots",
-        "description": "Bookable callback windows inside opening hours, with remaining capacity. Offer at most three over the phone.",
+        "description": "Bookable callback windows inside opening hours, with remaining capacity. Send PreferredStartUtc when the caller names a time and the nearest available slots come back instead of the earliest. Offer at most three over the phone.",
         "operationId": "GetCallbackSlots",
         "parameters": [
           {
@@ -941,6 +941,11 @@
           "type": "string",
           "x-ms-summary": "Speakable"
         },
+        "IsExactMatch": {
+          "type": "boolean",
+          "x-ms-summary": "IsExactMatch",
+          "description": "True when PreferredStartUtc falls inside the first slot returned, so the caller gets the time they asked for."
+        },
         "Success": {
           "type": "boolean",
           "x-ms-summary": "Success",
@@ -979,6 +984,12 @@
           "type": "integer",
           "x-ms-summary": "MaxResults",
           "description": "Defaults to 6."
+        },
+        "PreferredStartUtc": {
+          "type": "string",
+          "x-ms-summary": "PreferredStartUtc",
+          "description": "A time the caller asked for. Slots nearest it are returned instead of the earliest ones. Omit it and the earliest come back.",
+          "format": "date-time"
         }
       },
       "required": [

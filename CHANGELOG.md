@@ -9,6 +9,26 @@ Semantic versioning. The Custom API contract is stable within a major version.
 | Internal fix, same contract | Patch |
 | Removed or renamed output, changed enum, changed meaning | Major |
 
+## [3.4.0]
+
+### Added
+
+- `pwrp_GetCallbackSlots` takes an optional `PreferredStartUtc`. A caller who does not
+  want any of the times offered can say when would suit, and the slots nearest that come
+  back instead of the earliest. Before this the agent could only read the next three
+  windows again, which is the same answer said twice
+- `IsExactMatch` on the same endpoint, true when the requested time falls inside the
+  first slot returned. A slot is a window, so asking for 12:05 and being offered 12:00 to
+  12:15 counts: the caller is rung when they asked to be. The comparison is the toolkit's
+  because date arithmetic in a model is how a caller gets rung at the wrong time
+
+Nearest slots are chosen by distance and then returned in time order. Reading them back
+nearest first gives "quarter to three, quarter past three, half two", which sounds like a
+mistake rather than an offer.
+
+No new tool. A preferred time is an input to the endpoint the agent already has, and the
+nine tool budget holds.
+
 ## [3.3.0]
 
 ### Fixed

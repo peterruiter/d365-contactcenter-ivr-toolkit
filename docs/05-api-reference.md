@@ -169,12 +169,28 @@ Skip this if you already have it from `pwrp_GetQueueContext`, which returns
 ## pwrp_GetCallbackSlots
 
 **Inputs:** `Queue` (required), `Days` (optional, 1 to 14, defaults 3),
-`MaxResults` (optional, defaults 6)
+`MaxResults` (optional, defaults 6), `PreferredStartUtc` (optional)
 
-**Outputs:** `Slots` (JSON), `Count`, `Speakable` (first three only)
+**Outputs:** `Slots` (JSON), `Count`, `IsExactMatch`, `Speakable` (first three only)
 
 Slots fall inside opening hours and respect `pwrp_slotcapacity`. Offer three over the
 phone. Six and the caller loses track.
+
+Send `PreferredStartUtc` when the caller names a time rather than picking from the list.
+The slots nearest it come back instead of the earliest, which is rarely the same set: a
+caller who asks for Thursday afternoon does not want three times tomorrow morning.
+
+`IsExactMatch` is true when the requested time falls inside the first slot returned. A
+slot is a window, so asking for 12:05 and being offered the 12:00 to 12:15 slot counts:
+the caller is rung when they asked to be. When it is false, the toolkit found the nearest
+it has and the agent should say so before booking.
+
+The nearest slots are chosen by distance from the preference and then returned in time
+order. Reading them back nearest first gives "quarter to three, quarter past three, half
+two", which sounds like a mistake.
+
+A preference outside the `Days` window returns the nearest inside it. Widen `Days` if the
+agent should honour "next week".
 
 ---
 

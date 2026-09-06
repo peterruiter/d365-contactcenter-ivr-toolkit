@@ -86,10 +86,11 @@ model sees when it decides what to call, so paste it as written. See
 | `Queue` | Dynamically fill with AI | The same queue name sent to `pwrp_GetQueueContext` |
 | `Days` | Custom value `3` | How far ahead to look. Three days is long enough to find a slot and short enough that the first ones offered are the useful ones |
 | `MaxResults` | Custom value `3` | The endpoint defaults to six. Six is fine on a screen and wrong on a phone: a caller cannot hold six times in their head, and reading them turns a thirty second booking into two minutes |
+| `PreferredStartUtc` | Dynamically fill with AI | A time the caller asked for, when they name one instead of picking from the list. Leave it to the model to fill only when the caller says a time: unfilled it comes through as not supplied and the earliest slots come back, which is what you want for "whenever" |
 
 **Description:**
 
-> Bookable callback windows inside opening hours, with remaining capacity. Offer at most three over the phone.
+> Bookable callback windows inside opening hours, with remaining capacity. Send PreferredStartUtc when the caller names a time and the nearest available slots come back instead of the earliest. Offer at most three over the phone.
 
 Only useful where scheduled callback is on. It needs both the
 `pwrp_EnableScheduledCallback` setting and `pwrp_scheduledcallbackenabled` on the queue

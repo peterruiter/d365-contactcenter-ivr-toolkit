@@ -341,7 +341,7 @@
       "name": "pwrp_GetCallbackSlots",
       "displayName": "Get callback slots",
       "type": "PowerPete.IvrToolkit.CustomApis.GetCallbackSlots",
-      "description": "Bookable callback windows inside opening hours, with remaining capacity. Offer at most three over the phone.",
+      "description": "Bookable callback windows inside opening hours, with remaining capacity. Send PreferredStartUtc when the caller names a time and the nearest available slots come back instead of the earliest. Offer at most three over the phone.",
       "isFunction": false,
       "inputs": [
         {
@@ -360,6 +360,12 @@
           "type": "Integer",
           "required": false,
           "description": "Defaults to 6."
+        },
+        {
+          "name": "PreferredStartUtc",
+          "type": "DateTime",
+          "required": false,
+          "description": "A time the caller asked for. Slots nearest it are returned instead of the earliest ones. Omit it and the earliest come back."
         }
       ],
       "outputs": [
@@ -374,6 +380,11 @@
         {
           "name": "Speakable",
           "type": "String"
+        },
+        {
+          "name": "IsExactMatch",
+          "type": "Boolean",
+          "description": "True when PreferredStartUtc falls inside the first slot returned, so the caller gets the time they asked for."
         }
       ]
     },

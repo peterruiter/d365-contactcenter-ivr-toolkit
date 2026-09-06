@@ -69,6 +69,9 @@ was never involved.
 **Scheduled.** Someone picks a time. This needs slots.
 
 1. `pwrp_GetCallbackSlots`. Read the count and the first three start times.
+   Worth testing with `PreferredStartUtc` as well: send a time that is not on a slot
+   boundary and read back `IsExactMatch` and the first slot. A time inside a slot's window
+   should come back exact, one between windows should not.
 2. Ask which one, then ask for the number and validate it as above.
 3. `pwrp_CreateCallback` with `Mode` set to `Scheduled` and `RequestedStartUtc` set to the
    chosen slot. A time that is not one of the slots is rejected, which is worth testing.

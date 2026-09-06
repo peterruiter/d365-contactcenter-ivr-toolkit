@@ -47,11 +47,36 @@ namespace PowerPete.IvrToolkit.CustomApis
             var queue = CallbackFactory.Queue(request);
             var days = Math.Min(Math.Max(request.GetInt("Days", 3), 1), 14);
             var maximum = Math.Min(Math.Max(request.GetInt("MaxResults", 6), 1), 50);
+            var preferred = request.GetDate("PreferredStartUtc");
 
-            var slots = CallbackFactory.Build(request).GetSlots(queue, DateTime.UtcNow, days).Take(maximum).ToList();
+            var available = CallbackFactory.Build(request).GetSlots(queue, DateTime.UtcNow, days);
+
+            // Without a preference the earliest slots are the useful ones. With one, the
+            // useful ones are the closest to it, which is rarely the same set: a caller
+            // who asks for Thursday afternoon does not want three times tomorrow morning.
+            //
+            // Nearest is chosen by distance, then read back in time order. Picking three
+            // around a preference and then reading them out nearest first gives "quarter
+            // to three, quarter past three, half two", which sounds like a mistake.
+            var slots = preferred.HasValue
+                ? available.OrderBy(s => Math.Abs((s.StartUtc - preferred.Value).Ticks))
+                           .Take(maximum)
+                           .OrderBy(s => s.StartUtc)
+                           .ToList()
+                : available.Take(maximum).ToList();
+
+            // Whether the caller got the time they asked for, decided here rather than by
+            // the agent comparing timestamps. A slot is a window, so asking for 12:05 and
+            // being given the 12:00 to 12:15 slot is an exact match: the caller is called
+            // when they asked to be.
+            var exact = preferred.HasValue
+                && slots.Count > 0
+                && preferred.Value >= slots[0].StartUtc
+                && preferred.Value < slots[0].EndUtc;
 
             request.SetOutput("Slots", JsonConvert.SerializeObject(slots));
             request.SetOutput("Count", slots.Count);
+            request.SetOutput("IsExactMatch", exact);
             // Offering three options over the phone is plenty. More and the caller loses track.
             request.SetOutput("Speakable", string.Join(", ", slots.Take(3).Select(s => s.Speakable)));
         }
