@@ -144,6 +144,32 @@ Work through in order:
 
 If records reach `Queued` and still nobody is called, it is 6 or 7, and 7 is the usual one.
 
+### The promotion flow shows errors the moment you open it
+
+Two banners, both expected on a flow that has just been created:
+
+```
+Some of the connections are not authorized yet.
+Request to XRM API failed with error: 'Message: Code: InnerError: '
+```
+
+The second is caused by the first. The designer resolves the parameters of
+`pwrp_PromoteDueCallbacks` by asking Dataverse through the connection, and the connection
+reference is not bound to one yet, so that lookup fails and reports nothing useful.
+
+**Do not press Save while the first banner is up.** The designer treats an unauthorized
+connection as one to rewrite, and saving replaces the connection reference the script put
+in with whatever it can resolve, which is usually nothing.
+
+Bind it instead, then reopen:
+
+1. Solutions > Power Pete Contact Center IVR Toolkit > Connection references
+2. Open **Power Pete Dataverse** and pick a Dataverse connection, or create one
+3. Reopen the flow. Both banners should be gone
+
+The account behind that connection needs the toolkit security role. It is the identity that
+calls `pwrp_PromoteDueCallbacks`, not the caller and not you.
+
 ### A response property is listed two or more times
 
 Re-run `build/Register-CustomApis.ps1`. It prints a yellow `- removed duplicate` line for

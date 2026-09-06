@@ -166,6 +166,9 @@ else {
 Write-Host ""
 Write-Host "Next:" -ForegroundColor Cyan
 Write-Host "  1. Bind the Power Pete Dataverse connection reference in the maker portal."
+Write-Host "     Do this before opening the flow in the designer. Until it is bound the"
+Write-Host "     designer cannot resolve the action and reports an XRM API error, and"
+Write-Host "     saving from that state rewrites the connection reference away." -ForegroundColor Yellow
 Write-Host "  2. Set pwrp_EnableScheduledCallback and pwrp_OutboundWorkstreamId on the Settings page."
 Write-Host "  3. Turn the flow on."
 Write-Host "  4. Run pwrp_HealthCheck. The Callback promotion check reads overdue records,"
