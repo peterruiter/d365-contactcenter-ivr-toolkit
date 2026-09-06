@@ -159,6 +159,12 @@ message is deliberately hidden from the metadata connectors read, so the Dataver
 connector cannot describe it and cannot call it either. The flow was calling something it
 was not allowed to see.
 
+There are two rows to correct, which is why clearing the flag once was not enough.
+Creating a custom API generates an `sdkmessage` row, and that row is what the connector
+actually reads. It holds its own copy of `isprivate` and an `isactive` flag, and neither
+follows the API when you change it. An API first registered as private leaves an inactive
+message behind permanently. 3.4.2 repairs the message during registration.
+
 Re-register against the current contract, then check what the platform now says:
 
 ```powershell

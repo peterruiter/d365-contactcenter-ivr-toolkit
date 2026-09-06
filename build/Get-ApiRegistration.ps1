@@ -90,7 +90,9 @@ if ($problems -eq 0) {
     Write-Host "Recreate the connection behind the connection reference to clear it."
 }
 else {
-    Write-Host "$problems need attention. Register-CustomApis.ps1 corrects everything above" -ForegroundColor Yellow
-    Write-Host "except a wrong isfunction or bindingtype, which cannot be changed after the" -ForegroundColor Yellow
-    Write-Host "API is created and mean deleting and re-registering it." -ForegroundColor Yellow
+    Write-Host "$problems need attention. Register-CustomApis.ps1 corrects everything above," -ForegroundColor Yellow
+    Write-Host "including an inactive or private sdk message, except a wrong isfunction or" -ForegroundColor Yellow
+    Write-Host "bindingtype. Those cannot be changed after the API is created and mean" -ForegroundColor Yellow
+    Write-Host "deleting and re-registering it, which Register-CustomApis does for you when" -ForegroundColor Yellow
+    Write-Host "the contract changes isfunction." -ForegroundColor Yellow
 }

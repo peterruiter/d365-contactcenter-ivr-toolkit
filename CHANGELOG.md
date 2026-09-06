@@ -12,6 +12,22 @@ Semantic versioning. The Custom API contract is stable within a major version.
 Versions here are `MAJOR.MINOR.PATCH`. The fourth part in `VERSION` is a build number that
 `build.ps1` raises on every run, and a build is not a release, so it never appears below.
 
+## [3.4.2]
+
+### Fixed
+
+- `Register-CustomApis.ps1` reactivates the `sdkmessage` row behind each API. Clearing
+  `isprivate` on the custom API in 3.4.1 was not enough: creating an API generates a
+  message row holding its own copy of `isprivate` plus an `isactive` flag, that row is
+  what connectors read, and neither field follows the API when it changes. An API first
+  registered as private left a permanently inactive message, so `pwrp_PromoteDueCallbacks`
+  stayed invisible to the Dataverse connector even after the API said it was public
+
+### Added
+
+- `build/Get-ApiRegistration.ps1` reports what the platform holds for each API, the
+  custom API row and the generated message row side by side. Read only
+
 ## [3.4.1]
 
 ### Fixed
