@@ -159,13 +159,24 @@ message is deliberately hidden from the metadata connectors read, so the Dataver
 connector cannot describe it and cannot call it either. The flow was calling something it
 was not allowed to see.
 
-Re-register against the current contract:
+Re-register against the current contract, then check what the platform now says:
 
 ```powershell
 pwsh build/Register-CustomApis.ps1 -EnvironmentUrl https://yourorg.crm4.dynamics.com
+pwsh build/Get-ApiRegistration.ps1 -EnvironmentUrl https://yourorg.crm4.dynamics.com
 ```
 
-Then reopen the flow. Nothing in the flow itself needs changing.
+`Get-ApiRegistration.ps1` is read only. It reports the `customapi` row and the
+`sdkmessage` row that was generated from it, because the connector reads the message and
+the two hold separate copies of `isprivate`.
+
+If it reports every API visible and the action is still missing from the designer's
+picklist, the remaining explanation is the connector's own cache. It caches the message
+list per connection, and a message that did not exist when the connection was made stays
+missing. Create a new Dataverse connection, point the **Power Pete Dataverse** connection
+reference at it, and reopen the flow.
+
+Nothing in the flow itself needs changing in any of these cases.
 
 ### The promotion flow shows errors the moment you open it
 
