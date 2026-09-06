@@ -90,13 +90,24 @@ function Set-ApiChild {
     $apiId = $script:apiIds[$ApiName]
     if (-not $apiId) { throw "No id known for $ApiName. It was neither found nor created." }
 
-    $found = (Invoke-Dataverse -Method GET -Path ("/api/data/v9.2/$EntitySet" +
-        "?`$select=$IdField,uniquename" +
-        "&`$filter=_customapiid_value eq $apiId and (uniquename eq '$ChildName' or uniquename eq '$ApiName.$ChildName')")).value
+    # Every child of this API, not the two uniquename spellings this script happened to use
+    # before. A row written under any other convention, ccit_ prefixed ones from before the
+    # rebrand among them, was invisible to that filter and survived every run. They share a
+    # name with the row that is wanted, so the maker portal lists the same response property
+    # two, three or four times, and the API surface is whatever Dataverse picks.
+    #
+    # Matching on name is what makes this reconcile rather than accumulate: name is the
+    # property an agent sees, so two rows sharing one is always wrong regardless of how
+    # either was named internally.
+    $all = (Invoke-Dataverse -Method GET -Path ("/api/data/v9.2/$EntitySet" +
+        "?`$select=$IdField,uniquename,name" +
+        "&`$filter=_customapiid_value eq $apiId")).value
+
+    $found = $all | Where-Object { $_.uniquename -eq $ChildName -or $_.name -eq $ChildName }
 
     foreach ($stale in ($found | Where-Object { $_.uniquename -ne $ChildName })) {
         Invoke-Dataverse -Method DELETE -Path "/api/data/v9.2/$EntitySet($($stale.$IdField))" | Out-Null
-        Write-Host "      - removed $($stale.uniquename)" -ForegroundColor DarkGray
+        Write-Host "      - removed duplicate $($stale.uniquename)" -ForegroundColor Yellow
     }
 
     $current = $found | Where-Object { $_.uniquename -eq $ChildName } | Select-Object -First 1

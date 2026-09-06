@@ -81,17 +81,20 @@ each queue profile that should offer it.
 
 ### 5. The promotion flow
 
-**You have to build this. It is not in the solution.** Everything above books a callback
-and nothing dispatches it, so records sit at `Requested` for ever and the caller is never
-rung. `solution/Workflows/PowerPete-Promote-Due-Callbacks.json` is the definition to work
-from, not an importable component.
+Run `build/New-PromotionFlow.ps1`. It creates the flow, a connection reference, and adds
+both to the solution.
 
-Make a cloud flow in the same solution:
+```bash
+pwsh build/New-PromotionFlow.ps1 -EnvironmentUrl https://mydev.crm4.dynamics.com
+```
 
-1. Trigger: **Recurrence**, every 5 minutes.
-2. Action: Dataverse **Perform an unbound action**, action name `pwrp_PromoteDueCallbacks`.
+Then bind the **Power Pete Dataverse** connection reference in the maker portal and switch
+the flow on. It is created switched off on purpose: a flow promoting callbacks into a
+workstream that is not configured yet fails every five minutes and buries its own run
+history.
 
-That is the whole flow. It is deliberately a timer that calls one action: the date maths,
+The flow is a recurrence and one unbound action calling `pwrp_PromoteDueCallbacks`. That is
+the whole flow. It is deliberately a timer that calls one action: the date maths,
 the slot window and the retry rules live in the plugin where they are unit tested and can
 be read in a pull request. The same logic drawn as flow steps is unreviewable.
 

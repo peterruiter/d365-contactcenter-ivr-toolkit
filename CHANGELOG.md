@@ -33,6 +33,16 @@ nine tool budget holds.
 
 ### Fixed
 
+- `Register-CustomApis.ps1` reconciles response properties and request parameters on their
+  name rather than on the two uniquename spellings it happened to use before. Rows written
+  under any other convention, the `ccit_` prefixed ones from before the rebrand among them,
+  were invisible to that filter and survived every run, so the same property was listed two,
+  three or four times and the API surface was whichever row Dataverse picked. Re-running the
+  registration now deletes them
+- `build/New-PromotionFlow.ps1` creates the promotion flow and its connection reference and
+  adds both to the solution, replacing a paragraph of instructions for building it by hand.
+  It is created switched off, and an existing flow that is switched on is put back the way
+  it was found
 - `docs/07-scheduled-callback.md` said the promotion flow ships in the solution and runs
   every five minutes. It does not ship, and there is no flow: `solution/Workflows/` holds a
   definition file that is not a solution component, and `Solution.xml` has no workflow root
