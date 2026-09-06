@@ -73,6 +73,10 @@ was never involved.
 3. `pwrp_CreateCallback` with `Mode` set to `Scheduled` and `RequestedStartUtc` set to the
    chosen slot. A time that is not one of the slots is rejected, which is worth testing.
 
+No `pwrp_GetCallbackSlots` tool means this agent was not set up for scheduled callback.
+Say that, rather than that the slots could not be retrieved. They are different faults and
+only one of them is yours to fix.
+
 If `ScheduledCallbackAvailable` was false, say so and stop. Scheduled callback needs both
 the `pwrp_EnableScheduledCallback` environment variable and the queue profile flag, and
 the environment variable is off by default. Direct callback needs only the profile flag.

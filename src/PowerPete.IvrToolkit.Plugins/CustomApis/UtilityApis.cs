@@ -20,7 +20,10 @@ namespace PowerPete.IvrToolkit.CustomApis
             // Country, most specific first: an explicit CountryCode, then the queue's own,
             // then the organisation default. Queue is the one an agent should send, because
             // a market is a queue rather than a setting on the agent.
-            var country = request.GetString("CountryCode");
+            // Normalised rather than read, so a placeholder typed into the tool
+            // configuration falls through to the queue instead of becoming the dialling
+            // prefix. See PhoneNumberValidator.NormaliseCountryCode.
+            var country = PhoneNumberValidator.NormaliseCountryCode(request.GetString("CountryCode"));
             if (country == null)
             {
                 var queueName = request.GetString("Queue");

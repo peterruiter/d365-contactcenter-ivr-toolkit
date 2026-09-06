@@ -70,7 +70,7 @@ model sees when it decides what to call, so paste it as written. See
 |---|---|---|
 | `PhoneNumber` | Dynamically fill with AI | Whatever the caller said, in any format |
 | `Queue` | Dynamically fill with AI | The same queue name sent to `pwrp_GetQueueContext`. The country comes from the queue profile, so one agent serves every market |
-| `CountryCode` | Custom value `-` | Not digits, so it is ignored and `Queue` decides. Set a real code here only to force one country regardless of queue |
+| `CountryCode` | Custom value `-` | A value that cannot be a country code is ignored, so `Queue` decides. Set a real code here only to force one country regardless of queue |
 
 **Description:**
 
@@ -81,7 +81,7 @@ model sees when it decides what to call, so paste it as written. See
 | Parameter | Fill using | Value |
 |---|---|---|
 | `Queue` | Dynamically fill with AI | |
-| `PhoneNumber` | Dynamically fill with AI | The `E164` that `pwrp_ValidatePhoneNumber` returned, not what the caller said |
+| `PhoneNumber` | Dynamically fill with AI | The number as the caller said it, the same string you sent to `pwrp_ValidatePhoneNumber`. Not the `E164`, and never rebuilt from the digits you read back |
 | `Mode` | Custom value `Direct` | Pin it unless the agent really offers booked slots. A model that can choose `Scheduled` will sometimes choose it on a queue that does not allow it |
 | `RequestedStartUtc` | Custom value `0001-01-01T00:00:00Z` | Read as not supplied, and ignored entirely when `Mode` is `Direct`. Switch to AI only when the agent offers booked slots |
 | `ConversationId` | Custom value `System.Conversation.Id` | Ties the callback to the conversation, which is what makes it traceable afterwards |

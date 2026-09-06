@@ -20,6 +20,28 @@ namespace PowerPete.IvrToolkit.Speech
             public string Reason;
         }
 
+        /// <summary>
+        /// Returns the country code as bare digits, or null when the value cannot be one.
+        /// </summary>
+        /// <remarks>
+        /// A tool configuration cannot express "leave this optional input out". Copilot
+        /// Studio makes you type something, and what people type is a dash. That dash used
+        /// to be concatenated straight onto the number, producing "+-653740141", which
+        /// passed the length check, was reported valid, and was written to a callback.
+        ///
+        /// So a value that cannot be a country code is treated as no country code, and the
+        /// caller falls back to the queue. Do not relax this to "starts with digits": a
+        /// half-parsed country code is worse than an ignored one, because it dials.
+        /// </remarks>
+        public static string NormaliseCountryCode(string raw)
+        {
+            if (string.IsNullOrWhiteSpace(raw)) return null;
+
+            var trimmed = raw.Trim().TrimStart('+');
+            if (trimmed.Length < 1 || trimmed.Length > 3) return null;
+            return trimmed.All(char.IsDigit) ? trimmed : null;
+        }
+
         public static Result Validate(string raw, string defaultCountryCode)
         {
             var result = new Result { NumberType = "Unknown", Country = defaultCountryCode };
@@ -46,7 +68,7 @@ namespace PowerPete.IvrToolkit.Speech
                 hadPlus = true;
             }
 
-            var cc = (defaultCountryCode ?? "31").TrimStart('+');
+            var cc = NormaliseCountryCode(defaultCountryCode) ?? "31";
 
             if (!hadPlus && digits.StartsWith("0"))
             {
@@ -71,6 +93,15 @@ namespace PowerPete.IvrToolkit.Speech
             else if (digits.Length < 8 || digits.Length > 15)
             {
                 result.Reason = "Length is outside the E.164 range.";
+                return result;
+            }
+
+            // Everything above builds the number out of char.IsDigit and a normalised
+            // country code, so this cannot fail today. It is here because it did fail
+            // yesterday, silently, and a wrong number that reads as valid gets dialled.
+            if (!digits.All(char.IsDigit))
+            {
+                result.Reason = "The number did not normalise to digits.";
                 return result;
             }
 

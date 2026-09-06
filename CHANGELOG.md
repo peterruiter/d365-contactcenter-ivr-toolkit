@@ -9,6 +9,39 @@ Semantic versioning. The Custom API contract is stable within a major version.
 | Internal fix, same contract | Patch |
 | Removed or renamed output, changed enum, changed meaning | Major |
 
+## [3.3.0]
+
+### Fixed
+
+- A country code that cannot be one is ignored instead of being used as the dialling
+  prefix. A tool configuration cannot leave an optional input out, so makers type a
+  placeholder, and the documented placeholder `-` was concatenated straight onto the
+  number: a caller who said `0653740141` got `+-653740141` back, reported valid, and that
+  is what was written to the callback. `docs/06-copilot-studio.md` had claimed for two
+  versions that a non-digit value was ignored. It is now true
+- `pwrp_ValidatePhoneNumber` falls through to the queue's country when the `CountryCode`
+  input is a placeholder, which is the resolution order the documentation always described
+- A last check that a valid number really did normalise to digits. It cannot fail given
+  the fix above, which is the point: the previous version had no such check and shipped a
+  number with a dash in it
+
+### Changed
+
+- The `PhoneNumber` input description for `pwrp_CreateCallback` said to send the `E164`
+  that validation returned. The agent instructions said to send the number as the caller
+  said it and never to rebuild it. Both were in the product, they contradict each other,
+  and the tool description is the one a model reads at call time. It now matches the
+  instructions: send what the caller said, and let the toolkit normalise once using the
+  queue's country
+- The agent no longer reads the callback reference out for a direct callback. Six
+  characters mean nothing to someone who has just been told they will be rung back
+  shortly, cannot be written down in a car, and make a simple answer sound like a case
+  number. It is read when the caller asks, when the callback is for a booked time, or
+  when they need to quote it back
+- An agent with no `pwrp_GetCallbackSlots` tool now says scheduled callback is not
+  offered, rather than that it could not retrieve the slots. The second sounds like an
+  outage and leaves the caller waiting for a fix that is not coming
+
 ## [3.2.0]
 
 ### Added

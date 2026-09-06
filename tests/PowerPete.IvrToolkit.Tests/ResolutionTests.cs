@@ -72,5 +72,57 @@ namespace PowerPete.IvrToolkit.Tests
         {
             Assert.Equal("3 1 6 1 2 3 4 5 6 7 8", SpeakableFormatter.SpellNumber("+31612345678"));
         }
+
+        /// <summary>
+        /// A tool configuration cannot leave an optional input out, so makers type a
+        /// placeholder. "-" reached production and became the dialling prefix: the caller
+        /// said 0653740141, the toolkit answered "+-653740141" with IsValid true, and that
+        /// is what was written to the callback.
+        /// </summary>
+        [Theory]
+        [InlineData("-")]
+        [InlineData("")]
+        [InlineData("  ")]
+        [InlineData("n/a")]
+        [InlineData("none")]
+        [InlineData("+")]
+        [InlineData("1234")]
+        public void Country_code_that_cannot_be_one_is_ignored(string junk)
+        {
+            Assert.Null(PhoneNumberValidator.NormaliseCountryCode(junk));
+
+            // Falls back rather than failing, so a bad tool configuration does not cost
+            // the caller their callback.
+            var result = PhoneNumberValidator.Validate("0653740141", junk);
+            Assert.True(result.IsValid);
+            Assert.Equal("+31653740141", result.E164);
+        }
+
+        [Theory]
+        [InlineData("31", "31")]
+        [InlineData("+31", "31")]
+        [InlineData(" 32 ", "32")]
+        [InlineData("1", "1")]
+        public void A_real_country_code_is_kept(string raw, string expected)
+        {
+            Assert.Equal(expected, PhoneNumberValidator.NormaliseCountryCode(raw));
+        }
+
+        [Fact]
+        public void A_belgian_queue_does_not_get_a_dutch_number()
+        {
+            var result = PhoneNumberValidator.Validate("0475 123456", "32");
+            Assert.True(result.IsValid);
+            Assert.Equal("+32475123456", result.E164);
+        }
+
+        [Fact]
+        public void Every_valid_number_normalises_to_digits()
+        {
+            var result = PhoneNumberValidator.Validate("06 53 74 01 41", "31");
+            Assert.True(result.IsValid);
+            Assert.StartsWith("+", result.E164);
+            Assert.All(result.E164.Substring(1), c => Assert.True(char.IsDigit(c)));
+        }
     }
 }
