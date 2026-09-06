@@ -16,6 +16,18 @@ Versions here are `MAJOR.MINOR.PATCH`. The fourth part in `VERSION` is a build n
 
 ### Fixed
 
+- Holidays are seeded. `Seed-Data.ps1` wrote them to `pwrp_holidays`, and the Web API
+  serves the table at `pwrp_holidaies`: Dataverse pluralises a trailing y to ies without
+  checking for a preceding vowel. Every write returned "Resource not found for the
+  segment", and `Send-Record` caught every exception and printed it in grey as though the
+  row already existed, so the run listed ten holidays a year and stored none of them. It
+  has done this for as long as the script has existed
+- `Send-Record` tolerates a duplicate and rethrows everything else. A seed that reports
+  success while writing nothing is worse than one that stops
+- Scripts resolve entity set names from metadata through `Get-EntitySetName` rather than
+  spelling them out. `pwrp_queuehours` is served at `pwrp_queuehourses`, so this was not a
+  one table problem
+
 - A holiday that closes the whole day is now reported as `Reason = Holiday`. The flag lived
   only on opening windows and a full closure has none, so the test could only ever be true
   for a holiday that was a short day. Christmas Day reported `OutsideHours`, and the holiday

@@ -199,6 +199,21 @@ reference at it, and reopen the flow.
 
 Nothing in the flow itself needs changing in any of these cases.
 
+### `Resource not found for the segment 'pwrp_...'`
+
+The Web API entity set name is not the logical name with an s on it. Dataverse pluralises
+the schema name and turns a trailing y into ies without checking for a preceding vowel, so
+`pwrp_holiday` is served at `pwrp_holidaies`, and it doubles a trailing s, so
+`pwrp_queuehours` is `pwrp_queuehourses`.
+
+Ask the environment rather than guessing:
+
+```powershell
+(Invoke-Dataverse -Path "/api/data/v9.2/EntityDefinitions?`$select=LogicalName,EntitySetName").value | Where-Object { $_.LogicalName -like 'pwrp_*' } | ForEach-Object { "$($_.LogicalName)  ->  $($_.EntitySetName)" }
+```
+
+Scripts in `build/` call `Get-EntitySetName` for this reason. If you add one, do the same.
+
 ### A fix is deployed and the old behaviour continues
 
 Check what is actually registered:

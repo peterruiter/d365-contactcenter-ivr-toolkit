@@ -29,6 +29,10 @@ $ErrorActionPreference = "Continue"
 . "$PSScriptRoot/Common.ps1"
 Connect-Dataverse -EnvironmentUrl $EnvironmentUrl
 
+# Resolved rather than spelled out. Dataverse pluralises a schema name with a rule that
+# turns pwrp_holiday into pwrp_holidaies, so a hardcoded set name is a guess.
+$profileSet = Get-EntitySetName -LogicalName "pwrp_queueprofile"
+
 $passed = 0
 $failed = 0
 
@@ -84,10 +88,10 @@ if ($EnableCallback) {
     if (-not $resolved) { throw "Could not resolve $Queue." }
 
     $queueProfile = (Invoke-Dataverse -Method GET `
-        -Path "/api/data/v9.2/pwrp_queueprofiles?`$select=pwrp_queueprofileid&`$filter=_pwrp_queueid_value eq $($resolved.QueueId)").value
+        -Path "/api/data/v9.2/$profileSet?`$select=pwrp_queueprofileid&`$filter=_pwrp_queueid_value eq $($resolved.QueueId)").value
     if ($queueProfile.Count -eq 0) { throw "No queue profile for $Queue. Run New-QueueProfiles.ps1." }
 
-    Invoke-Dataverse -Method PATCH -Path "/api/data/v9.2/pwrp_queueprofiles($($queueProfile[0].pwrp_queueprofileid))" -Body @{
+    Invoke-Dataverse -Method PATCH -Path "/api/data/v9.2/$profileSet($($queueProfile[0].pwrp_queueprofileid))" -Body @{
         pwrp_directcallbackenabled = $true
     } | Out-Null
     Write-Host "Direct callback enabled on the $Queue profile`n" -ForegroundColor Yellow

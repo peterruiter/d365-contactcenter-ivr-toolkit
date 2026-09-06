@@ -25,9 +25,20 @@ Connect-Dataverse -EnvironmentUrl $EnvironmentUrl
 
 function Send-Record {
     param([string]$Path, $Body, [string]$Method = "POST")
-    # Seeding is idempotent by intent, not by constraint, so a duplicate is not fatal.
+
+    # Seeding is idempotent by intent, not by constraint, so a row that already exists is
+    # not fatal. Everything else is. Catching every exception and printing it in grey hid
+    # a missing table for as long as this script has existed: each write failed with
+    # "Resource not found for the segment", the run reported a tidy list of holidays, and
+    # nothing was ever written.
     try { Invoke-Dataverse -Method $Method -Path $Path -Body $Body | Out-Null }
-    catch { Write-Host "  = $($_.Exception.Message)" -ForegroundColor DarkGray }
+    catch {
+        if ($_.Exception.Message -match "duplicate|Cannot insert duplicate|already exists") {
+            Write-Host "  = already there" -ForegroundColor DarkGray
+            return
+        }
+        throw
+    }
 }
 
 # Easter drives four movable Dutch holidays. Anonymous Gregorian algorithm.
@@ -43,6 +54,11 @@ function Get-Easter {
     $day = (($h + $l - 7 * $m + 114) % 31) + 1
     return Get-Date -Year $Year -Month $month -Day $day -Hour 0 -Minute 0 -Second 0
 }
+
+# Resolved, not spelled out. See Get-EntitySetName: pwrp_holiday is served at
+# pwrp_holidaies, which nobody would type on purpose.
+$holidaySet = Get-EntitySetName -LogicalName "pwrp_holiday"
+$templateSet = Get-EntitySetName -LogicalName "pwrp_messagetemplate"
 
 if (-not $SkipHolidays) {
     $startYear = (Get-Date).Year
@@ -84,13 +100,13 @@ if (-not $SkipHolidays) {
             # seeded before 3.7.0 have their year suffix taken off rather than being
             # duplicated alongside a clean one.
             $iso = $date.ToString("yyyy-MM-dd")
-            $existing = (Invoke-Dataverse -Method GET -Path ("/api/data/v9.2/pwrp_holidays" +
+            $existing = (Invoke-Dataverse -Method GET -Path ("/api/data/v9.2/$holidaySet" +
                 "?`$select=pwrp_holidayid,pwrp_name" +
                 "&`$filter=pwrp_date eq $iso and _pwrp_queueid_value eq null")).value
 
             if ($existing.Count -gt 0) {
                 if ($existing[0].pwrp_name -ne $holiday.Name) {
-                    Send-Record -Method PATCH -Path "/api/data/v9.2/pwrp_holidays($($existing[0].pwrp_holidayid))" `
+                    Send-Record -Method PATCH -Path "/api/data/v9.2/$holidaySet($($existing[0].pwrp_holidayid))" `
                         -Body @{ pwrp_name = $holiday.Name }
                     Write-Host "  ~ $($holiday.Name)  $($date.ToString('ddd dd MMM yyyy')), renamed" -ForegroundColor Yellow
                 }
@@ -100,7 +116,7 @@ if (-not $SkipHolidays) {
                 continue
             }
 
-            Send-Record -Path "/api/data/v9.2/pwrp_holidays" -Body @{
+            Send-Record -Path "/api/data/v9.2/$holidaySet" -Body @{
                 pwrp_name = $holiday.Name
                 pwrp_date = $iso
             }
@@ -169,14 +185,14 @@ if (-not $SkipTemplates) {
 
     foreach ($template in $templates) {
         # Existing rows are left alone, so a reseed never overwrites edited wording.
-        $existing = (Invoke-Dataverse -Method GET -Path ("/api/data/v9.2/pwrp_messagetemplates" +
+        $existing = (Invoke-Dataverse -Method GET -Path ("/api/data/v9.2/$templateSet" +
             "?`$select=pwrp_messagetemplateid&`$filter=pwrp_name eq '$($template.Key)' and pwrp_locale eq '$($template.Locale)'")).value
         if ($existing.Count -gt 0) {
             Write-Host "  = $($template.Key) $($template.Locale)" -ForegroundColor DarkGray
             continue
         }
 
-        Send-Record -Path "/api/data/v9.2/pwrp_messagetemplates" -Body @{
+        Send-Record -Path "/api/data/v9.2/$templateSet" -Body @{
             pwrp_name   = $template.Key
             pwrp_locale = $template.Locale
             pwrp_text   = $template.Text

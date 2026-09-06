@@ -21,19 +21,23 @@ $ErrorActionPreference = "Stop"
 . "$PSScriptRoot/Common.ps1"
 Connect-Dataverse -EnvironmentUrl $EnvironmentUrl
 
+# Resolved rather than spelled out. Dataverse pluralises a schema name with a rule that
+# turns pwrp_holiday into pwrp_holidaies, so a hardcoded set name is a guess.
+$profileSet = Get-EntitySetName -LogicalName "pwrp_queueprofile"
+
 $filter = if ($All) { "" } else { "&`$filter=msdyn_queuetype eq 192350002" }
 $queues = (Invoke-Dataverse -Method GET -Path "/api/data/v9.2/queues?`$select=queueid,name$filter").value
 
 Write-Host "Found $($queues.Count) queues" -ForegroundColor Cyan
 
 foreach ($queue in $queues) {
-    $existing = (Invoke-Dataverse -Method GET -Path "/api/data/v9.2/pwrp_queueprofiles?`$filter=_pwrp_queueid_value eq $($queue.queueid)").value
+    $existing = (Invoke-Dataverse -Method GET -Path "/api/data/v9.2/$profileSet?`$filter=_pwrp_queueid_value eq $($queue.queueid)").value
     if ($existing.Count -gt 0) {
         Write-Host "  skip $($queue.name), profile exists" -ForegroundColor Gray
         continue
     }
 
-    Invoke-Dataverse -Method POST -Path "/api/data/v9.2/pwrp_queueprofiles" -Body @{
+    Invoke-Dataverse -Method POST -Path "/api/data/v9.2/$profileSet" -Body @{
         pwrp_name                     = $queue.name
         pwrp_speakablename            = $queue.name
         pwrp_hourssource              = 1      # native operating hours

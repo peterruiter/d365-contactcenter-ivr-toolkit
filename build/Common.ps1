@@ -190,6 +190,38 @@ function Invoke-Dataverse {
     A profile is only reused when it points at the same organisation, so switching
     environments still signs in rather than silently targeting the previous one.
 #>
+<#
+.SYNOPSIS
+    Returns the Web API entity set name for a table, asking the environment rather than
+    guessing at it.
+
+.DESCRIPTION
+    The set name is not the logical name with an "s" on it. Dataverse pluralises the schema
+    name with a naive rule that turns any trailing y into ies without checking whether a
+    vowel precedes it, so pwrp_holiday is served at pwrp_holidaies, and it doubles a
+    trailing s, so pwrp_queuehours is pwrp_queuehourses.
+
+    Guessing produced a seed script that wrote nothing for as long as it existed. Every
+    write returned "Resource not found for the segment", and the handler treated that as a
+    row that already existed.
+
+    Cached per session. The answer cannot change while a script runs.
+#>
+function Get-EntitySetName {
+    param([Parameter(Mandatory = $true)][string]$LogicalName)
+
+    if (-not $script:EntitySetNames) { $script:EntitySetNames = @{} }
+    if ($script:EntitySetNames.ContainsKey($LogicalName)) { return $script:EntitySetNames[$LogicalName] }
+
+    $set = (Invoke-Dataverse -Method GET -Path ("/api/data/v9.2/EntityDefinitions(LogicalName='$LogicalName')" +
+        "?`$select=EntitySetName")).EntitySetName
+
+    if (-not $set) { throw "No entity set for $LogicalName. Has New-Schema.ps1 run against this environment?" }
+
+    $script:EntitySetNames[$LogicalName] = $set
+    return $set
+}
+
 function Connect-Pac {
     param(
         [Parameter(Mandatory = $true)][string]$EnvironmentUrl,
