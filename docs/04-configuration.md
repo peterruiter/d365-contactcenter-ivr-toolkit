@@ -193,10 +193,26 @@ Leave the queue empty to apply organisation wide.
 | Oudjaarsdag | 31 Dec | (empty) | 09:00 | 13:00 | Short day everywhere |
 | Team offsite | 14 Mar | Billing | (empty) | (empty) | Billing only closed |
 
-A queue specific row beats an organisation wide one for the same date.
+A queue specific row beats an organisation wide one for the same date. Organisation wide
+rows are loaded first and the queue row overwrites, so you can close everything for
+Christmas and still give one queue a skeleton shift.
+
+What a holiday changes for the caller is the reason, not the wording. `pwrp_IsQueueOpen`
+and `pwrp_GetNextOpenTime` return `Reason = Holiday` instead of `OutsideHours`, which lets
+an agent say something better than "we are closed". The spoken line comes from the
+`holiday` message template and does not name the day: the template takes no tokens, so
+every holiday reads the same.
+
+The **Name** is therefore mostly for whoever maintains the table. It does reach
+`pwrp_GetQueueHours` inside the `Hours` JSON, but only on a holiday with times, because a
+full closure has no windows to carry it. Do not write wording a caller is meant to hear
+into it and expect it to be read out.
 
 Load the national holidays for the next two years at install. Nobody remembers to do
 it in December.
+
+Only the next 14 days are expanded, so a closure longer than that reports no next opening
+and the agent falls back to the `closed_indefinite` wording.
 
 ## Turning callback on
 
