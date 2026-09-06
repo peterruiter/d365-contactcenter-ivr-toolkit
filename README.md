@@ -128,9 +128,12 @@ Proven end to end: queue context, callback slots, phone validation, direct and s
 callback booking, and outcome logging. The agent also handled a misrecognised queue name by
 asking rather than guessing, which is the behaviour the resolver exists for.
 
-Not yet proven: metrics against a queue with callers actually waiting, promotion through to
-a dialled call, and cancel and reschedule. The promotion flow exists as of 3.4.0 and has
-not run in anger. See `CHANGELOG.md`.
+Scheduled callback is proven through to a placed call as of 3.5.0: booked from the agent,
+promoted by the recurrence flow, dispatched to proactive engagement in preview dial mode,
+and answered.
+
+Not yet proven: metrics against a queue with callers actually waiting, and cancel and
+reschedule. See `CHANGELOG.md`.
 
 ## Versioning and support
 
