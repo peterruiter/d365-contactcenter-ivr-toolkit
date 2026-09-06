@@ -45,7 +45,9 @@ pac solution import --path ./out/PowerPeteIvrToolkitCore_3.4.0.8_Managed.zip --a
 # 4. Create queue profiles
 ./build/New-QueueProfiles.ps1 -EnvironmentUrl https://yourorg.crm4.dynamics.com
 
-# 5. The promotion flow, only if you will offer scheduled callback
+# 5. The promotion flow, only if you will offer scheduled callback.
+#    Set the outbound side up first, see docs/07. The script creates the flow, not
+#    the proactive engagement that actually places the calls.
 ./build/New-PromotionFlow.ps1 -EnvironmentUrl https://yourorg.crm4.dynamics.com
 
 # 6. The application user an agent authenticates as

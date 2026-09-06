@@ -68,16 +68,43 @@ lists every active outbound workstream by name and writes the id for you.
 
 ### 3. Proactive engagement
 
-Configure a proactive engagement against that workstream. Any dial mode works; the
-toolkit dispatches a delivery and the engagement decides how it is placed.
+This is what places the calls, and the toolkit will not work without it. Create it from
+the workstream, so the workstream is filled in for you: **Copilot Service admin center** >
+**Customer support** > **Workstreams** > your outbound workstream > **New proactive
+engagement**.
 
-Preview is a good default for a scheduled callback, because the representative sees the
-caller's context before the dial and a caller who booked a time expects the person to know
-why they are ringing. It is a default, not a requirement. Copilot mode reaches the
-customer first and hands them to an AI agent, which suits a callback that mostly needs
-information rather than a person, and progressive and predictive also dial the customer
-before a representative is added. The trade is representative idle time against how well
-briefed the representative is when the customer answers.
+The wizard has seven pages. Three settings on them are requirements of the toolkit. The
+rest are yours.
+
+**Audience.** Under **Select your audience**, choose **Contact Center**, then **CCaaS
+API** as the intake method. This one is not optional: the toolkit dispatches through
+`CCaaS_CreateSimpleProactiveDelivery`, and an engagement expecting a file upload or a
+Customer Insights journey is not listening for that call.
+
+**Details.** Set **Contact unique identifier** to **contactid**. The toolkit sends the
+Dynamics contact GUID, so anything else will not match and the engagement will create a
+duplicate contact for every callback. Pick the **Primary queue** that should handle the
+callbacks.
+
+**Everything else is your decision.** Dial mode, engagement type, priority, call order,
+display numbers, reattempts, throttling and frequency limits are how your contact centre
+chooses to run, and the toolkit has no view on any of it. It dispatches a delivery and the
+engagement decides how the call is placed.
+
+Two of those interact with settings on this side, so decide deliberately rather than by
+accident:
+
+| Engagement setting | Interaction |
+|---|---|
+| **Reattempts** | The engagement retries a delivery, and `pwrp_MaxCallbackAttempts` retries a request that came back as `NoAnswer`. Both configured means a caller is rung more times than either number says. Pick one to do the retrying and set the other to its minimum |
+| **Frequency limits** and quiet hours | These can suppress a call the caller explicitly asked for at a time they chose. Reasonable for marketing outreach, less so for a booked callback |
+
+Leave the engagement **active** when you are done. The toolkit finds it by looking for the
+active engagement on the workstream, so a draft one is invisible to it.
+
+Finally, note the engagement's name. If you ever create a second active engagement on the
+same workstream, promotion stops rather than guessing which one rings your customers, and
+`pwrp_ProactiveEngagementConfigId` is how you say.
 
 ### 4. Toolkit configuration
 

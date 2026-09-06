@@ -18,7 +18,8 @@ Scheduled callback also needs:
 |---|---|
 | Outbound calling configured | Outbound profile with a queue and capacity profile |
 | A phone number enabled for outbound | Phone numbers page shows "Make calls" |
-| An outbound workstream | Proactive engagement uses this to place the calls |
+| An outbound workstream | The engagement hangs off this, and the toolkit finds it there |
+| A proactive engagement on that workstream | Places the calls. Audience must be **CCaaS API** and the contact identifier must be **contactid**. Everything else is yours. See [scheduled callback](07-scheduled-callback.md) |
 
 If you only need direct callback, skip that block. Direct callback is a queue overflow
 setting and needs nothing extra.
