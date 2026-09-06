@@ -87,7 +87,7 @@ const GROUPS = [
     blurb: "The bands decide when the toolkit stops putting callers through and offers to ring them back instead.",
     vars: ["pwrp_WaitBandThresholds"] },
   { title: "Callbacks",
-    blurb: "Direct callback needs only the queue profile flag. Scheduled callback needs the master switch here as well, which is why turning it on for a single queue appears to do nothing. It also needs a proactive engagement configuration, because that is what actually places the call.",
+    blurb: "Direct callback needs only the queue profile flag. Scheduled callback needs the master switch here as well, which is why turning it on for a single queue appears to do nothing. Proactive engagement places the calls, and the toolkit finds it on the outbound workstream, so leave the engagement empty unless that workstream runs more than one.",
     vars: ["pwrp_EnableScheduledCallback", "pwrp_ProactiveEngagementConfigId", "pwrp_OutboundWorkstreamId",
            "pwrp_CallbackSlotMinutes", "pwrp_MaxCallbackAttempts", "pwrp_CallbackRetryMinutes"] },
   { title: "Performance",
@@ -124,6 +124,24 @@ const LOOKUPS = {
       return { value: w.msdyn_liveworkstreamid, label: w.msdyn_name + "  (" + parts.join(", ") + ")" };
     },
     empty: "No active outbound workstream in this environment. Create one, with preview dial mode, before turning scheduled callback on."
+  },
+  pwrp_ProactiveEngagementConfigId: {
+    // Usually left empty. The toolkit finds the engagement on the outbound workstream by
+    // itself, so this is only for an environment running several on one workstream, where
+    // guessing which one rings customers would be the wrong thing to do.
+    path: "msdyn_proactive_engagement_configs" +
+      "?$select=msdyn_name,msdyn_description,msdyn_proactive_engagement_configid" +
+      "&$expand=msdyn_workstream($select=msdyn_name)" +
+      "&$filter=statecode eq 0" +
+      "&$orderby=msdyn_name",
+    map: e => {
+      const workstream = e.msdyn_workstream ? e.msdyn_workstream.msdyn_name : "no workstream";
+      return {
+        value: e.msdyn_proactive_engagement_configid,
+        label: e.msdyn_name + "  (" + workstream + ")"
+      };
+    },
+    empty: "No active proactive engagement in this environment. Create one on the outbound workstream, in preview dial mode."
   }
 };
 

@@ -302,7 +302,7 @@ No inputs. Returns `Checks` (JSON), `Passed`, `FailureCount`.
 | Metrics schema | `msdyn_queueextension` is unreadable, usually after a wave update |
 | Presence schema | `msdyn_agentstatushistory` is unreadable |
 | Scheduled callback config | Scheduled callback is on and `pwrp_OutboundWorkstreamId` is not set |
-| Proactive engagement | Scheduled callback is on and `pwrp_ProactiveEngagementConfigId` is not set |
+| Proactive engagement | Scheduled callback is on and no engagement resolves from the outbound workstream |
 | Callback promotion | Scheduled callbacks are over fifteen minutes late and still `Requested` |
 | Default locale | `pwrp_DefaultLocale` is not set |
 

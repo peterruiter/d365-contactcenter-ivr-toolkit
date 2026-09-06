@@ -74,24 +74,24 @@ the whole point of a scheduled callback.
 
 ### 4. Toolkit configuration
 
-The proactive engagement configuration id is the one setting you have to fetch by hand.
-In Power Apps, open **Tables** > **Proactive Engagement Configuration** and copy the id of
-the record you created in step 3.
-
 In the Contact Center IVR Toolkit app, go to **Settings**:
 
 ```
-pwrp_EnableScheduledCallback     = true
-pwrp_ProactiveEngagementConfigId = the id from step 3
-pwrp_OutboundWorkstreamId        = pick the workstream from step 2
-pwrp_CallbackSlotMinutes         = 30
-pwrp_MaxCallbackAttempts         = 3
-pwrp_CallbackRetryMinutes        = 20
+pwrp_EnableScheduledCallback = true
+pwrp_OutboundWorkstreamId    = pick the workstream from step 2
+pwrp_CallbackSlotMinutes     = 30
+pwrp_MaxCallbackAttempts     = 3
+pwrp_CallbackRetryMinutes    = 20
 ```
 
-`pwrp_ProactiveEngagementConfigId` is the one that decides whether a callback rings
-anyone. The configuration carries the dial mode, the workstream and the outbound profile,
-so `pwrp_OutboundWorkstreamId` is now only recorded on the request for reporting.
+You do not configure the proactive engagement. A proactive engagement is created from a
+workstream and carries it, so the toolkit finds the active one on
+`pwrp_OutboundWorkstreamId` and dispatches through it.
+
+`pwrp_ProactiveEngagementConfigId` exists only for the environment running more than one
+active engagement on that workstream. Promotion refuses to guess in that case and names
+them in the error, because choosing an engagement decides how customers are rung. The
+Settings page lists them, so you pick rather than hunt for a GUID.
 
 Then press **Run health check** on the same page. It fails when scheduled callback is on
 and the workstream is not set, which is the mistake this ordering exists to catch.

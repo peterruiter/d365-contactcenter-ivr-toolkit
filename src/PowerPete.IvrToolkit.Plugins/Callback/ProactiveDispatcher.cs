@@ -53,11 +53,73 @@ namespace PowerPete.IvrToolkit.Callback
         }
 
         /// <summary>
-        /// True when the environment is configured well enough to dispatch anything.
+        /// The proactive engagement configuration that will place the calls.
         /// </summary>
-        public bool IsConfigured
+        /// <remarks>
+        /// Derived from the outbound workstream rather than configured, because a proactive
+        /// engagement is created from a workstream and carries it, so the id is already
+        /// knowable from a setting that is picked off a list. Asking someone to open the
+        /// table browser and copy a GUID for something the environment already knows is the
+        /// same mistake as asking a speech IVR for a queue id.
+        ///
+        /// pwrp_ProactiveEngagementConfigId overrides it, for the environment running more
+        /// than one engagement on one workstream. Ambiguity is refused rather than guessed
+        /// at, the same way an ambiguous queue name is: choosing an engagement decides how
+        /// customers are rung, and the wrong guess dials them in the wrong mode.
+        /// </remarks>
+        public string ResolveConfigId()
         {
-            get { return !string.IsNullOrWhiteSpace(_config.GetString(ConfigKeys.ProactiveEngagementConfigId)); }
+            var configured = _config.GetString(ConfigKeys.ProactiveEngagementConfigId);
+            if (!string.IsNullOrWhiteSpace(configured)) { return configured.Trim(); }
+
+            var workstream = _config.GetString(ConfigKeys.OutboundWorkstreamId);
+            Guid workstreamId;
+            if (string.IsNullOrWhiteSpace(workstream) || !Guid.TryParse(workstream.Trim(), out workstreamId))
+            {
+                throw new ToolkitException(ErrorCodes.ConfigurationError,
+                    "Set pwrp_OutboundWorkstreamId on the Settings page. Without it there is no " +
+                    "way to find the proactive engagement that places scheduled callbacks.");
+            }
+
+            var query = new QueryExpression("msdyn_proactive_engagement_config")
+            {
+                ColumnSet = new ColumnSet("msdyn_name"),
+                Criteria =
+                {
+                    Conditions =
+                    {
+                        new ConditionExpression("statecode", ConditionOperator.Equal, 0),
+                        new ConditionExpression("msdyn_workstream", ConditionOperator.Equal, workstreamId)
+                    }
+                },
+                Orders = { new OrderExpression("msdyn_name", OrderType.Ascending) },
+                // Five is enough to name them all in an error without reading a whole table
+                // into a plugin to say "more than one".
+                TopCount = 5
+            };
+
+            var found = _service.RetrieveMultiple(query).Entities;
+
+            if (found.Count == 0)
+            {
+                throw new ToolkitException(ErrorCodes.ConfigurationError,
+                    "No active proactive engagement is configured on the outbound workstream. " +
+                    "Create one in preview dial mode, or set pwrp_ProactiveEngagementConfigId.");
+            }
+
+            if (found.Count > 1)
+            {
+                var names = string.Join(", ", found.Select(f => f.GetAttributeValue<string>("msdyn_name")).ToArray());
+                throw new ToolkitException(ErrorCodes.ConfigurationError,
+                    "The outbound workstream has more than one active proactive engagement (" + names +
+                    "). Set pwrp_ProactiveEngagementConfigId to the one that should place callbacks.");
+            }
+
+            var resolved = found[0];
+            _tracing.Trace("[pwrp] dispatching through proactive engagement {0}",
+                resolved.GetAttributeValue<string>("msdyn_name"));
+
+            return resolved.Id.ToString();
         }
 
         /// <summary>
@@ -65,18 +127,12 @@ namespace PowerPete.IvrToolkit.Callback
         /// comes back as a reason so the caller can leave the record for the next run rather
         /// than losing the whole batch to one bad number.
         /// </summary>
-        public DispatchResult Dispatch(Entity callback, DateTime now)
+        public DispatchResult Dispatch(Entity callback, string configId, DateTime now)
         {
             var reference = callback.GetAttributeValue<string>("pwrp_name");
 
             try
             {
-                var configId = _config.GetString(ConfigKeys.ProactiveEngagementConfigId);
-                if (string.IsNullOrWhiteSpace(configId))
-                {
-                    return Failed("pwrp_ProactiveEngagementConfigId is not set.");
-                }
-
                 var contactRef = callback.GetAttributeValue<EntityReference>("pwrp_contactid");
                 if (contactRef == null)
                 {

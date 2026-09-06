@@ -23,9 +23,15 @@ Versions here are `MAJOR.MINOR.PATCH`. The fourth part in `VERSION` is a build n
   API, MCP or a Customer Insights journey and cannot see a custom table, so every
   scheduled callback sat marked ready and was never dialled. All CCaaS references live in
   `Callback/ProactiveDispatcher.cs`
-- `pwrp_ProactiveEngagementConfigId`, the configuration that places the calls. It carries
-  the dial mode, workstream and outbound profile, and it is now the setting scheduled
-  callback depends on. The health check covers it
+- The proactive engagement is resolved from `pwrp_OutboundWorkstreamId`, which is already
+  chosen from a list, because an engagement is created from a workstream and carries it.
+  Nothing new to configure. More than one active engagement on that workstream is refused
+  rather than guessed at and they are named in the error, the same way an ambiguous queue
+  name is, because choosing one decides how customers are rung
+- `pwrp_ProactiveEngagementConfigId` overrides that lookup, for the environment that needs
+  it. Normally empty, and the Settings page lists the engagements so it is picked, not
+  typed. The health check resolves the engagement the way promotion does rather than
+  checking a box is filled in
 - `pwrp_deliveryid` on `pwrp_callbackrequest`, to correlate a request with its delivery
 - The booked slot is passed as the delivery window, so a nine o'clock callback cannot be
   placed at four. Without it the API assumes twenty four hours from now. An overdue record

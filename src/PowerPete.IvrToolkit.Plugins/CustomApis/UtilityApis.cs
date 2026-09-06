@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using PowerPete.IvrToolkit.Callback;
 using PowerPete.IvrToolkit.Common;
 using PowerPete.IvrToolkit.Queues;
 using PowerPete.IvrToolkit.Speech;
@@ -193,14 +194,27 @@ namespace PowerPete.IvrToolkit.CustomApis
                     ? "Scheduled callback is on. pwrp_OutboundWorkstreamId must point at an outbound workstream."
                     : "Scheduled callback is off.");
 
-            // The workstream alone dispatches nothing. Proactive engagement is what places
-            // the call, and it is reached through its configuration id, so this is the
-            // setting that decides whether a promoted callback ever rings anyone.
-            var engagement = request.Config.GetString(ConfigKeys.ProactiveEngagementConfigId);
-            Add("Proactive engagement", !scheduled || !string.IsNullOrWhiteSpace(engagement),
-                scheduled
-                    ? "Scheduled callback is on. pwrp_ProactiveEngagementConfigId must name a proactive engagement configuration."
-                    : "Scheduled callback is off.");
+            // The workstream alone dispatches nothing. Proactive engagement places the call,
+            // so this resolves it exactly the way promotion will rather than checking that a
+            // setting is non empty. A check that only proves a box was filled in is worth
+            // very little, and this one is now usually empty on purpose.
+            if (!scheduled)
+            {
+                Add("Proactive engagement", true, "Scheduled callback is off.");
+            }
+            else
+            {
+                try
+                {
+                    var dispatcher = new ProactiveDispatcher(request.Service, request.Config, request.Tracing);
+                    Add("Proactive engagement", true,
+                        "Callbacks dispatch through engagement " + dispatcher.ResolveConfigId() + ".");
+                }
+                catch (Exception ex)
+                {
+                    Add("Proactive engagement", false, ex.Message);
+                }
+            }
 
             // Config being right proves nothing about anything running. Scheduled callback
             // needs a recurrence flow calling pwrp_PromoteDueCallbacks, and that flow is not

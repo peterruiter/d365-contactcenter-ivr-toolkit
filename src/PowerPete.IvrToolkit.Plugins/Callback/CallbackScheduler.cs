@@ -60,12 +60,11 @@ namespace PowerPete.IvrToolkit.Callback
                 return result;
             }
 
+            // Resolved once for the batch, and deliberately outside the per record try:
+            // a misconfigured engagement is not a bad record, and marking a hundred
+            // callbacks failed over one missing setting would be wrong.
             var dispatcher = new ProactiveDispatcher(_service, _config, _tracing);
-            if (!dispatcher.IsConfigured)
-            {
-                throw new ToolkitException(ErrorCodes.ConfigurationError,
-                    "pwrp_ProactiveEngagementConfigId is not set. Scheduled callbacks cannot be dispatched.");
-            }
+            var configId = dispatcher.ResolveConfigId();
 
             var workstream = _config.GetString(ConfigKeys.OutboundWorkstreamId);
             var now = DateTime.UtcNow;
@@ -74,7 +73,7 @@ namespace PowerPete.IvrToolkit.Callback
             foreach (var record in DueRequests(horizon))
             {
                 var reference = record.GetAttributeValue<string>("pwrp_name");
-                var dispatch = dispatcher.Dispatch(record, now);
+                var dispatch = dispatcher.Dispatch(record, configId, now);
 
                 if (!dispatch.Success)
                 {
