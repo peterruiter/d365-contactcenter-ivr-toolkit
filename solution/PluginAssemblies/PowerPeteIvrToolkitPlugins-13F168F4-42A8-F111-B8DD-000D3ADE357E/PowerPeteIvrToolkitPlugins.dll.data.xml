@@ -1,65 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PluginAssembly FullName="PowerPete.IvrToolkit.Plugins, Version=1.0.12.0, Culture=neutral, PublicKeyToken=041a54d285080237" PluginAssemblyId="13f168f4-42a8-f111-b8dd-000d3ade357e" CustomizationLevel="1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<PluginAssembly FullName="PowerPete.IvrToolkit.Plugins, Version=1.0.17.0, Culture=neutral, PublicKeyToken=041a54d285080237" PluginAssemblyId="13f168f4-42a8-f111-b8dd-000d3ade357e" CustomizationLevel="1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <IsolationMode>2</IsolationMode>
   <SourceType>0</SourceType>
   <IntroducedVersion>1.0.0.0</IntroducedVersion>
   <FileName>/PluginAssemblies/PowerPeteIvrToolkitPlugins-13F168F4-42A8-F111-B8DD-000D3ADE357E/PowerPeteIvrToolkitPlugins.dll</FileName>
   <PluginTypes>
-    <PluginType AssemblyQualifiedName="PowerPete.IvrToolkit.CustomApis.CancelCallback, PowerPete.IvrToolkit.Plugins, Version=1.0.12.0, Culture=neutral, PublicKeyToken=041a54d285080237" PluginTypeId="c97eee07-43a8-f111-b8de-000d3ade3584" Name="PowerPete.IvrToolkit.CustomApis.CancelCallback">
+    <PluginType AssemblyQualifiedName="PowerPete.IvrToolkit.CustomApis.CancelCallback, PowerPete.IvrToolkit.Plugins, Version=1.0.17.0, Culture=neutral, PublicKeyToken=041a54d285080237" PluginTypeId="c97eee07-43a8-f111-b8de-000d3ade3584" Name="PowerPete.IvrToolkit.CustomApis.CancelCallback">
       <FriendlyName>PowerPete.IvrToolkit.CustomApis.CancelCallback</FriendlyName>
     </PluginType>
-    <PluginType AssemblyQualifiedName="PowerPete.IvrToolkit.CustomApis.CheckCallbackEligibility, PowerPete.IvrToolkit.Plugins, Version=1.0.12.0, Culture=neutral, PublicKeyToken=041a54d285080237" PluginTypeId="c47eee07-43a8-f111-b8de-000d3ade3584" Name="PowerPete.IvrToolkit.CustomApis.CheckCallbackEligibility">
+    <PluginType AssemblyQualifiedName="PowerPete.IvrToolkit.CustomApis.CheckCallbackEligibility, PowerPete.IvrToolkit.Plugins, Version=1.0.17.0, Culture=neutral, PublicKeyToken=041a54d285080237" PluginTypeId="c47eee07-43a8-f111-b8de-000d3ade3584" Name="PowerPete.IvrToolkit.CustomApis.CheckCallbackEligibility">
       <FriendlyName>PowerPete.IvrToolkit.CustomApis.CheckCallbackEligibility</FriendlyName>
     </PluginType>
-    <PluginType AssemblyQualifiedName="PowerPete.IvrToolkit.CustomApis.CreateCallback, PowerPete.IvrToolkit.Plugins, Version=1.0.12.0, Culture=neutral, PublicKeyToken=041a54d285080237" PluginTypeId="c67eee07-43a8-f111-b8de-000d3ade3584" Name="PowerPete.IvrToolkit.CustomApis.CreateCallback">
+    <PluginType AssemblyQualifiedName="PowerPete.IvrToolkit.CustomApis.CreateCallback, PowerPete.IvrToolkit.Plugins, Version=1.0.17.0, Culture=neutral, PublicKeyToken=041a54d285080237" PluginTypeId="c67eee07-43a8-f111-b8de-000d3ade3584" Name="PowerPete.IvrToolkit.CustomApis.CreateCallback">
       <FriendlyName>PowerPete.IvrToolkit.CustomApis.CreateCallback</FriendlyName>
     </PluginType>
-    <PluginType AssemblyQualifiedName="PowerPete.IvrToolkit.CustomApis.GetBroadcastMessage, PowerPete.IvrToolkit.Plugins, Version=1.0.12.0, Culture=neutral, PublicKeyToken=041a54d285080237" PluginTypeId="9090640a-43a8-f111-b8de-70a8a52adfbd" Name="PowerPete.IvrToolkit.CustomApis.GetBroadcastMessage">
+    <PluginType AssemblyQualifiedName="PowerPete.IvrToolkit.CustomApis.GetBroadcastMessage, PowerPete.IvrToolkit.Plugins, Version=1.0.17.0, Culture=neutral, PublicKeyToken=041a54d285080237" PluginTypeId="9090640a-43a8-f111-b8de-70a8a52adfbd" Name="PowerPete.IvrToolkit.CustomApis.GetBroadcastMessage">
       <FriendlyName>PowerPete.IvrToolkit.CustomApis.GetBroadcastMessage</FriendlyName>
     </PluginType>
-    <PluginType AssemblyQualifiedName="PowerPete.IvrToolkit.CustomApis.GetCallbackSlots, PowerPete.IvrToolkit.Plugins, Version=1.0.12.0, Culture=neutral, PublicKeyToken=041a54d285080237" PluginTypeId="1c782e05-43a8-f111-b8dd-7c1e52344f50" Name="PowerPete.IvrToolkit.CustomApis.GetCallbackSlots">
+    <PluginType AssemblyQualifiedName="PowerPete.IvrToolkit.CustomApis.GetCallbackSlots, PowerPete.IvrToolkit.Plugins, Version=1.0.17.0, Culture=neutral, PublicKeyToken=041a54d285080237" PluginTypeId="1c782e05-43a8-f111-b8dd-7c1e52344f50" Name="PowerPete.IvrToolkit.CustomApis.GetCallbackSlots">
       <FriendlyName>PowerPete.IvrToolkit.CustomApis.GetCallbackSlots</FriendlyName>
     </PluginType>
-    <PluginType AssemblyQualifiedName="PowerPete.IvrToolkit.CustomApis.GetCallbackStatus, PowerPete.IvrToolkit.Plugins, Version=1.0.12.0, Culture=neutral, PublicKeyToken=041a54d285080237" PluginTypeId="20782e05-43a8-f111-b8dd-7c1e52344f50" Name="PowerPete.IvrToolkit.CustomApis.GetCallbackStatus">
+    <PluginType AssemblyQualifiedName="PowerPete.IvrToolkit.CustomApis.GetCallbackStatus, PowerPete.IvrToolkit.Plugins, Version=1.0.17.0, Culture=neutral, PublicKeyToken=041a54d285080237" PluginTypeId="20782e05-43a8-f111-b8dd-7c1e52344f50" Name="PowerPete.IvrToolkit.CustomApis.GetCallbackStatus">
       <FriendlyName>PowerPete.IvrToolkit.CustomApis.GetCallbackStatus</FriendlyName>
     </PluginType>
-    <PluginType AssemblyQualifiedName="PowerPete.IvrToolkit.CustomApis.GetNextOpenTime, PowerPete.IvrToolkit.Plugins, Version=1.0.12.0, Culture=neutral, PublicKeyToken=041a54d285080237" PluginTypeId="7b3b0304-43a8-f111-b8de-70a8a52adfbd" Name="PowerPete.IvrToolkit.CustomApis.GetNextOpenTime">
+    <PluginType AssemblyQualifiedName="PowerPete.IvrToolkit.CustomApis.GetNextOpenTime, PowerPete.IvrToolkit.Plugins, Version=1.0.17.0, Culture=neutral, PublicKeyToken=041a54d285080237" PluginTypeId="7b3b0304-43a8-f111-b8de-70a8a52adfbd" Name="PowerPete.IvrToolkit.CustomApis.GetNextOpenTime">
       <FriendlyName>PowerPete.IvrToolkit.CustomApis.GetNextOpenTime</FriendlyName>
     </PluginType>
-    <PluginType AssemblyQualifiedName="PowerPete.IvrToolkit.CustomApis.GetQueueContext, PowerPete.IvrToolkit.Plugins, Version=1.0.12.0, Culture=neutral, PublicKeyToken=041a54d285080237" PluginTypeId="75052605-43a8-f111-b8dd-000d3ade357e" Name="PowerPete.IvrToolkit.CustomApis.GetQueueContext">
+    <PluginType AssemblyQualifiedName="PowerPete.IvrToolkit.CustomApis.GetQueueContext, PowerPete.IvrToolkit.Plugins, Version=1.0.17.0, Culture=neutral, PublicKeyToken=041a54d285080237" PluginTypeId="75052605-43a8-f111-b8dd-000d3ade357e" Name="PowerPete.IvrToolkit.CustomApis.GetQueueContext">
       <FriendlyName>PowerPete.IvrToolkit.CustomApis.GetQueueContext</FriendlyName>
     </PluginType>
-    <PluginType AssemblyQualifiedName="PowerPete.IvrToolkit.CustomApis.GetQueueHours, PowerPete.IvrToolkit.Plugins, Version=1.0.12.0, Culture=neutral, PublicKeyToken=041a54d285080237" PluginTypeId="1f8b4703-43a8-f111-b8dd-7c1e52875561" Name="PowerPete.IvrToolkit.CustomApis.GetQueueHours">
+    <PluginType AssemblyQualifiedName="PowerPete.IvrToolkit.CustomApis.GetQueueHours, PowerPete.IvrToolkit.Plugins, Version=1.0.17.0, Culture=neutral, PublicKeyToken=041a54d285080237" PluginTypeId="1f8b4703-43a8-f111-b8dd-7c1e52875561" Name="PowerPete.IvrToolkit.CustomApis.GetQueueHours">
       <FriendlyName>PowerPete.IvrToolkit.CustomApis.GetQueueHours</FriendlyName>
     </PluginType>
-    <PluginType AssemblyQualifiedName="PowerPete.IvrToolkit.CustomApis.GetQueueMetrics, PowerPete.IvrToolkit.Plugins, Version=1.0.12.0, Culture=neutral, PublicKeyToken=041a54d285080237" PluginTypeId="7e762806-43a8-f111-b8dd-70a8a58097f6" Name="PowerPete.IvrToolkit.CustomApis.GetQueueMetrics">
+    <PluginType AssemblyQualifiedName="PowerPete.IvrToolkit.CustomApis.GetQueueMetrics, PowerPete.IvrToolkit.Plugins, Version=1.0.17.0, Culture=neutral, PublicKeyToken=041a54d285080237" PluginTypeId="7e762806-43a8-f111-b8dd-70a8a58097f6" Name="PowerPete.IvrToolkit.CustomApis.GetQueueMetrics">
       <FriendlyName>PowerPete.IvrToolkit.CustomApis.GetQueueMetrics</FriendlyName>
     </PluginType>
-    <PluginType AssemblyQualifiedName="PowerPete.IvrToolkit.CustomApis.GetQueues, PowerPete.IvrToolkit.Plugins, Version=1.0.12.0, Culture=neutral, PublicKeyToken=041a54d285080237" PluginTypeId="dd7ab501-43a8-f111-b8de-000d3ade3584" Name="PowerPete.IvrToolkit.CustomApis.GetQueues">
+    <PluginType AssemblyQualifiedName="PowerPete.IvrToolkit.CustomApis.GetQueues, PowerPete.IvrToolkit.Plugins, Version=1.0.17.0, Culture=neutral, PublicKeyToken=041a54d285080237" PluginTypeId="dd7ab501-43a8-f111-b8de-000d3ade3584" Name="PowerPete.IvrToolkit.CustomApis.GetQueues">
       <FriendlyName>PowerPete.IvrToolkit.CustomApis.GetQueues</FriendlyName>
     </PluginType>
-    <PluginType AssemblyQualifiedName="PowerPete.IvrToolkit.CustomApis.HealthCheck, PowerPete.IvrToolkit.Plugins, Version=1.0.12.0, Culture=neutral, PublicKeyToken=041a54d285080237" PluginTypeId="38062605-43a8-f111-b8dd-000d3ade357e" Name="PowerPete.IvrToolkit.CustomApis.HealthCheck">
+    <PluginType AssemblyQualifiedName="PowerPete.IvrToolkit.CustomApis.HealthCheck, PowerPete.IvrToolkit.Plugins, Version=1.0.17.0, Culture=neutral, PublicKeyToken=041a54d285080237" PluginTypeId="38062605-43a8-f111-b8dd-000d3ade357e" Name="PowerPete.IvrToolkit.CustomApis.HealthCheck">
       <FriendlyName>PowerPete.IvrToolkit.CustomApis.HealthCheck</FriendlyName>
     </PluginType>
-    <PluginType AssemblyQualifiedName="PowerPete.IvrToolkit.CustomApis.IsQueueOpen, PowerPete.IvrToolkit.Plugins, Version=1.0.12.0, Culture=neutral, PublicKeyToken=041a54d285080237" PluginTypeId="7a3b0304-43a8-f111-b8de-70a8a52adfbd" Name="PowerPete.IvrToolkit.CustomApis.IsQueueOpen">
+    <PluginType AssemblyQualifiedName="PowerPete.IvrToolkit.CustomApis.IsQueueOpen, PowerPete.IvrToolkit.Plugins, Version=1.0.17.0, Culture=neutral, PublicKeyToken=041a54d285080237" PluginTypeId="7a3b0304-43a8-f111-b8de-70a8a52adfbd" Name="PowerPete.IvrToolkit.CustomApis.IsQueueOpen">
       <FriendlyName>PowerPete.IvrToolkit.CustomApis.IsQueueOpen</FriendlyName>
     </PluginType>
-    <PluginType AssemblyQualifiedName="PowerPete.IvrToolkit.CustomApis.LogIvrOutcome, PowerPete.IvrToolkit.Plugins, Version=1.0.12.0, Culture=neutral, PublicKeyToken=041a54d285080237" PluginTypeId="cf7eee07-43a8-f111-b8de-000d3ade3584" Name="PowerPete.IvrToolkit.CustomApis.LogIvrOutcome">
+    <PluginType AssemblyQualifiedName="PowerPete.IvrToolkit.CustomApis.LogIvrOutcome, PowerPete.IvrToolkit.Plugins, Version=1.0.17.0, Culture=neutral, PublicKeyToken=041a54d285080237" PluginTypeId="cf7eee07-43a8-f111-b8de-000d3ade3584" Name="PowerPete.IvrToolkit.CustomApis.LogIvrOutcome">
       <FriendlyName>PowerPete.IvrToolkit.CustomApis.LogIvrOutcome</FriendlyName>
     </PluginType>
-    <PluginType AssemblyQualifiedName="PowerPete.IvrToolkit.CustomApis.PromoteDueCallbacks, PowerPete.IvrToolkit.Plugins, Version=1.0.12.0, Culture=neutral, PublicKeyToken=041a54d285080237" PluginTypeId="9190640a-43a8-f111-b8de-70a8a52adfbd" Name="PowerPete.IvrToolkit.CustomApis.PromoteDueCallbacks">
+    <PluginType AssemblyQualifiedName="PowerPete.IvrToolkit.CustomApis.PromoteDueCallbacks, PowerPete.IvrToolkit.Plugins, Version=1.0.17.0, Culture=neutral, PublicKeyToken=041a54d285080237" PluginTypeId="9190640a-43a8-f111-b8de-70a8a52adfbd" Name="PowerPete.IvrToolkit.CustomApis.PromoteDueCallbacks">
       <FriendlyName>PowerPete.IvrToolkit.CustomApis.PromoteDueCallbacks</FriendlyName>
     </PluginType>
-    <PluginType AssemblyQualifiedName="PowerPete.IvrToolkit.CustomApis.RecordCallbackOutcome, PowerPete.IvrToolkit.Plugins, Version=1.0.12.0, Culture=neutral, PublicKeyToken=041a54d285080237" PluginTypeId="d07eee07-43a8-f111-b8de-000d3ade3584" Name="PowerPete.IvrToolkit.CustomApis.RecordCallbackOutcome">
+    <PluginType AssemblyQualifiedName="PowerPete.IvrToolkit.CustomApis.RecordCallbackOutcome, PowerPete.IvrToolkit.Plugins, Version=1.0.17.0, Culture=neutral, PublicKeyToken=041a54d285080237" PluginTypeId="d07eee07-43a8-f111-b8de-000d3ade3584" Name="PowerPete.IvrToolkit.CustomApis.RecordCallbackOutcome">
       <FriendlyName>PowerPete.IvrToolkit.CustomApis.RecordCallbackOutcome</FriendlyName>
     </PluginType>
-    <PluginType AssemblyQualifiedName="PowerPete.IvrToolkit.CustomApis.RescheduleCallback, PowerPete.IvrToolkit.Plugins, Version=1.0.12.0, Culture=neutral, PublicKeyToken=041a54d285080237" PluginTypeId="29782e05-43a8-f111-b8dd-7c1e52344f50" Name="PowerPete.IvrToolkit.CustomApis.RescheduleCallback">
+    <PluginType AssemblyQualifiedName="PowerPete.IvrToolkit.CustomApis.RescheduleCallback, PowerPete.IvrToolkit.Plugins, Version=1.0.17.0, Culture=neutral, PublicKeyToken=041a54d285080237" PluginTypeId="29782e05-43a8-f111-b8dd-7c1e52344f50" Name="PowerPete.IvrToolkit.CustomApis.RescheduleCallback">
       <FriendlyName>PowerPete.IvrToolkit.CustomApis.RescheduleCallback</FriendlyName>
     </PluginType>
-    <PluginType AssemblyQualifiedName="PowerPete.IvrToolkit.CustomApis.ResolveQueue, PowerPete.IvrToolkit.Plugins, Version=1.0.12.0, Culture=neutral, PublicKeyToken=041a54d285080237" PluginTypeId="128b4703-43a8-f111-b8dd-7c1e52875561" Name="PowerPete.IvrToolkit.CustomApis.ResolveQueue">
+    <PluginType AssemblyQualifiedName="PowerPete.IvrToolkit.CustomApis.ResolveQueue, PowerPete.IvrToolkit.Plugins, Version=1.0.17.0, Culture=neutral, PublicKeyToken=041a54d285080237" PluginTypeId="128b4703-43a8-f111-b8dd-7c1e52875561" Name="PowerPete.IvrToolkit.CustomApis.ResolveQueue">
       <FriendlyName>PowerPete.IvrToolkit.CustomApis.ResolveQueue</FriendlyName>
     </PluginType>
-    <PluginType AssemblyQualifiedName="PowerPete.IvrToolkit.CustomApis.ValidatePhoneNumber, PowerPete.IvrToolkit.Plugins, Version=1.0.12.0, Culture=neutral, PublicKeyToken=041a54d285080237" PluginTypeId="c9690a05-43a8-f111-b8dd-7c1e52faad42" Name="PowerPete.IvrToolkit.CustomApis.ValidatePhoneNumber">
+    <PluginType AssemblyQualifiedName="PowerPete.IvrToolkit.CustomApis.ValidatePhoneNumber, PowerPete.IvrToolkit.Plugins, Version=1.0.17.0, Culture=neutral, PublicKeyToken=041a54d285080237" PluginTypeId="c9690a05-43a8-f111-b8dd-7c1e52faad42" Name="PowerPete.IvrToolkit.CustomApis.ValidatePhoneNumber">
       <FriendlyName>PowerPete.IvrToolkit.CustomApis.ValidatePhoneNumber</FriendlyName>
     </PluginType>
   </PluginTypes>

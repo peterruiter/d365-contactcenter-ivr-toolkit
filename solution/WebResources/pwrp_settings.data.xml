@@ -4,6 +4,7 @@
   <Name>pwrp_settings</Name>
   <DisplayName>Contact Center IVR Toolkit settings</DisplayName>
   <Description>Reads and writes the pwrp_ environment variables. Source is src/webresources/pwrp_settings.html.</Description>
+  <LanguageCode>0</LanguageCode>
   <WebResourceType>1</WebResourceType>
   <IntroducedVersion>1.0.0.0</IntroducedVersion>
   <IsEnabledForMobileClient>0</IsEnabledForMobileClient>

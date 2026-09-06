@@ -1,0 +1,13 @@
+<environmentvariabledefinition schemaname="pwrp_ProactiveEngagementConfigId">
+  <description default="The proactive engagement configuration that places scheduled callbacks. It carries the dial mode, workstream and outbound profile.">
+    <label description="The proactive engagement configuration that places scheduled callbacks. It carries the dial mode, workstream and outbound profile." languagecode="1033" />
+  </description>
+  <displayname default="Proactive engagement configuration id">
+    <label description="Proactive engagement configuration id" languagecode="1033" />
+  </displayname>
+  <introducedversion>3.4.0.9</introducedversion>
+  <iscustomizable>1</iscustomizable>
+  <isrequired>0</isrequired>
+  <secretstore>0</secretstore>
+  <type>100000000</type>
+</environmentvariabledefinition>
