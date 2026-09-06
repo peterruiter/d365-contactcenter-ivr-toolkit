@@ -138,5 +138,6 @@ Invoke-Endpoint -Name "ValidatePhoneNumber" -Api "pwrp_ValidatePhoneNumber" -Bod
 Write-Host "`n$passed passed, $failed failed" -ForegroundColor $(if ($failed -eq 0) { "Green" } else { "Yellow" })
 if ($failed -gt 0) {
     Write-Host "A failing reader is usually a wrong attribute name, not a broken install." -ForegroundColor Gray
-    Write-Host "See CLAUDE.md on keeping platform table references in one file." -ForegroundColor Gray
+    Write-Host "Every msdyn_ reference lives in Metrics/QueueMetricsReader.cs or" -ForegroundColor Gray
+    Write-Host "Hours/OperatingHoursProvider.cs. Fix it there." -ForegroundColor Gray
 }
