@@ -944,7 +944,7 @@
         "IsExactMatch": {
           "type": "boolean",
           "x-ms-summary": "IsExactMatch",
-          "description": "True when PreferredStartUtc falls inside the first slot returned, so the caller gets the time they asked for."
+          "description": "True when the caller gets the time they asked for, not merely the nearest one free."
         },
         "Success": {
           "type": "boolean",
@@ -988,7 +988,7 @@
         "PreferredStartUtc": {
           "type": "string",
           "x-ms-summary": "PreferredStartUtc",
-          "description": "A time the caller asked for. Slots nearest it are returned instead of the earliest ones. Omit it and the earliest come back.",
+          "description": "A time the caller asked for. The nearest slots come back instead of the earliest.",
           "format": "date-time"
         }
       },

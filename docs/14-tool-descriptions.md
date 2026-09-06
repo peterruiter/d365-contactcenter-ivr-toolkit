@@ -56,6 +56,20 @@ Three words that stop the model asking the caller for a GUID.
 
 Stops it trying to format the number itself, badly.
 
+### One hundred characters, hard
+
+Dataverse rejects a parameter or property description over 100 characters. Not a style
+guide, a limit: the request fails.
+
+`Register-CustomApis.ps1` checks the whole contract before it writes anything, because
+the platform rejects them one at a time and the run stops with some endpoints updated and
+the rest not. A failed registration that changed nothing is easy to recover from.
+
+The limit is a fair constraint rather than an obstacle. Both examples above are under
+forty characters and both do their job. A description that needs a hundred and twenty is
+usually explaining a design decision to a person, and the model does not need that. Put
+it in `docs/05-api-reference.md`, where the reader is a person.
+
 ## Testing descriptions
 
 Test with vague utterances, not clean ones. "Can I speak to someone about my bill" is
