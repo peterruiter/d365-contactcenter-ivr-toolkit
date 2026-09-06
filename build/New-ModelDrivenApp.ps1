@@ -104,7 +104,7 @@ if (-not $AppId) {
 # Publish before touching anything else, which is what makes the app and its sitemap
 # readable through the Web API at all.
 Write-Host "Publishing the app so it can be read" -ForegroundColor Cyan
-Invoke-Dataverse -Method POST -Path "/api/data/v9.2/PublishXml" -Body @{
+Invoke-Dataverse -Method POST -Path "/api/data/v9.2/PublishXml" -RetryOn "An unexpected error occurred" -Body @{
     ParameterXml = "<importexportxml><appmodules><appmodule>$AppId</appmodule></appmodules></importexportxml>"
 } | Out-Null
 
@@ -122,9 +122,10 @@ Write-Host "  '$($app.name)' [$($app.uniquename)]" -ForegroundColor DarkGray
 # one is unreadable on the other.
 Write-Host "`nApp icon" -ForegroundColor Cyan
 
-# A web resource has to be published before anything can reference it. Pointing the app
-# icon or a subarea at an unpublished resource renders blank rather than failing, which
-# is a slow thing to work out, so publishing is part of uploading here.
+# Uploads only. Publishing happens once at the end, with the app and the sitemap: a web
+# resource has to be published before anything can reference it, but publishing each one
+# as it is uploaded means several publishes seconds apart, and the second of those came
+# back "An unexpected error occurred" on an environment with other work in flight.
 function Set-WebResource {
     param(
         [string]$Name,
@@ -159,10 +160,6 @@ function Set-WebResource {
         Write-Host "  + $Name" -ForegroundColor DarkGray
     }
 
-    Invoke-Dataverse -Method POST -Path "/api/data/v9.2/PublishXml" -Body @{
-        ParameterXml = "<importexportxml><webresources><webresource>$id</webresource></webresources></importexportxml>"
-    } | Out-Null
-
     return $id
 }
 
@@ -179,42 +176,21 @@ $iconId = Set-WebResource -Name $iconName -Type 11 `
 # a stack trace that says nothing about lookups.
 #
 # Read the name rather than guessing it. Guessing produced that stack trace.
-# The lookup is found by what it points at, not by its name. It is not called
-# "webresourceid": filtering the relationships on that attribute name matched nothing,
-# and an assumption about the name is what produced the deserialiser stack trace before
-# that.
-$iconLookup = (Invoke-Dataverse -Method GET -Path (
-    "/api/data/v9.2/EntityDefinitions(LogicalName='appmodule')/Attributes/" +
-    "Microsoft.Dynamics.CRM.LookupAttributeMetadata?`$select=LogicalName,Targets")).value |
-    Where-Object { $_.Targets -contains "webresource" } |
-    Select-Object -First 1
-
-$iconNav = $null
-if ($iconLookup) {
-    $iconNav = ((Invoke-Dataverse -Method GET -Path (
-        "/api/data/v9.2/EntityDefinitions(LogicalName='appmodule')/ManyToOneRelationships" +
-        "?`$select=ReferencingAttribute,ReferencingEntityNavigationPropertyName" +
-        "&`$filter=ReferencingAttribute eq '$($iconLookup.LogicalName)'")).value |
-        Select-Object -First 1).ReferencingEntityNavigationPropertyName
+# appmodule.webresourceid is a Uniqueidentifier column, not a lookup. That is the whole
+# story behind two earlier failures here: there is no relationship to find and no
+# navigation property to bind through, so "webresourceid@odata.bind" was an annotation on
+# a primitive, which fails inside the OData deserialiser with a stack trace that mentions
+# neither lookups nor icons. Write the id.
+try {
+    Invoke-Dataverse -Method PATCH -Path "/api/data/v9.2/appmodules($AppId)" -SolutionName $SolutionName -Body @{
+        webresourceid = $iconId
+    } | Out-Null
+    Write-Host "  + icon set on the app" -ForegroundColor DarkGray
 }
-
-# Not fatal. The icon is cosmetic, and the sitemap below is not, so a failure here must
-# not cost the run. An earlier version threw at this point and never wrote the navigation.
-if (-not $iconNav) {
-    Write-Warning ("No appmodule lookup to webresource was found, so the icon was not set. " +
+catch {
+    # Cosmetic, and the sitemap below is not, so this must not cost the run.
+    Write-Warning ("Icon not set: $($_.Exception.Message)`n" +
         "Set it by hand in the app designer, choosing $iconName.")
-}
-else {
-    try {
-        Invoke-Dataverse -Method PATCH -Path "/api/data/v9.2/appmodules($AppId)" -SolutionName $SolutionName -Body @{
-            "$iconNav@odata.bind" = "/webresourceset($iconId)"
-        } | Out-Null
-        Write-Host "  + icon set on the app via $iconNav" -ForegroundColor DarkGray
-    }
-    catch {
-        Write-Warning ("Icon not set: $($_.Exception.Message)`n" +
-            "Set it by hand in the app designer, choosing $iconName.")
-    }
 }
 
 # --- Settings page ------------------------------------------------------------
@@ -303,9 +279,11 @@ foreach ($area in ($areas + $settingsAreas)) { Write-Host "    $($area.Title)" -
 # An unpublished sitemap is invisible, so this is part of creating the app rather than
 # an optional extra.
 Write-Host "`nPublishing" -ForegroundColor Cyan
-Invoke-Dataverse -Method POST -Path "/api/data/v9.2/PublishXml" -Body @{
+Invoke-Dataverse -Method POST -Path "/api/data/v9.2/PublishXml" -RetryOn "An unexpected error occurred" -Body @{
     ParameterXml = "<importexportxml><appmodules><appmodule>$AppId</appmodule></appmodules>" +
-                   "<sitemaps><sitemap>$sitemapId</sitemap></sitemaps></importexportxml>"
+                   "<sitemaps><sitemap>$sitemapId</sitemap></sitemaps>" +
+                   "<webresources><webresource>$iconId</webresource>" +
+                   "<webresource>$settingsId</webresource></webresources></importexportxml>"
 } | Out-Null
 
 Write-Host "`nApp ready. Open it from the Power Apps maker portal, or Dynamics 365 home." -ForegroundColor Green

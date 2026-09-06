@@ -106,7 +106,12 @@ function Invoke-Dataverse {
         $Body,
         [string]$SolutionName,
         [switch]$Representation,
-        [int]$Attempts = 6
+        [int]$Attempts = 6,
+        # Extra transient pattern for this call only. PublishXml is the reason it exists:
+        # it answers "An unexpected error occurred" when the environment is busy, which is
+        # far too vague to retry on in general but is safe on an operation that is
+        # idempotent by definition. Do not pass it on anything that writes.
+        [string]$RetryOn
     )
 
     if (-not $script:DataverseHeaders) { throw "Call Connect-Dataverse before Invoke-Dataverse." }
@@ -122,6 +127,7 @@ function Invoke-Dataverse {
                  "installation or removal of another solution|" +
                  "database session was disconnected|" +
                  "schema customization request is currently being ran"
+    if ($RetryOn) { $transient = "$transient|$RetryOn" }
 
     for ($attempt = 1; ; $attempt++) {
         try {

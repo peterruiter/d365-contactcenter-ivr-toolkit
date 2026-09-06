@@ -163,11 +163,14 @@ uploaded from `build/assets/app-icon.svg`. Without it the app shows the platform
 tile, which several other apps also show. Edit the SVG in the repository and re-run
 `New-ModelDrivenApp.ps1`; do not edit the web resource in the environment.
 
-Binding it to the app is done by finding the `appmodule` lookup whose target is
-`webresource` and using that relationship's navigation property name. Do not shorten this
-to the attribute name. The attribute is not called `webresourceid`, and an `@odata.bind`
-on a name that is not a navigation property fails inside the OData deserialiser with a
-stack trace that mentions neither lookups nor icons.
+`appmodule.webresourceid` is a Uniqueidentifier column, not a lookup. Write the id into
+it. There is no relationship and no navigation property, so `webresourceid@odata.bind`
+is an annotation on a primitive and fails inside the OData deserialiser with a stack
+trace that mentions neither lookups nor icons.
+
+Web resources are uploaded first and published once at the end, together with the app and
+the sitemap. Publishing each one as it is uploaded means several publishes seconds apart,
+and on a busy environment the second came back "An unexpected error occurred".
 
 It is line art in one accent colour on a transparent ground. The app selector renders the
 tile on dark navy and the maker portal renders it on white, and an icon designed for one
