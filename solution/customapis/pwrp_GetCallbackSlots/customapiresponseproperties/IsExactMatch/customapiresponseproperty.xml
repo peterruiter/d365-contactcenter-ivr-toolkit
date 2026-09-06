@@ -1,0 +1,11 @@
+<customapiresponseproperty uniquename="IsExactMatch">
+  <description default="True when the caller gets the time they asked for, not merely the nearest one free.">
+    <label description="True when the caller gets the time they asked for, not merely the nearest one free." languagecode="1033" />
+  </description>
+  <displayname default="IsExactMatch">
+    <label description="IsExactMatch" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>IsExactMatch</name>
+  <type>0</type>
+</customapiresponseproperty>

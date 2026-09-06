@@ -12,6 +12,37 @@ Semantic versioning. The Custom API contract is stable within a major version.
 Versions here are `MAJOR.MINOR.PATCH`. The fourth part in `VERSION` is a build number that
 `build.ps1` raises on every run, and a build is not a release, so it never appears below.
 
+## [3.5.0]
+
+### Added
+
+- Promotion now creates a proactive engagement delivery with
+  `CCaaS_CreateSimpleProactiveDelivery`, so a scheduled callback is actually placed.
+  Until now promotion set `pwrp_status` to `Queued` on our own table and stopped, and
+  nothing read that. Proactive engagement takes its audience from a file upload, the CCaaS
+  API, MCP or a Customer Insights journey and cannot see a custom table, so every
+  scheduled callback sat marked ready and was never dialled. All CCaaS references live in
+  `Callback/ProactiveDispatcher.cs`
+- `pwrp_ProactiveEngagementConfigId`, the configuration that places the calls. It carries
+  the dial mode, workstream and outbound profile, and it is now the setting scheduled
+  callback depends on. The health check covers it
+- `pwrp_deliveryid` on `pwrp_callbackrequest`, to correlate a request with its delivery
+- The booked slot is passed as the delivery window, so a nine o'clock callback cannot be
+  placed at four. Without it the API assumes twenty four hours from now. An overdue record
+  gets a window starting now, so a backlog drains after an outage
+- The callback reference, queue, locale, requested time and context are passed as
+  `InputAttributes`, so the representative sees why they are ringing
+
+### Changed
+
+- A dispatch that fails leaves the record at `Requested` with a failure reason rather than
+  marking it `Queued`. The next run retries it, so a transient outage does not fail a whole
+  backlog, and `ExpireStale` still gives up after 24 hours
+- A callback with no resolved contact is not dispatched. Proactive engagement upserts on
+  the identifier, so inventing one manufactures a contact out of an unmatched caller
+  number. `CreateCallback` already matches on the number, and setting the contact by hand
+  lets the next run pick it up
+
 ## [3.4.2]
 
 ### Added

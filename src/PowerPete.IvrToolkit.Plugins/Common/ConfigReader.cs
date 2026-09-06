@@ -80,6 +80,7 @@ namespace PowerPete.IvrToolkit.Common
         public const string MetricsWindowMinutes = "pwrp_MetricsWindowMinutes";
         public const string EnableScheduledCallback = "pwrp_EnableScheduledCallback";
         public const string OutboundWorkstreamId = "pwrp_OutboundWorkstreamId";
+        public const string ProactiveEngagementConfigId = "pwrp_ProactiveEngagementConfigId";
         public const string MaxCallbackAttempts = "pwrp_MaxCallbackAttempts";
         public const string CallbackRetryMinutes = "pwrp_CallbackRetryMinutes";
         public const string CallbackSlotMinutes = "pwrp_CallbackSlotMinutes";

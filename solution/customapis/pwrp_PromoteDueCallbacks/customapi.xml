@@ -9,7 +9,7 @@
   </displayname>
   <iscustomizable>1</iscustomizable>
   <isfunction>0</isfunction>
-  <isprivate>1</isprivate>
+  <isprivate>0</isprivate>
   <name>pwrp_PromoteDueCallbacks</name>
   <plugintypeid>
     <plugintypeexportkey>9190640a-43a8-f111-b8de-70a8a52adfbd</plugintypeexportkey>

@@ -193,6 +193,15 @@ namespace PowerPete.IvrToolkit.CustomApis
                     ? "Scheduled callback is on. pwrp_OutboundWorkstreamId must point at an outbound workstream."
                     : "Scheduled callback is off.");
 
+            // The workstream alone dispatches nothing. Proactive engagement is what places
+            // the call, and it is reached through its configuration id, so this is the
+            // setting that decides whether a promoted callback ever rings anyone.
+            var engagement = request.Config.GetString(ConfigKeys.ProactiveEngagementConfigId);
+            Add("Proactive engagement", !scheduled || !string.IsNullOrWhiteSpace(engagement),
+                scheduled
+                    ? "Scheduled callback is on. pwrp_ProactiveEngagementConfigId must name a proactive engagement configuration."
+                    : "Scheduled callback is off.");
+
             // Config being right proves nothing about anything running. Scheduled callback
             // needs a recurrence flow calling pwrp_PromoteDueCallbacks, and that flow is not
             // part of the solution, so the ordinary way for this feature to fail is that

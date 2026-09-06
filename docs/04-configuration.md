@@ -186,8 +186,11 @@ back when a representative is free. There is no time and no slots.
 is `false` by default, so setting the queue flag alone does nothing and
 `ScheduledCallbackAvailable` stays false with no explanation.
 
-It also needs `pwrp_OutboundWorkstreamId`, because proactive engagement places the calls.
-The health check fails when the switch is on and the workstream is missing.
+It also needs `pwrp_ProactiveEngagementConfigId`, because proactive engagement places the
+calls and that id is how the toolkit reaches it. The configuration carries the dial mode,
+the workstream and the outbound profile with it, so `pwrp_OutboundWorkstreamId` is only
+recorded on the request for reporting. The health check fails when the switch is on and
+either is missing.
 
 ### Slots
 

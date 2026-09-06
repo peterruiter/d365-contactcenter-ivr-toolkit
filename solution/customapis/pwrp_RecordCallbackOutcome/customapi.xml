@@ -9,7 +9,7 @@
   </displayname>
   <iscustomizable>1</iscustomizable>
   <isfunction>0</isfunction>
-  <isprivate>1</isprivate>
+  <isprivate>0</isprivate>
   <name>pwrp_RecordCallbackOutcome</name>
   <plugintypeid>
     <plugintypeexportkey>d07eee07-43a8-f111-b8de-000d3ade3584</plugintypeexportkey>

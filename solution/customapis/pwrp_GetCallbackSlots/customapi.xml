@@ -1,8 +1,8 @@
 <customapi uniquename="pwrp_GetCallbackSlots">
   <allowedcustomprocessingsteptype>0</allowedcustomprocessingsteptype>
   <bindingtype>0</bindingtype>
-  <description default="Bookable callback windows inside opening hours, with remaining capacity. Offer at most three over the phone.">
-    <label description="Bookable callback windows inside opening hours, with remaining capacity. Offer at most three over the phone." languagecode="1033" />
+  <description default="Bookable callback windows inside opening hours, with remaining capacity. Send PreferredStartUtc when the caller names a time and the nearest available slots come back instead of the earliest. Offer at most three over the phone.">
+    <label description="Bookable callback windows inside opening hours, with remaining capacity. Send PreferredStartUtc when the caller names a time and the nearest available slots come back instead of the earliest. Offer at most three over the phone." languagecode="1033" />
   </description>
   <displayname default="Get callback slots">
     <label description="Get callback slots" languagecode="1033" />

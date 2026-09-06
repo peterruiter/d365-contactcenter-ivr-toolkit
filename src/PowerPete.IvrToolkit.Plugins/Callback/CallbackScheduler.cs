@@ -60,26 +60,48 @@ namespace PowerPete.IvrToolkit.Callback
                 return result;
             }
 
-            var workstream = _config.GetString(ConfigKeys.OutboundWorkstreamId);
-            if (string.IsNullOrWhiteSpace(workstream))
+            var dispatcher = new ProactiveDispatcher(_service, _config, _tracing);
+            if (!dispatcher.IsConfigured)
             {
                 throw new ToolkitException(ErrorCodes.ConfigurationError,
-                    "pwrp_OutboundWorkstreamId is not set. Scheduled callbacks cannot be dispatched.");
+                    "pwrp_ProactiveEngagementConfigId is not set. Scheduled callbacks cannot be dispatched.");
             }
 
+            var workstream = _config.GetString(ConfigKeys.OutboundWorkstreamId);
             var now = DateTime.UtcNow;
             var horizon = now.AddMinutes(lookAheadMinutes);
 
             foreach (var record in DueRequests(horizon))
             {
                 var reference = record.GetAttributeValue<string>("pwrp_name");
+                var dispatch = dispatcher.Dispatch(record, now);
 
-                _service.Update(new Entity("pwrp_callbackrequest", record.Id)
+                if (!dispatch.Success)
+                {
+                    // Left at Requested deliberately, so the next run retries it. A
+                    // transient outage would otherwise fail a whole backlog permanently,
+                    // and a record that is genuinely undispatchable is not lost either:
+                    // ExpireStale gives up on it after 24 hours and says why.
+                    _service.Update(new Entity("pwrp_callbackrequest", record.Id)
+                    {
+                        ["pwrp_failurereason"] = Truncate(dispatch.Reason, 400)
+                    });
+
+                    result.Failed++;
+                    continue;
+                }
+
+                // Queued means handed over, not dialled. Proactive engagement decides when
+                // the call is placed inside the window, and RecordOutcome moves it on.
+                var update = new Entity("pwrp_callbackrequest", record.Id)
                 {
                     ["pwrp_status"] = new OptionSetValue(StatusQueued),
                     ["pwrp_queuedon"] = now,
-                    ["pwrp_workstreamid"] = workstream
-                });
+                    ["pwrp_deliveryid"] = dispatch.DeliveryId,
+                    ["pwrp_failurereason"] = null
+                };
+                if (!string.IsNullOrWhiteSpace(workstream)) { update["pwrp_workstreamid"] = workstream; }
+                _service.Update(update);
 
                 result.Promoted++;
                 result.References.Add(reference);
@@ -92,11 +114,18 @@ namespace PowerPete.IvrToolkit.Callback
             return result;
         }
 
+        private static string Truncate(string value, int max)
+        {
+            if (string.IsNullOrEmpty(value)) { return value; }
+            return value.Length <= max ? value : value.Substring(0, max);
+        }
+
         private IEnumerable<Entity> DueRequests(DateTime horizon)
         {
             var query = new QueryExpression("pwrp_callbackrequest")
             {
-                ColumnSet = new ColumnSet("pwrp_name", "pwrp_queueid", "pwrp_requestedstart", "pwrp_mode"),
+                ColumnSet = new ColumnSet("pwrp_name", "pwrp_queueid", "pwrp_requestedstart", "pwrp_mode",
+                    "pwrp_contactid", "pwrp_phonenumber", "pwrp_locale", "pwrp_context"),
                 Criteria =
                 {
                     Conditions =

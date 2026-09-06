@@ -136,8 +136,14 @@ Work through in order:
 2. Its connection reference is bound to a connection, and the flow is switched on. It is
    created switched off on purpose
 3. `pwrp_EnableScheduledCallback` is true
-4. `pwrp_OutboundWorkstreamId` points at a real outbound workstream. The flow throws
-   `pwrp_OutboundWorkstreamId is not set` rather than promoting
+4. `pwrp_ProactiveEngagementConfigId` names a proactive engagement configuration. The
+   flow throws `pwrp_ProactiveEngagementConfigId is not set` rather than promoting. This
+   is the setting that decides whether anything is dialled: before 3.5.0 promotion only
+   set a status and no call was ever placed
+4b. Promoted records carry a **Delivery id**. An empty one on a record at `Queued` means
+   the delivery was created but its id could not be read, which is harmless. A record
+   stuck at `Requested` with a **Failure reason** is a dispatch that failed and will be
+   retried on the next run
 5. Records are moving from `Requested` to `Queued`
 6. Proactive engagement is configured in preview dial mode
 7. Representatives are in the outbound capacity profile

@@ -33,11 +33,22 @@ not build a dialer.
     |  scheduled flow, every 5 minutes
     |  promotes due records
     v
-  Outbound workstream  ->  proactive engagement, preview dial mode
+  CCaaS_CreateSimpleProactiveDelivery   one delivery per record
+    |
+    v
+  Proactive engagement, preview dial mode  ->  status Queued
     |
     v
   Representative accepts  ->  call placed  ->  status Completed
 ```
+
+The API call is the part people assume is implicit and is not. Proactive engagement takes
+its audience from a file upload, the CCaaS API, MCP or a Customer Insights journey. It
+cannot see a custom table, so a promoted record with nothing dispatching it is a row that
+says ready and is never read. Before 3.5.0 that was exactly what promotion did.
+
+`Queued` means handed over, not dialled. Proactive engagement decides when the call goes
+out inside the window it was given.
 
 Owning the dialer would mean rebuilding capacity handling, presence awareness and
 compliance. Proactive engagement already does all of that.
@@ -63,15 +74,24 @@ the whole point of a scheduled callback.
 
 ### 4. Toolkit configuration
 
+The proactive engagement configuration id is the one setting you have to fetch by hand.
+In Power Apps, open **Tables** > **Proactive Engagement Configuration** and copy the id of
+the record you created in step 3.
+
 In the Contact Center IVR Toolkit app, go to **Settings**:
 
 ```
-pwrp_EnableScheduledCallback = true
-pwrp_OutboundWorkstreamId    = pick the workstream from step 2
-pwrp_CallbackSlotMinutes     = 30
-pwrp_MaxCallbackAttempts     = 3
-pwrp_CallbackRetryMinutes    = 20
+pwrp_EnableScheduledCallback     = true
+pwrp_ProactiveEngagementConfigId = the id from step 3
+pwrp_OutboundWorkstreamId        = pick the workstream from step 2
+pwrp_CallbackSlotMinutes         = 30
+pwrp_MaxCallbackAttempts         = 3
+pwrp_CallbackRetryMinutes        = 20
 ```
+
+`pwrp_ProactiveEngagementConfigId` is the one that decides whether a callback rings
+anyone. The configuration carries the dial mode, the workstream and the outbound profile,
+so `pwrp_OutboundWorkstreamId` is now only recorded on the request for reporting.
 
 Then press **Run health check** on the same page. It fails when scheduled callback is on
 and the workstream is not set, which is the mistake this ordering exists to catch.

@@ -353,6 +353,12 @@
           "displayName": "Workstream id"
         },
         {
+          "name": "pwrp_deliveryid",
+          "type": "String",
+          "maxLength": 100,
+          "displayName": "Delivery id"
+        },
+        {
           "name": "pwrp_locale",
           "type": "String",
           "maxLength": 10,
@@ -674,6 +680,12 @@
       "type": "String",
       "default": "",
       "description": "The outbound workstream proactive engagement uses to place scheduled callbacks. Required once scheduled callback is on, and the health check fails without it. The toolkit books the callback, it does not dial it."
+    },
+    {
+      "name": "pwrp_ProactiveEngagementConfigId",
+      "type": "String",
+      "displayName": "Proactive engagement configuration id",
+      "description": "The proactive engagement configuration that places scheduled callbacks. It carries the dial mode, workstream and outbound profile."
     },
     {
       "name": "pwrp_MaxCallbackAttempts",

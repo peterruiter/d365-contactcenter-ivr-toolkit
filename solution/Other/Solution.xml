@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <ImportExportXml version="9.2.26082.157" SolutionPackageVersion="9.2" languagecode="1033" generatedBy="CrmLive" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" OrganizationVersion="9.2.26082.157" OrganizationSchemaType="Full" CRMServerServiceabilityVersion="9.2.26082.00157">
   <SolutionManifest>
     <UniqueName>PowerPeteIvrToolkitCore</UniqueName>
@@ -61,6 +61,7 @@
       <RootComponent type="1" schemaName="pwrp_queueprofile" behavior="0" />
       <RootComponent type="1" schemaName="queue" behavior="1" />
       <RootComponent type="20" id="{27e23113-3fa8-f111-b8de-000d3a694c2b}" behavior="0" />
+      <RootComponent type="29" id="{5d32e408-00aa-f111-aaab-7c1e52875561}" behavior="0" />
       <RootComponent type="61" schemaName="pwrp_/icons/ivrtoolkit.svg" behavior="0" />
       <RootComponent type="61" schemaName="pwrp_settings" behavior="0" />
       <RootComponent type="62" schemaName="contact_center_ivr_toolkit_1bb4bea3" behavior="0" />
