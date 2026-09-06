@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<WebResource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <WebResourceId>{f74b3abf-cca9-f111-aaac-000d3ade3584}</WebResourceId>
+  <Name>pwrp_settings</Name>
+  <DisplayName>Contact Center IVR Toolkit settings</DisplayName>
+  <Description>Reads and writes the pwrp_ environment variables. Source is src/webresources/pwrp_settings.html.</Description>
+  <WebResourceType>1</WebResourceType>
+  <IntroducedVersion>1.0.0.0</IntroducedVersion>
+  <IsEnabledForMobileClient>0</IsEnabledForMobileClient>
+  <IsAvailableForMobileOffline>0</IsAvailableForMobileOffline>
+  <IsCustomizable>1</IsCustomizable>
+  <CanBeDeleted>1</CanBeDeleted>
+  <IsHidden>0</IsHidden>
+  <FileName>/WebResources/pwrp_settingsF74B3ABF-CCA9-F111-AAAC-000D3ADE3584</FileName>
+</WebResource>

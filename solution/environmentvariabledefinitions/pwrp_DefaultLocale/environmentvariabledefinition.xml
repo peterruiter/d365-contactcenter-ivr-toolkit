@@ -1,5 +1,7 @@
 <environmentvariabledefinition schemaname="pwrp_DefaultLocale">
-  <defaultvalue>nl-NL</defaultvalue>
+  <description default="Language for spoken output when a queue profile does not set its own. nl-NL and en-GB are built in. Set it per queue on the queue profile instead when queues serve different languages, because the queue decides what a caller hears, not the agent.">
+    <label description="Language for spoken output when a queue profile does not set its own. nl-NL and en-GB are built in. Set it per queue on the queue profile instead when queues serve different languages, because the queue decides what a caller hears, not the agent." languagecode="1033" />
+  </description>
   <displayname default="Default locale">
     <label description="Default locale" languagecode="1033" />
   </displayname>

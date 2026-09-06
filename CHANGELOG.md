@@ -23,6 +23,9 @@ Semantic versioning. The Custom API contract is stable within a major version.
   setting does and what goes wrong when it is set badly, including the pairing that
   catches everyone: `pwrp_EnableScheduledCallback` and the queue profile flag are both
   required, so turning one on alone appears to do nothing
+- The shipped default on every setting, whether or not it has been overridden. It was
+  only in the faint schema line, and absent entirely when the default was empty, so a
+  setting that had been changed gave no way to see what it used to be
 - **Use default** on each setting, which deletes the value row. Clearing the box and
   saving never did this. An empty string is a value, and the platform refuses one on some
   types, so there was no way back to a default short of deleting the record by hand

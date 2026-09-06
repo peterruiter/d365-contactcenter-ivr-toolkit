@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<WebResource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <WebResourceId>{a0eb15b0-10a9-f111-aaac-000d3a694c2b}</WebResourceId>
+  <Name>pwrp_/icons/ivrtoolkit.svg</Name>
+  <DisplayName>Contact Center IVR Toolkit icon</DisplayName>
+  <Description>App tile icon. Source of truth is build/assets/app-icon.svg.</Description>
+  <WebResourceType>11</WebResourceType>
+  <IntroducedVersion>1.0.0.0</IntroducedVersion>
+  <IsEnabledForMobileClient>0</IsEnabledForMobileClient>
+  <IsAvailableForMobileOffline>0</IsAvailableForMobileOffline>
+  <IsCustomizable>1</IsCustomizable>
+  <CanBeDeleted>1</CanBeDeleted>
+  <IsHidden>0</IsHidden>
+  <FileName>/WebResources/pwrp_iconsivrtoolkitsvgA0EB15B0-10A9-F111-AAAC-000D3A694C2B</FileName>
+</WebResource>

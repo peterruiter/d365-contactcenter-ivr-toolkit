@@ -1,4 +1,7 @@
 <environmentvariabledefinition schemaname="pwrp_OutboundWorkstreamId">
+  <description default="The outbound workstream proactive engagement uses to place scheduled callbacks. Required once scheduled callback is on, and the health check fails without it. The toolkit books the callback, it does not dial it.">
+    <label description="The outbound workstream proactive engagement uses to place scheduled callbacks. Required once scheduled callback is on, and the health check fails without it. The toolkit books the callback, it does not dial it." languagecode="1033" />
+  </description>
   <displayname default="Outbound workstream id">
     <label description="Outbound workstream id" languagecode="1033" />
   </displayname>

@@ -40,9 +40,11 @@ Four things it does that the maker portal does not:
   positional numbers, so the page turns whatever you type into the four bands a caller
   would actually land in, and refuses to pretend that three numbers that do not rise mean
   anything
-- **Puts a setting back on its default.** Clearing the box and saving does not do this.
-  An empty string is a value, and the platform refuses one on some types. **Use default**
-  deletes the value so the default applies again
+- **Shows the shipped default on every setting, and puts it back.** The default is on
+  screen whether or not the setting has been overridden, which is the only way to see
+  what a changed setting used to be. **Use default** reverts it. Clearing the box and
+  saving does not: an empty string is a value, and the platform refuses one on some
+  types, so **Use default** deletes the value instead
 - **Runs the health check.** The same `pwrp_HealthCheck` the install runs, so you can see
   straight away whether what you just saved holds together
 

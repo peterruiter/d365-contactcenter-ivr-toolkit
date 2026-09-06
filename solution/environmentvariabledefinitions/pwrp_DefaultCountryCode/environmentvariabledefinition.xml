@@ -1,5 +1,7 @@
 <environmentvariabledefinition schemaname="pwrp_DefaultCountryCode">
-  <defaultvalue>31</defaultvalue>
+  <description default="Country calling code in digits, no plus, for turning a spoken number into a full one. 31 for the Netherlands, 32 for Belgium. Only used for numbers given in national form. Set it per queue on the queue profile when you serve more than one country: a Belgian number read against the Dutch code becomes a valid looking Dutch number with no error.">
+    <label description="Country calling code in digits, no plus, for turning a spoken number into a full one. 31 for the Netherlands, 32 for Belgium. Only used for numbers given in national form. Set it per queue on the queue profile when you serve more than one country: a Belgian number read against the Dutch code becomes a valid looking Dutch number with no error." languagecode="1033" />
+  </description>
   <displayname default="Default country code">
     <label description="Default country code" languagecode="1033" />
   </displayname>

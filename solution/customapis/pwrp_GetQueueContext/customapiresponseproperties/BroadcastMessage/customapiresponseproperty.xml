@@ -1,0 +1,11 @@
+<customapiresponseproperty uniquename="BroadcastMessage">
+  <description default="An outage or notice to read before anything else. Empty when there is none.">
+    <label description="An outage or notice to read before anything else. Empty when there is none." languagecode="1033" />
+  </description>
+  <displayname default="BroadcastMessage">
+    <label description="BroadcastMessage" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>BroadcastMessage</name>
+  <type>10</type>
+</customapiresponseproperty>

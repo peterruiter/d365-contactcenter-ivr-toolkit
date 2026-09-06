@@ -1,5 +1,7 @@
 <environmentvariabledefinition schemaname="pwrp_CallbackRetryMinutes">
-  <defaultvalue>20</defaultvalue>
+  <description default="Minutes between callback attempts. Too short and you call back while they are still busy, too long and they have stopped caring.">
+    <label description="Minutes between callback attempts. Too short and you call back while they are still busy, too long and they have stopped caring." languagecode="1033" />
+  </description>
   <displayname default="Callback retry gap (min)">
     <label description="Callback retry gap (min)" languagecode="1033" />
   </displayname>

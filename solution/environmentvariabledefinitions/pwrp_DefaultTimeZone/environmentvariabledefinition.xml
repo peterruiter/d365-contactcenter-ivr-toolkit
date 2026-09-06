@@ -1,5 +1,7 @@
 <environmentvariabledefinition schemaname="pwrp_DefaultTimeZone">
-  <defaultvalue>W. Europe Standard Time</defaultvalue>
+  <description default="Windows time zone id used for opening hours when a queue profile does not set its own, for example W. Europe Standard Time. Get this wrong and the IVR is confidently open at the wrong times.">
+    <label description="Windows time zone id used for opening hours when a queue profile does not set its own, for example W. Europe Standard Time. Get this wrong and the IVR is confidently open at the wrong times." languagecode="1033" />
+  </description>
   <displayname default="Default time zone">
     <label description="Default time zone" languagecode="1033" />
   </displayname>

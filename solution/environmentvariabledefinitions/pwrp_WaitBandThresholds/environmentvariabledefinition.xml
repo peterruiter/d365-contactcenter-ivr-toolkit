@@ -1,5 +1,7 @@
 <environmentvariabledefinition schemaname="pwrp_WaitBandThresholds">
-  <defaultvalue>60,180,420</defaultvalue>
+  <description default="Three numbers of seconds, rising, separated by commas. Under the first is Short, then Moderate, then Long, and above the third is VeryLong. A callback is offered whenever the wait is not Short, so the first number is the one that decides when callers stop being put through. Tune it to what your callers actually tolerate, not to the SLA.">
+    <label description="Three numbers of seconds, rising, separated by commas. Under the first is Short, then Moderate, then Long, and above the third is VeryLong. A callback is offered whenever the wait is not Short, so the first number is the one that decides when callers stop being put through. Tune it to what your callers actually tolerate, not to the SLA." languagecode="1033" />
+  </description>
   <displayname default="Wait band thresholds (s)">
     <label description="Wait band thresholds (s)" languagecode="1033" />
   </displayname>

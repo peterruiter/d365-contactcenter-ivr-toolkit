@@ -1,5 +1,7 @@
 <environmentvariabledefinition schemaname="pwrp_TelemetryEnabled">
-  <defaultvalue>true</defaultvalue>
+  <description default="Whether each call writes its duration to the trace log. Leave it on. It is how you find out the IVR became slow before a caller tells you.">
+    <label description="Whether each call writes its duration to the trace log. Leave it on. It is how you find out the IVR became slow before a caller tells you." languagecode="1033" />
+  </description>
   <displayname default="Telemetry enabled">
     <label description="Telemetry enabled" languagecode="1033" />
   </displayname>

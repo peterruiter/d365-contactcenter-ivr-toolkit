@@ -1,5 +1,7 @@
 <environmentvariabledefinition schemaname="pwrp_MaxCallbackAttempts">
-  <defaultvalue>3</defaultvalue>
+  <description default="How many times to try a callback before giving up and marking it failed. Three is a reasonable default. Higher annoys people who did not answer on purpose.">
+    <label description="How many times to try a callback before giving up and marking it failed. Three is a reasonable default. Higher annoys people who did not answer on purpose." languagecode="1033" />
+  </description>
   <displayname default="Max callback attempts">
     <label description="Max callback attempts" languagecode="1033" />
   </displayname>

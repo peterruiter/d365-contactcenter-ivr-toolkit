@@ -1,5 +1,7 @@
 <environmentvariabledefinition schemaname="pwrp_MetricsCacheSeconds">
-  <defaultvalue>15</defaultvalue>
+  <description default="How long live queue metrics are reused before reading them again. Lower is fresher and slower. Raise it on a busy queue, where a fifteen second old number is no less true and the read is expensive.">
+    <label description="How long live queue metrics are reused before reading them again. Lower is fresher and slower. Raise it on a busy queue, where a fifteen second old number is no less true and the read is expensive." languagecode="1033" />
+  </description>
   <displayname default="Metrics cache (s)">
     <label description="Metrics cache (s)" languagecode="1033" />
   </displayname>

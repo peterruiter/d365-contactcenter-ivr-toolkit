@@ -1,5 +1,7 @@
 <environmentvariabledefinition schemaname="pwrp_CallbackSlotMinutes">
-  <defaultvalue>30</defaultvalue>
+  <description default="Length of a bookable callback window, used only by scheduled callback. Thirty minutes means a caller is offered nine o'clock or half past, not an exact minute. Shorter looks precise and is a promise you cannot keep.">
+    <label description="Length of a bookable callback window, used only by scheduled callback. Thirty minutes means a caller is offered nine o'clock or half past, not an exact minute. Shorter looks precise and is a promise you cannot keep." languagecode="1033" />
+  </description>
   <displayname default="Callback slot length (min)">
     <label description="Callback slot length (min)" languagecode="1033" />
   </displayname>

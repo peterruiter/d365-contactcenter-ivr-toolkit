@@ -1,5 +1,7 @@
 <environmentvariabledefinition schemaname="pwrp_EnableScheduledCallback">
-  <defaultvalue>false</defaultvalue>
+  <description default="Master switch for callbacks at a chosen time. Off means only direct callback is offered, whatever a queue profile says. Both this and pwrp_scheduledcallbackenabled on the queue profile must be on, which is why turning it on for one queue alone appears to do nothing.">
+    <label description="Master switch for callbacks at a chosen time. Off means only direct callback is offered, whatever a queue profile says. Both this and pwrp_scheduledcallbackenabled on the queue profile must be on, which is why turning it on for one queue alone appears to do nothing." languagecode="1033" />
+  </description>
   <displayname default="Enable scheduled callback">
     <label description="Enable scheduled callback" languagecode="1033" />
   </displayname>

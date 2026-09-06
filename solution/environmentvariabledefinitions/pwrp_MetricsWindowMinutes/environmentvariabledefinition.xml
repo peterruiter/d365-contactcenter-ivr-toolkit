@@ -1,5 +1,7 @@
 <environmentvariabledefinition schemaname="pwrp_MetricsWindowMinutes">
-  <defaultvalue>60</defaultvalue>
+  <description default="How far back to look when averaging how long callers waited before being answered. Too short on a quiet queue and there is nothing to average, which shows as a stale metric.">
+    <label description="How far back to look when averaging how long callers waited before being answered. Too short on a quiet queue and there is nothing to average, which shows as a stale metric." languagecode="1033" />
+  </description>
   <displayname default="Metrics window (min)">
     <label description="Metrics window (min)" languagecode="1033" />
   </displayname>

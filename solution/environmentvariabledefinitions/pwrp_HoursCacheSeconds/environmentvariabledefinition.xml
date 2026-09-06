@@ -1,5 +1,7 @@
 <environmentvariabledefinition schemaname="pwrp_HoursCacheSeconds">
-  <defaultvalue>300</defaultvalue>
+  <description default="How long opening hours, queue profiles and message wording are reused. Safe to raise, since hours rarely change. Lower it while editing wording, because an edit will not be heard until this expires.">
+    <label description="How long opening hours, queue profiles and message wording are reused. Safe to raise, since hours rarely change. Lower it while editing wording, because an edit will not be heard until this expires." languagecode="1033" />
+  </description>
   <displayname default="Hours cache (s)">
     <label description="Hours cache (s)" languagecode="1033" />
   </displayname>

@@ -14,44 +14,54 @@
         <Titles>
           <Title LCID="1033" Title="Configuration" />
         </Titles>
-        <SubArea Id="pwrp_sub_broadcastmessage" VectorIcon="/_imgs/TableIconsFluentV9/star.svg" Icon="/_imgs/imagestrips/transparent_spacer.gif" Entity="pwrp_broadcastmessage" Client="All,Outlook,OutlookLaptopClient,OutlookWorkstationClient,Web" AvailableOffline="true" PassParams="false" Sku="All,OnPremise,Live,SPLA">
+        <SubArea Id="pwrp_sub_broadcastmessage" VectorIcon="/_imgs/TableIconsFluentV9/star.svg" Icon="/_imgs/imagestrips/transparent_spacer.gif" Client="All,Outlook,OutlookLaptopClient,OutlookWorkstationClient,Web" Entity="pwrp_broadcastmessage" AvailableOffline="true" PassParams="false" Sku="All,OnPremise,Live,SPLA">
           <Titles>
             <Title LCID="1033" Title="Broadcast messages" />
           </Titles>
         </SubArea>
-        <SubArea Id="pwrp_sub_queuealias" VectorIcon="/_imgs/TableIconsFluentV9/link.svg" Icon="/_imgs/imagestrips/transparent_spacer.gif" Entity="pwrp_queuealias" Client="All,Outlook,OutlookLaptopClient,OutlookWorkstationClient,Web" AvailableOffline="true" PassParams="false" Sku="All,OnPremise,Live,SPLA">
+        <SubArea Id="pwrp_sub_queuealias" VectorIcon="/_imgs/TableIconsFluentV9/link.svg" Icon="/_imgs/imagestrips/transparent_spacer.gif" Client="All,Outlook,OutlookLaptopClient,OutlookWorkstationClient,Web" Entity="pwrp_queuealias" AvailableOffline="true" PassParams="false" Sku="All,OnPremise,Live,SPLA">
           <Titles>
             <Title LCID="1033" Title="Queue aliases" />
           </Titles>
         </SubArea>
-        <SubArea Id="pwrp_sub_callbackrequest" VectorIcon="/_imgs/TableIconsFluentV9/approvals_app.svg" Icon="/_imgs/imagestrips/transparent_spacer.gif" Entity="pwrp_callbackrequest" Client="All,Outlook,OutlookLaptopClient,OutlookWorkstationClient,Web" AvailableOffline="true" PassParams="false" Sku="All,OnPremise,Live,SPLA">
+        <SubArea Id="pwrp_sub_callbackrequest" VectorIcon="/_imgs/TableIconsFluentV9/approvals_app.svg" Icon="/_imgs/imagestrips/transparent_spacer.gif" Client="All,Outlook,OutlookLaptopClient,OutlookWorkstationClient,Web" Entity="pwrp_callbackrequest" AvailableOffline="true" PassParams="false" Sku="All,OnPremise,Live,SPLA">
           <Titles>
             <Title LCID="1033" Title="Callback requests" />
           </Titles>
         </SubArea>
-        <SubArea Id="pwrp_sub_queueprofile" VectorIcon="/_imgs/TableIconsFluentV9/settings.svg" Icon="/_imgs/imagestrips/transparent_spacer.gif" Entity="pwrp_queueprofile" Client="All,Outlook,OutlookLaptopClient,OutlookWorkstationClient,Web" AvailableOffline="true" PassParams="false" Sku="All,OnPremise,Live,SPLA">
+        <SubArea Id="pwrp_sub_queueprofile" VectorIcon="/_imgs/TableIconsFluentV9/settings.svg" Icon="/_imgs/imagestrips/transparent_spacer.gif" Client="All,Outlook,OutlookLaptopClient,OutlookWorkstationClient,Web" Entity="pwrp_queueprofile" AvailableOffline="true" PassParams="false" Sku="All,OnPremise,Live,SPLA">
           <Titles>
             <Title LCID="1033" Title="Queue profiles" />
           </Titles>
         </SubArea>
-        <SubArea Id="pwrp_sub_queuehours" VectorIcon="/_imgs/TableIconsFluentV9/calendar_icon.svg" Icon="/_imgs/imagestrips/transparent_spacer.gif" Entity="pwrp_queuehours" Client="All,Outlook,OutlookLaptopClient,OutlookWorkstationClient,Web" AvailableOffline="true" PassParams="false" Sku="All,OnPremise,Live,SPLA">
+        <SubArea Id="pwrp_sub_queuehours" VectorIcon="/_imgs/TableIconsFluentV9/calendar_icon.svg" Icon="/_imgs/imagestrips/transparent_spacer.gif" Client="All,Outlook,OutlookLaptopClient,OutlookWorkstationClient,Web" Entity="pwrp_queuehours" AvailableOffline="true" PassParams="false" Sku="All,OnPremise,Live,SPLA">
           <Titles>
             <Title LCID="1033" Title="Queue hours" />
           </Titles>
         </SubArea>
-        <SubArea Id="pwrp_sub_holiday" VectorIcon="/_imgs/TableIconsFluentV9/calendar_icon.svg" Icon="/_imgs/imagestrips/transparent_spacer.gif" Entity="pwrp_holiday" Client="All,Outlook,OutlookLaptopClient,OutlookWorkstationClient,Web" AvailableOffline="true" PassParams="false" Sku="All,OnPremise,Live,SPLA">
+        <SubArea Id="pwrp_sub_holiday" VectorIcon="/_imgs/TableIconsFluentV9/calendar_icon.svg" Icon="/_imgs/imagestrips/transparent_spacer.gif" Client="All,Outlook,OutlookLaptopClient,OutlookWorkstationClient,Web" Entity="pwrp_holiday" AvailableOffline="true" PassParams="false" Sku="All,OnPremise,Live,SPLA">
           <Titles>
             <Title LCID="1033" Title="Holidays" />
           </Titles>
         </SubArea>
-        <SubArea Id="pwrp_sub_ivroutcome" VectorIcon="/_imgs/TableIconsFluentV9/briefcase.svg" Icon="/_imgs/imagestrips/transparent_spacer.gif" Entity="pwrp_ivroutcome" Client="All,Outlook,OutlookLaptopClient,OutlookWorkstationClient,Web" AvailableOffline="true" PassParams="false" Sku="All,OnPremise,Live,SPLA">
+        <SubArea Id="pwrp_sub_ivroutcome" VectorIcon="/_imgs/TableIconsFluentV9/briefcase.svg" Icon="/_imgs/imagestrips/transparent_spacer.gif" Client="All,Outlook,OutlookLaptopClient,OutlookWorkstationClient,Web" Entity="pwrp_ivroutcome" AvailableOffline="true" PassParams="false" Sku="All,OnPremise,Live,SPLA">
           <Titles>
             <Title LCID="1033" Title="IVR outcomes" />
           </Titles>
         </SubArea>
-        <SubArea Id="pwrp_sub_messagetemplate" VectorIcon="/_imgs/TableIconsFluentV9/person.svg" Icon="/_imgs/imagestrips/transparent_spacer.gif" Entity="pwrp_messagetemplate" Client="All,Outlook,OutlookLaptopClient,OutlookWorkstationClient,Web" AvailableOffline="true" PassParams="false" Sku="All,OnPremise,Live,SPLA">
+        <SubArea Id="pwrp_sub_messagetemplate" VectorIcon="/_imgs/TableIconsFluentV9/person.svg" Icon="/_imgs/imagestrips/transparent_spacer.gif" Client="All,Outlook,OutlookLaptopClient,OutlookWorkstationClient,Web" Entity="pwrp_messagetemplate" AvailableOffline="true" PassParams="false" Sku="All,OnPremise,Live,SPLA">
           <Titles>
             <Title LCID="1033" Title="Message templates" />
+          </Titles>
+        </SubArea>
+      </Group>
+      <Group Id="pwrp_group_settings" ResourceId="SitemapDesigner.NewGroup" DescriptionResourceId="SitemapDesigner.NewGroup" IntroducedVersion="7.0.0.0" IsProfile="false" ToolTipResourseId="SitemapDesigner.Unknown">
+        <Titles>
+          <Title LCID="1033" Title="Settings" />
+        </Titles>
+        <SubArea Id="pwrp_sub_settings" VectorIcon="/_imgs/TableIconsFluentV9/settings.svg" Icon="/_imgs/imagestrips/transparent_spacer.gif" Client="All,Outlook,OutlookLaptopClient,OutlookWorkstationClient,Web" Url="$webresource:pwrp_settings" AvailableOffline="false" PassParams="true" Sku="All,OnPremise,Live,SPLA">
+          <Titles>
+            <Title LCID="1033" Title="Settings" />
           </Titles>
         </SubArea>
       </Group>
