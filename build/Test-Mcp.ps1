@@ -138,8 +138,12 @@ if ($Queue) {
             arguments = @{ Queue = $Queue }
         }
         $payload = $call.result.content[0].text | ConvertFrom-Json
+
+        # Top level outputs only. The queue's name is inside the Context JSON rather than
+        # beside it, and reading a property that does not exist prints an empty string that
+        # reads exactly like a queue which failed to resolve.
         Write-Result -Name "tools/call pwrp_GetQueueContext" -Ok ($payload.Success -eq $true) `
-            -Detail "$($payload.QueueName), open $($payload.IsOpen), band $($payload.WaitBand)"
+            -Detail "QueueId $($payload.QueueId), open $($payload.IsOpen), band $($payload.WaitBand), action $($payload.RecommendedAction)"
     }
     catch {
         Write-Result -Name "tools/call pwrp_GetQueueContext" -Ok $false -Detail $_.Exception.Message
