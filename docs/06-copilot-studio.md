@@ -108,8 +108,8 @@ a fix that is not coming.
 | `Mode` | Dynamically fill with AI | `Direct` or `Scheduled`, whichever the caller chose. Safe to let the model pick, because `pwrp_CreateCallback` refuses `Scheduled` on a queue that does not allow it and returns `CALLBACK_DISABLED`. Pin it to `Direct` only if you deliberately never offer booked times |
 | `RequestedStartUtc` | Dynamically fill with AI | The slot the caller chose, exactly as `pwrp_GetCallbackSlots` returned it. Ignored when `Mode` is `Direct`, and a time that is not one of the returned slots is rejected |
 | `ConversationId` | Custom value `System.Conversation.Id` | Ties the callback to the conversation, which is what makes it traceable afterwards |
-| `ContactId` | Custom value `-` | Not a GUID, so it is read as no contact |
-| `ContextJson` | Custom value `{}` | |
+| `ContactId` | Custom value `-`, or `=Global.msdyn_CustomerId` | The dash is read as no contact, which is right for a test. On a real call the conversation already knows the customer, so bind the variable and the callback links to them. An id that is not a readable contact is dropped rather than failing the booking, because the customer of a conversation is an account about as often as a contact |
+| `ContextJson` | Custom value `{}`, or dynamically filled with AI | `{}` books a callback that tells the representative nothing. Filling it with a sentence on what the caller wanted is what makes the callback better than a missed call |
 
 **Description:**
 

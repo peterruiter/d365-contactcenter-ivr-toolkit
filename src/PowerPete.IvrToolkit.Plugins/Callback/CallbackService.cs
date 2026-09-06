@@ -169,7 +169,7 @@ namespace PowerPete.IvrToolkit.Callback
                 ["pwrp_conversationid"] = conversationId
             };
 
-            if (contactId.HasValue)
+            if (contactId.HasValue && ContactExists(contactId.Value))
             {
                 record["pwrp_contactid"] = new EntityReference("contact", contactId.Value);
             }
@@ -197,6 +197,33 @@ namespace PowerPete.IvrToolkit.Callback
                     rawNumber,
                     queue.Locale)
             };
+        }
+
+        /// <summary>
+        /// True when the id really is a contact this environment can read.
+        /// </summary>
+        /// <remarks>
+        /// A well formed GUID is not a contact. The natural thing to bind this input to is
+        /// the conversation's customer, and that customer is an account roughly as often as
+        /// it is a contact. Setting a contact lookup to an account id makes the create fail,
+        /// and the caller who was promised a callback does not get one.
+        ///
+        /// A callback with no contact still gets dialled, so an id we cannot confirm is
+        /// dropped and traced rather than allowed to fail the booking. The number is what
+        /// the dialer needs; the contact is context for whoever answers.
+        /// </remarks>
+        private bool ContactExists(Guid id)
+        {
+            try
+            {
+                _service.Retrieve("contact", id, new ColumnSet("contactid"));
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _tracing.Trace("ContactId {0} is not a readable contact, booking without one: {1}", id, ex.Message);
+                return false;
+            }
         }
 
         public CallbackRecord GetStatus(string reference, string phoneNumber, Guid? callbackId)

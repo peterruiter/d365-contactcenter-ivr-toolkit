@@ -33,6 +33,10 @@ nine tool budget holds.
 
 ### Fixed
 
+- A `ContactId` that is not a readable contact is dropped instead of failing the booking.
+  The natural thing to bind that input to is the conversation's customer, and that customer
+  is an account about as often as a contact, so a well formed GUID pointing at the wrong
+  table would have cost the caller the callback they were just promised
 - The booking confirmation spells the number the caller gave, not the stored E.164. A
   caller who said "0653740141" was told "we will call you back today at 14:30 on
   3 1 6 5 3 7 4 0 1 4 1", which reads as a wrong number in the one sentence that confirms

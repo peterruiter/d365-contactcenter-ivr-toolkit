@@ -204,7 +204,7 @@ agent should honour "next week".
 | `PhoneNumber` | Yes | Any format. Normalised to E.164 |
 | `Mode` | No | `Direct` or `Scheduled`. Defaults to `Direct` |
 | `RequestedStartUtc` | For Scheduled | Must match an available slot |
-| `ContactId` | No | |
+| `ContactId` | No | Dropped when it is not a readable contact. A booking is worth more than the link |
 | `ConversationId` | No | Ties the callback to the conversation |
 | `ContextJson` | No | Anything the representative should see before dialling |
 
