@@ -75,6 +75,15 @@ the application user. That is the right trade for a first look: it keeps a real 
 secret out of your shell history, and it separates "does the server work" from "does the
 minimal security role suffice", which is what `Test-Endpoints.ps1 -ClientId` answers.
 
+Do not put a client secret in `appsettings.json`. It is committed, and the fields are there
+for a deployment to fill from key vault rather than for you to type into. If you do need to
+run as the application user locally, pass it as an environment variable or use
+`dotnet user-secrets`, both of which the configuration binder reads without a file:
+
+```powershell
+$env:Dataverse__TenantId = "..."; $env:Dataverse__ClientId = "..."; $env:Dataverse__ClientSecret = "..."
+```
+
 In another terminal:
 
 ```powershell

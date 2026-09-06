@@ -10,3 +10,12 @@ CLAUDE.md
 HANDOVER.md
 .claude/
 .vscode/
+
+# Local secrets. appsettings.json ships with an empty ClientSecret and the obvious way
+# to run the MCP server locally is to fill it in, so the overrides that would carry one
+# are ignored before anyone does.
+appsettings.Development.json
+appsettings.Local.json
+appsettings.*.local.json
+*.env
+.env
