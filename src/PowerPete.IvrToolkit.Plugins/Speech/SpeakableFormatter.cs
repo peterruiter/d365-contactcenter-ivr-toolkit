@@ -40,7 +40,8 @@ namespace PowerPete.IvrToolkit.Speech
                 ["at"] = "om",
                 ["and"] = "en",
                 ["callback_booked"] = "We bellen u terug {when} op {number}.",
-                ["callback_queued"] = "We bellen u terug op {number} zodra er een medewerker vrij is."
+                ["callback_queued"] = "We bellen u terug op {number} zodra er een medewerker vrij is.",
+                ["callback_slot"] = "{when}"
             },
             ["en-GB"] = new Dictionary<string, string>
             {
@@ -59,7 +60,8 @@ namespace PowerPete.IvrToolkit.Speech
                 ["at"] = "at",
                 ["and"] = "and",
                 ["callback_booked"] = "We will call you back {when} on {number}.",
-                ["callback_queued"] = "We will call you back on {number} as soon as someone is free."
+                ["callback_queued"] = "We will call you back on {number} as soon as someone is free.",
+                ["callback_slot"] = "{when}"
             }
         };
 
@@ -175,6 +177,23 @@ namespace PowerPete.IvrToolkit.Speech
                 case "Long": return S(locale, "wait_long");
                 default: return S(locale, "wait_verylong");
             }
+        }
+
+        /// <summary>
+        /// A slot on offer, before the caller has given a number.
+        /// </summary>
+        /// <remarks>
+        /// Not DescribeCallback with an empty number. That renders "We will call you back
+        /// today at 12:00 on ." and reads aloud as a sentence that stops mid word. A slot
+        /// is a time being offered, not a booking being confirmed, so it is its own phrase.
+        ///
+        /// The template is just {when} because three of these are read in a row. Anything
+        /// longer is said three times and the caller has stopped listening by the second.
+        /// </remarks>
+        public static string DescribeSlot(DateTime whenLocal, string locale)
+        {
+            return S(locale, "callback_slot")
+                .Replace("{when}", RelativeDayTime(whenLocal, DateTime.Now, locale));
         }
 
         public static string DescribeCallback(DateTime? whenLocal, string number, string locale)

@@ -243,6 +243,7 @@ A placeholder only works in the key that defines it. `{number}` in `open_now` st
 | `wait_long` | none | Wait is past the second |
 | `wait_verylong` | none | Wait is past the third |
 | `callback_booked` | `{when}`, `{number}` | A scheduled callback is booked |
+| `callback_slot` | `{when}` | One bookable time being offered. Deliberately just the time: three are read in a row, and anything longer is said three times |
 | `callback_queued` | `{number}` | A direct callback is queued |
 | `today` | none | Word for a time later today. Used inside `{next}` and `{when}` |
 | `tomorrow` | none | Word for a time tomorrow |

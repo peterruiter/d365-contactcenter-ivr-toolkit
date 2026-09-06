@@ -95,7 +95,7 @@ namespace PowerPete.IvrToolkit.Callback
                                     StartUtc = startUtc,
                                     EndUtc = startUtc.AddMinutes(slotMinutes),
                                     RemainingCapacity = remaining,
-                                    Speakable = SpeakableFormatter.DescribeCallback(cursor, string.Empty, queue.Locale)
+                                    Speakable = SpeakableFormatter.DescribeSlot(cursor, queue.Locale)
                                 });
                             }
                         }

@@ -109,6 +109,20 @@ Ignore `RecommendedAction` here. It says `Serve` whenever the wait is short, whi
 quiet queue is always, and a diagnostics session that can only test callbacks when the
 queue happens to be busy is no use. Offer to book one whatever it says.
 
+### When a call fails the same way twice
+
+Stop. Read the `ErrorCode` and `ErrorMessage` and say what you tried, then wait.
+
+Retrying a call that returned `INVALID_INPUT` with the same arguments will fail the same
+way every time, because the arguments are the problem and most of them are pinned in the
+tool configuration where you cannot reach them. An agent that tried four times and then
+suggested a different time slot was wrong twice over: the slot was never the problem, and
+none of the four attempts could have worked.
+
+`INVALID_INPUT` on `pwrp_CreateCallback` saying a scheduled callback needs a requested
+start time means `RequestedStartUtc` is not reaching the toolkit. Say exactly that. It is
+a tool configuration to fix, not a booking to retry.
+
 ### What not to do
 
 Do not leave debug mode until the caller says "exit diagnostics".

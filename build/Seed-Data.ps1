@@ -135,6 +135,8 @@ if (-not $SkipTemplates) {
         @{ Key = "and";               Locale = "en-GB"; Text = "and" }
         @{ Key = "callback_booked";   Locale = "en-GB"; Text = "We will call you back {when} on {number}." }
         @{ Key = "callback_queued";   Locale = "en-GB"; Text = "We will call you back on {number} as soon as someone is free." }
+        @{ Key = "callback_slot";     Locale = "nl-NL"; Text = "{when}" }
+        @{ Key = "callback_slot";     Locale = "en-GB"; Text = "{when}" }
     )
 
     foreach ($template in $templates) {

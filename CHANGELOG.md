@@ -13,6 +13,11 @@ Semantic versioning. The Custom API contract is stable within a major version.
 
 ### Fixed
 
+- A callback slot on offer is spoken as a time, not as a booking with the number left
+  blank. `pwrp_GetCallbackSlots` called the booked-callback phrase with an empty number,
+  so three slots came back as "We will call you back today at 12:00 on ." and a caller
+  heard a sentence stop mid word, three times. Slots have their own `callback_slot`
+  template, which is just the time, because three of them are read in a row
 - A country code that cannot be one is ignored instead of being used as the dialling
   prefix. A tool configuration cannot leave an optional input out, so makers type a
   placeholder, and the documented placeholder `-` was concatenated straight onto the
