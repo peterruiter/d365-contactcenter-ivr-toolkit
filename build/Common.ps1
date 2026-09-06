@@ -116,6 +116,10 @@ function Invoke-Dataverse {
 
     if (-not $script:DataverseHeaders) { throw "Call Connect-Dataverse before Invoke-Dataverse." }
 
+    # Per call, so a refresh is available again on the next one. A long script can outlive
+    # a token more than once.
+    $script:DataverseRetriedAuth = $false
+
     $headers = $script:DataverseHeaders.Clone()
     if ($SolutionName) { $headers["MSCRM.SolutionUniqueName"] = $SolutionName }
     if ($Representation) { $headers["Prefer"] = "return=representation" }
@@ -140,6 +144,22 @@ function Invoke-Dataverse {
         catch {
             $detail = $_.ErrorDetails.Message
             $reason = if ($detail -match '"message":\s*"([^"]+)"') { $Matches[1] } else { $_.Exception.Message }
+
+            # An access token lasts about an hour and the headers are built once, at
+            # Connect-Dataverse. A session left open across a lunch break then fails on
+            # its next call with a bare 401, which reads like a permissions problem and is
+            # not one. The refresh token is cached, so this costs a round trip and no sign
+            # in. Once only: a 401 that survives a fresh token is a real 401.
+            if (-not $script:DataverseRetriedAuth -and
+                ($_.Exception.Response.StatusCode.value__ -eq 401 -or $reason -match "401 \(Unauthorized\)")) {
+                $script:DataverseRetriedAuth = $true
+                Write-Host "  ... token expired, refreshing" -ForegroundColor DarkGray
+                Connect-Dataverse -EnvironmentUrl $script:DataverseOrgUrl
+                $headers = $script:DataverseHeaders.Clone()
+                if ($SolutionName) { $headers["MSCRM.SolutionUniqueName"] = $SolutionName }
+                if ($Representation) { $headers["Prefer"] = "return=representation" }
+                continue
+            }
 
             if ($attempt -lt $Attempts -and ($detail -match $transient -or $reason -match $transient)) {
                 $wait = 15 * $attempt
