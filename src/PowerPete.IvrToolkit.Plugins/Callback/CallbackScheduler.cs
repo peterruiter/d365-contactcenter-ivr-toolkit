@@ -326,11 +326,18 @@ namespace PowerPete.IvrToolkit.Callback
             var current = _service.Retrieve("pwrp_callbackrequest", callbackId, new ColumnSet("pwrp_attempts"));
             var attempts = current.GetAttributeValue<int>("pwrp_attempts");
 
+            // A field called Failure reason holds a failure or nothing. Writing the detail
+            // in unconditionally put "CallEnded" on every callback that connected, which
+            // reads as a fault to anyone scanning the list and to anything reporting on it.
+            // Clearing it on success also drops the reason left by an earlier attempt, so a
+            // callback that failed once and then connected does not keep explaining itself.
+            var failed = status == StatusNoAnswer || status == StatusCancelled || status == StatusFailed;
+
             var update = new Entity("pwrp_callbackrequest", callbackId)
             {
                 ["pwrp_status"] = new OptionSetValue(status),
                 ["pwrp_lastattemptedon"] = DateTime.UtcNow,
-                ["pwrp_failurereason"] = detail
+                ["pwrp_failurereason"] = failed ? detail : null
             };
 
             // Only a real dial counts as an attempt. A status sync does not.

@@ -35,6 +35,11 @@ Versions here are `MAJOR.MINOR.PATCH`. The fourth part in `VERSION` is a build n
 - A delivery result of `CallFailed` maps to `NoAnswer`, not `Failed`. It covers no answer,
   busy and a failed dial without distinguishing them, and ringing once more someone who
   asked to be rung is a smaller mistake than abandoning them after a busy line
+- `pwrp_RecordCallbackOutcome` writes its `Detail` to the failure reason only when the
+  outcome is a failure, and clears the field otherwise. It used to write it whatever the
+  outcome was, so reconciliation would have stamped `CallEnded` on every callback that
+  connected. Clearing on success also drops the reason left by an earlier attempt, so a
+  callback that failed once and then connected stops explaining itself
 - An expired callback says which of the two things went wrong: never dispatched, or
   dispatched and never reported on. The old wording claimed the first in both cases
 - Reading the delivery table cannot stop promotion. A schema change there degrades
