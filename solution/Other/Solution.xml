@@ -6,7 +6,7 @@
       <LocalizedName description="Contact Center IVR Toolkit" languagecode="1033" />
     </LocalizedNames>
     <Descriptions />
-    <Version>3.5.0.11</Version>
+    <Version>3.5.0.12</Version>
     <Managed>2</Managed>
     <Publisher>
       <UniqueName>PowerPete</UniqueName>
@@ -66,7 +66,7 @@
       <RootComponent type="61" schemaName="pwrp_settings" behavior="0" />
       <RootComponent type="62" schemaName="contact_center_ivr_toolkit_1bb4bea3" behavior="0" />
       <RootComponent type="80" schemaName="contact_center_ivr_toolkit_1bb4bea3" behavior="0" />
-      <RootComponent type="91" id="{13f168f4-42a8-f111-b8dd-000d3ade357e}" schemaName="PowerPete.IvrToolkit.Plugins, Version=1.0.8.0, Culture=neutral, PublicKeyToken=041a54d285080237" behavior="0" />
+      <RootComponent type="91" id="{13f168f4-42a8-f111-b8dd-000d3ade357e}" schemaName="PowerPete.IvrToolkit.Plugins, Version=1.0.12.0, Culture=neutral, PublicKeyToken=041a54d285080237" behavior="0" />
     </RootComponents>
     <MissingDependencies>
       <MissingDependency>

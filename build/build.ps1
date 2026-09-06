@@ -181,12 +181,18 @@ Copy-Item $builtDll $packedDll.FullName -Force
 
 # Identity is version plus public key token, and both move together when the signing key
 # changes, so both are replaced rather than just the version.
+#
+# Solution.xml as well as the sidecar. An assembly is declared as a root component by its
+# full identity, version included, and an import whose root component names a version the
+# sidecar does not carry is rejected outright: "component ... of type 91 is not declared in
+# the solution file as a root component". Two files, one identity, so both or neither.
 $identity = "Version=$($built.Version), Culture=neutral, PublicKeyToken=$token"
-$xml = Get-Content $packedXml -Raw
-$updated = [Regex]::Replace($xml,
-    "Version=\d+\.\d+\.\d+\.\d+, Culture=neutral, PublicKeyToken=[0-9a-fA-F]+",
-    $identity)
-Set-Content -Path $packedXml -Value $updated -NoNewline
+$pattern = "Version=\d+\.\d+\.\d+\.\d+, Culture=neutral, PublicKeyToken=[0-9a-fA-F]+"
+
+foreach ($file in @($packedXml, "$root/solution/Other/Solution.xml")) {
+    $xml = Get-Content $file -Raw
+    Set-Content -Path $file -Value ([Regex]::Replace($xml, $pattern, $identity)) -NoNewline
+}
 
 if ($was -eq $built.Version) {
     Write-Host "  = $($packedDll.Name) $($built.Version)" -ForegroundColor DarkGray
