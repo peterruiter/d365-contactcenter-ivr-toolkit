@@ -7,23 +7,34 @@
     and packs the solution folder into managed and unmanaged zips under ./out.
 
 .NOTES
-    Keep -Version on the 1.0.x line for anything that will be updated in place.
+    The version comes from VERSION at the repository root and the build number is raised
+    on every run, so two builds never share an assembly version. That matters more than it
+    sounds: moving the build number is what forces the Dataverse sandbox to drop its cached
+    copy of the assembly, and a build that reuses one can deploy and change nothing.
 
     Dataverse treats a plugin assembly's major and minor version as part of its identity.
     Changing either is a different assembly, and updating the registered one is refused
-    with "Plugin Assembly fully qualified name has changed". Build and revision may move
-    freely, and moving them is what forces the sandbox to drop its cached copy.
-
-    So the assembly version is not the product version. The contract can be at 1.1.0 while
-    the assembly is at 1.0.6. Raise major or minor only when you intend to delete and
-    re-register, which means rebinding every Custom API.
+    with "Plugin Assembly fully qualified name has changed". So the assembly stays on 1.0
+    for ever and carries the build number in its third part, while the solution carries the
+    real version. build/Version.ps1 has the whole of it.
 
 .EXAMPLE
-    ./build.ps1 -Version 1.0.6
+    ./build.ps1
+
+.EXAMPLE
+    # Rebuild the version that is already there, for a packaging change or a retry.
+    ./build.ps1 -NoVersionBump
+
+.EXAMPLE
+    # Pin one, for reproducing a past build.
+    ./build.ps1 -Version 3.4.0.7
 #>
 [CmdletBinding()]
 param(
-    [string]$Version = "1.0.0",
+    # Overrides VERSION entirely. MAJOR.MINOR.PATCH.BUILD.
+    [string]$Version,
+    # Builds what VERSION already says instead of raising the build number.
+    [switch]$NoVersionBump,
     [switch]$SkipTests,
     [string]$OutputPath = "$PSScriptRoot/../out"
 )
@@ -31,7 +42,26 @@ param(
 $ErrorActionPreference = "Stop"
 $root = Resolve-Path "$PSScriptRoot/.."
 
-Write-Host "Contact Center IVR Toolkit build $Version" -ForegroundColor Cyan
+. "$PSScriptRoot/Version.ps1"
+
+if ($Version) {
+    if ($Version -notmatch '^\d+\.\d+\.\d+\.\d+$') {
+        throw "-Version must be MAJOR.MINOR.PATCH.BUILD, for example 3.4.0.7."
+    }
+    Set-Content -Path (Join-Path $root "VERSION") -Value $Version -NoNewline
+    $v = Get-ToolkitVersion -Root $root
+}
+elseif ($NoVersionBump) {
+    $v = Get-ToolkitVersion -Root $root
+}
+else {
+    $v = Step-ToolkitVersion -Root $root
+}
+
+Write-ToolkitVersion -Version $v -Root $root
+
+Write-Host "Contact Center IVR Toolkit $($v.Release) build $($v.Build)" -ForegroundColor Cyan
+Write-Host "  solution $($v.Solution), assembly $($v.Assembly)" -ForegroundColor DarkGray
 
 # 1. Signing key. Plugin assemblies must be strong named.
 # Generated directly via RSACryptoServiceProvider rather than shelling out to sn.exe:
@@ -73,7 +103,7 @@ if (-not $msbuild) {
 & $msbuild "$root/src/PowerPete.IvrToolkit.Plugins/PowerPete.IvrToolkit.Plugins.csproj" `
     /restore `
     /p:Configuration=Release `
-    /p:Version=$Version
+    /p:Version=$($v.Assembly)
 if ($LASTEXITCODE -ne 0) { throw "Build failed." }
 
 # 3. Tests
@@ -93,7 +123,7 @@ New-Item -ItemType Directory -Force -Path $OutputPath | Out-Null
 foreach ($type in @("Managed", "Unmanaged")) {
     Write-Host "Packing $type solution" -ForegroundColor Cyan
     & pac solution pack `
-        --zipfile "$OutputPath/PowerPeteIvrToolkitCore_$($Version)_$type.zip" `
+        --zipfile "$OutputPath/PowerPeteIvrToolkitCore_$($v.Solution)_$type.zip" `
         --folder "$root/solution" `
         --packagetype $type
     if ($LASTEXITCODE -ne 0) { throw "Solution pack failed for $type." }

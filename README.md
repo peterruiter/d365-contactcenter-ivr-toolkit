@@ -135,7 +135,8 @@ not run in anger. See `CHANGELOG.md`.
 ## Versioning and support
 
 Semantic versioning. The Custom API contract is stable within a major version, so an
-agent built against 1.x keeps working across 1.x upgrades. See
+agent built against 1.x keeps working across 1.x upgrades. The version is written by hand
+in `VERSION` alone; `build.ps1` raises the build number. See
 [CHANGELOG.md](CHANGELOG.md) and [CONTRIBUTING.md](CONTRIBUTING.md).
 
 Open source, MIT licensed. Maintained by Power Pete. Raise issues in this repository.

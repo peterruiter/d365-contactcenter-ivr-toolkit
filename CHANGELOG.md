@@ -9,10 +9,20 @@ Semantic versioning. The Custom API contract is stable within a major version.
 | Internal fix, same contract | Patch |
 | Removed or renamed output, changed enum, changed meaning | Major |
 
+Versions here are `MAJOR.MINOR.PATCH`. The fourth part in `VERSION` is a build number that
+`build.ps1` raises on every run, and a build is not a release, so it never appears below.
+
 ## [3.4.0]
 
 ### Added
 
+- `VERSION` at the repository root is the single place a version is written by hand, and
+  `build.ps1` raises the build number on every run. `-NoVersionBump` rebuilds what is
+  already there. Three schemes disagreed before this: the changelog at 3.4.0, the solution
+  at 1.0.0.0 and the assembly at 1.0.8.0, with nothing saying which named a release. The
+  assembly still cannot follow the release version, because Dataverse treats its major and
+  minor as identity and moving either means rebinding every Custom API, so it stays on 1.0
+  and carries the build number as the tie back to the release that produced it
 - `pwrp_GetCallbackSlots` takes an optional `PreferredStartUtc`. A caller who does not
   want any of the times offered can say when would suit, and the slots nearest that come
   back instead of the earliest. Before this the agent could only read the next three

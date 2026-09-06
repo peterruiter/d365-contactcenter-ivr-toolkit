@@ -13,13 +13,19 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)][string]$EnvironmentUrl,
-    [string]$Version = "1.0.0",
+    # Defaults to whatever build.ps1 last produced, read from VERSION.
+    [string]$Version,
     [switch]$Managed,
     [switch]$SkipHealthCheck
 )
 
 $ErrorActionPreference = "Stop"
 $type = if ($Managed) { "Managed" } else { "Unmanaged" }
+if (-not $Version) {
+    . "$PSScriptRoot/Version.ps1"
+    $Version = (Get-ToolkitVersion -Root "$PSScriptRoot/..").Solution
+}
+
 $zip = "$PSScriptRoot/../out/PowerPeteIvrToolkitCore_$($Version)_$type.zip"
 
 if (-not (Test-Path $zip)) { throw "Artefact not found: $zip. Run build.ps1 first." }

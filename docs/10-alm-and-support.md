@@ -20,6 +20,38 @@ Semantic versioning. The Custom API contract is what is versioned, not the inter
 An agent built against 1.x keeps working across every 1.x upgrade. That promise is the
 reason clients will accept a dependency on this.
 
+### Where the number lives
+
+`VERSION` at the repository root, and nowhere else by hand. It holds
+`MAJOR.MINOR.PATCH.BUILD`.
+
+| Part | Who moves it | Appears as |
+|---|---|---|
+| `MAJOR.MINOR.PATCH` | You, by the table above | The release, and what `CHANGELOG.md` calls it |
+| `BUILD` | `build.ps1`, every run | Nothing a person cites |
+
+`build.ps1` raises the build number and stamps it into the two files that need their own
+copy: the csproj for MSBuild and `Solution.xml` for `pac solution pack`. Pass
+`-NoVersionBump` to rebuild what is already there, which is what you want for a packaging
+change or a retry, and `-Version 3.4.0.7` to pin one.
+
+Raising the build number on every build is not bookkeeping. Moving it is what makes the
+Dataverse sandbox drop its cached copy of the assembly, so a build that reuses a number can
+deploy and change nothing, which is a confusing hour.
+
+The plugin assembly cannot carry the release version. Dataverse treats an assembly's major
+and minor version as part of its identity, so moving either makes it a different assembly
+and updating the registered one is refused, which means rebinding every Custom API. It
+stays on 1.0 and takes the build number in its third part:
+
+```
+VERSION 3.4.0.9  ->  solution 3.4.0.9,  assembly 1.0.9.0
+```
+
+The build number is therefore the only thing tying an assembly to its release. An assembly
+at 1.0.9.0 came from build 9, and the solution version says build 9 was 3.4.0.
+
+
 ## Build once, promote
 
 `build/pipelines/azure-pipelines.yml` builds and publishes an artefact. Client

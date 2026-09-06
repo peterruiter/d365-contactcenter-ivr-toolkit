@@ -35,7 +35,7 @@ If you are installing into a locked down environment or through a pipeline:
 ```powershell
 # 1. Import
 pac auth create --environment https://yourorg.crm4.dynamics.com
-pac solution import --path ./out/PowerPeteIvrToolkitCore_1.0.0_Managed.zip --activate-plugins --publish-changes
+pac solution import --path ./out/PowerPeteIvrToolkitCore_3.4.0.8_Managed.zip --activate-plugins --publish-changes
 
 # 2. Register the Custom API contract
 ./build/Register-CustomApis.ps1 -EnvironmentUrl https://yourorg.crm4.dynamics.com
@@ -68,7 +68,7 @@ agent already has.
 ## Building from source
 
 ```powershell
-./build/build.ps1 -Version 1.0.0
+./build/build.ps1
 ```
 
 Restores, builds in Release, runs the unit tests and packs both managed and unmanaged
