@@ -37,8 +37,13 @@ Versions here are `MAJOR.MINOR.PATCH`. The fourth part in `VERSION` is a build n
   service rejects a start that is not "UTC now or in the future", and a start of exactly now
   is already the past by the time it has been validated, so an overdue record failed every
   time. Two minutes is transit plus clock skew, not a deliberate delay. A nine o'clock
-  callback still cannot be Without it the API assumes twenty four hours from now. An overdue record
-  gets a window starting now, so a backlog drains after an outage
+  callback still cannot be placed at four: without a window the API assumes twenty four
+  hours from now. An overdue record gets a window starting now, so a backlog drains after
+  an outage
+- A dispatch whose response carries no readable delivery id traces the response's parameter
+  names. The shape is undocumented, and treating an unreadable id as quietly fine made a
+  record at `Queued` with no id and no reason indistinguishable from one that was never
+  dispatched at all
 - The callback reference, queue, locale, requested time and context are passed as
   `InputAttributes`, so the representative sees why they are ringing
 
