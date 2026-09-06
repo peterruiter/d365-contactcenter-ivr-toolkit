@@ -33,8 +33,11 @@ Versions here are `MAJOR.MINOR.PATCH`. The fourth part in `VERSION` is a build n
   typed. The health check resolves the engagement the way promotion does rather than
   checking a box is filled in
 - `pwrp_deliveryid` on `pwrp_callbackrequest`, to correlate a request with its delivery
-- The booked slot is passed as the delivery window, so a nine o'clock callback cannot be
-  placed at four. Without it the API assumes twenty four hours from now. An overdue record
+- The booked slot is passed as the delivery window, opening at least two minutes ahead. The
+  service rejects a start that is not "UTC now or in the future", and a start of exactly now
+  is already the past by the time it has been validated, so an overdue record failed every
+  time. Two minutes is transit plus clock skew, not a deliberate delay. A nine o'clock
+  callback still cannot be Without it the API assumes twenty four hours from now. An overdue record
   gets a window starting now, so a backlog drains after an outage
 - The callback reference, queue, locale, requested time and context are passed as
   `InputAttributes`, so the representative sees why they are ringing

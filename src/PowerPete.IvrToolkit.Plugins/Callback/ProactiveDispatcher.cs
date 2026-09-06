@@ -174,7 +174,23 @@ namespace PowerPete.IvrToolkit.Callback
                 var response = _service.Execute(request);
                 var deliveryId = ReadDeliveryId(response);
 
-                _tracing.Trace("[pwrp] dispatched callback {0} as delivery {1}", reference, deliveryId ?? "(no id)");
+                if (deliveryId == null)
+                {
+                    // The response shape is undocumented and this is how it is learned.
+                    // Treating an unreadable id as quietly fine turned a diagnosable state
+                    // into an invisible one: a record at Queued with no id and no reason
+                    // looks identical to a promotion that never called anything at all.
+                    _tracing.Trace("[pwrp] dispatched {0}, no id found in response. Parameters: {1}",
+                        reference,
+                        response == null || response.Results == null
+                            ? "(none)"
+                            : string.Join(", ", response.Results.Keys.ToArray()));
+                }
+                else
+                {
+                    _tracing.Trace("[pwrp] dispatched callback {0} as delivery {1}", reference, deliveryId);
+                }
+
                 return new DispatchResult { Success = true, DeliveryId = deliveryId };
             }
             catch (Exception ex)
@@ -183,6 +199,12 @@ namespace PowerPete.IvrToolkit.Callback
                 return Failed(ex.Message);
             }
         }
+
+        // How far ahead a window must open. The service rejects a start that is not "UTC
+        // now or in the future", and a start of exactly now is in the past by the time the
+        // request has been validated. This is transit time plus clock skew between the
+        // sandbox and the proactive engagement service, not a deliberate delay.
+        private const int WindowLeadMinutes = 2;
 
         /// <summary>
         /// One window, the booked slot. Without it the API assumes twenty four hours from
@@ -195,8 +217,10 @@ namespace PowerPete.IvrToolkit.Callback
 
             // An overdue record has a window that closed before it was ever dispatched, and
             // a window in the past can never be called. Start from now in that case, which
-            // is what a backlog draining after an outage needs.
-            if (start < now) { start = now; }
+            // is what a backlog draining after an outage needs. Now plus the lead, because
+            // now itself is already the past by the time the service reads it.
+            var earliest = now.AddMinutes(WindowLeadMinutes);
+            if (start < earliest) { start = earliest; }
 
             var window = new[]
             {
