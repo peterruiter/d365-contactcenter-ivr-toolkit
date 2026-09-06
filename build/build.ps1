@@ -117,7 +117,7 @@ if (-not $SkipTests) {
     if ($LASTEXITCODE -ne 0) { throw "Tests failed. Fix them before deploying." }
 }
 
-# 4. Web resources into the solution folder
+# 4. Build output into the solution folder
 # The Settings page exists twice: src/webresources/pwrp_settings.html, which is edited,
 # and solution/WebResources/pwrp_settings, which is packed. The second is written by
 # Export-Solution.ps1 and by nothing else, so every edit to the first was packed only if
@@ -151,6 +151,48 @@ foreach ($resource in $webResources) {
         [IO.File]::WriteAllBytes($resource.To, $from)
         Write-Host "  ~ $(Split-Path $resource.To -Leaf), was out of date" -ForegroundColor Yellow
     }
+}
+
+# The plugin assembly has the same two copies problem, and it is the one that matters.
+# solution/PluginAssemblies holds the dll that gets packed, written only by an export, so
+# every solution built here shipped whichever assembly was last exported rather than the
+# one just compiled. A deploy then imported successfully, published, registered its custom
+# APIs and left the old code running, which is as quiet as a failure gets.
+#
+# The sidecar carries the version too, in FullName and in every PluginType's qualified
+# name, so copying the dll alone would register an assembly whose identity contradicts its
+# contents. Both are rewritten from what was actually built.
+$assemblyDir = Get-ChildItem "$root/solution/PluginAssemblies" -Directory | Select-Object -First 1
+if (-not $assemblyDir) { throw "No PluginAssemblies folder in the solution. Export the solution first." }
+
+$packedDll = Get-ChildItem $assemblyDir.FullName -Filter "*.dll" | Select-Object -First 1
+$packedXml = "$($packedDll.FullName).data.xml"
+if (-not (Test-Path $packedXml)) { throw "No sidecar beside $($packedDll.Name)." }
+
+$builtDll = "$root/src/PowerPete.IvrToolkit.Plugins/bin/Release/net462/merged/PowerPete.IvrToolkit.Plugins.dll"
+if (-not (Test-Path $builtDll)) { throw "No merged assembly at $builtDll. The build did not produce one." }
+
+$built = [Reflection.AssemblyName]::GetAssemblyName((Resolve-Path $builtDll).Path)
+$token = ($built.GetPublicKeyToken() | ForEach-Object { $_.ToString("x2") }) -join ""
+if (-not $token) { throw "The built assembly is not strong named." }
+
+$was = [Reflection.AssemblyName]::GetAssemblyName($packedDll.FullName).Version
+Copy-Item $builtDll $packedDll.FullName -Force
+
+# Identity is version plus public key token, and both move together when the signing key
+# changes, so both are replaced rather than just the version.
+$identity = "Version=$($built.Version), Culture=neutral, PublicKeyToken=$token"
+$xml = Get-Content $packedXml -Raw
+$updated = [Regex]::Replace($xml,
+    "Version=\d+\.\d+\.\d+\.\d+, Culture=neutral, PublicKeyToken=[0-9a-fA-F]+",
+    $identity)
+Set-Content -Path $packedXml -Value $updated -NoNewline
+
+if ($was -eq $built.Version) {
+    Write-Host "  = $($packedDll.Name) $($built.Version)" -ForegroundColor DarkGray
+}
+else {
+    Write-Host "  ~ $($packedDll.Name) $was becomes $($built.Version)" -ForegroundColor Yellow
 }
 
 # 5. Pack solution

@@ -41,6 +41,13 @@ Versions here are `MAJOR.MINOR.PATCH`. The fourth part in `VERSION` is a build n
 
 ### Fixed
 
+- `build.ps1` copies the compiled plugin assembly into `solution/PluginAssemblies` before
+  packing, and rewrites the sidecar's `FullName` and every `PluginType` qualified name to
+  the version and public key token that were actually built. The packed assembly was only
+  ever written by `Export-Solution.ps1`, so every solution built here shipped whichever
+  assembly was last exported rather than the one just compiled. A deploy then imported,
+  published, registered its custom APIs and left the old code running, which is as quiet
+  as a failure gets: nothing in the output is wrong, and none of the fixes are there
 - `build.ps1` copies `src/webresources` into `solution/WebResources` before packing. The
   Settings page existed twice: the file that is edited, and the packed copy inside the
   solution, which only `Export-Solution.ps1` ever wrote. Nothing kept them in step, so an

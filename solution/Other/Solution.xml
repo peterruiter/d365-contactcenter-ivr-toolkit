@@ -6,7 +6,7 @@
       <LocalizedName description="Contact Center IVR Toolkit" languagecode="1033" />
     </LocalizedNames>
     <Descriptions />
-    <Version>3.5.0.10</Version>
+    <Version>3.5.0.11</Version>
     <Managed>2</Managed>
     <Publisher>
       <UniqueName>PowerPete</UniqueName>

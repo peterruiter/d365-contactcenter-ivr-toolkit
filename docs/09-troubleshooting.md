@@ -199,6 +199,31 @@ reference at it, and reopen the flow.
 
 Nothing in the flow itself needs changing in any of these cases.
 
+### A fix is deployed and the old behaviour continues
+
+Check what is actually registered:
+
+```powershell
+(Invoke-Dataverse -Path "/api/data/v9.2/pluginassemblies?`$select=name,version&`$filter=startswith(name,'PowerPete')").value | Format-Table
+```
+
+The version's third part is the build number, so `1.0.11.0` came from `VERSION 3.5.0.11`.
+If it is lower than `VERSION`, the deployment shipped an older assembly than the one that
+was built.
+
+Before 3.5.0 that was the normal case rather than an accident. The packed assembly under
+`solution/PluginAssemblies` is a copy that only `Export-Solution.ps1` ever wrote, so a
+build compiled the plugin and packed whatever had last been exported. The import succeeded,
+published, registered its custom APIs and left the old code running. `build.ps1` now copies
+the compiled assembly in before packing, and says so when the two had drifted:
+
+```
+~ PowerPeteIvrToolkitPlugins.dll 1.0.8.0 becomes 1.0.11.0
+```
+
+Rebuild and deploy. If the versions match and behaviour still has not changed, the sandbox
+is holding a cached copy, which a build number that actually moved is what clears.
+
 ### The Settings page shows an error the source says was fixed
 
 A dropdown falling back to a free text box, most often:
