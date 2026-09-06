@@ -21,17 +21,25 @@ public sealed class ToolCatalog
     /// <summary>
     /// Tools exposed by default. Everything else is available but hidden, because an
     /// agent given nineteen tools picks badly. Override with PWRP_EXPOSED_TOOLS.
+    ///
+    /// The same nine that docs/06-copilot-studio.md sets up over the Dataverse connector.
+    /// Two routes to the same toolkit that disagree about what an agent needs is a bug in
+    /// the product, and it was one: scheduled callback was default here and optional there.
+    ///
+    /// pwrp_RescheduleCallback replaced pwrp_GetNextOpenTime rather than joining it. Nine
+    /// is the budget. GetNextOpenTime answers what GetQueueContext already returned in
+    /// OpenState, so it was the one paying for a seat twice.
     /// </summary>
     private static readonly string[] DefaultExposed =
     {
         "pwrp_GetQueueContext",
         "pwrp_GetQueueHours",
-        "pwrp_GetNextOpenTime",
         "pwrp_ValidatePhoneNumber",
         "pwrp_GetCallbackSlots",
         "pwrp_CreateCallback",
         "pwrp_GetCallbackStatus",
         "pwrp_CancelCallback",
+        "pwrp_RescheduleCallback",
         "pwrp_LogIvrOutcome"
     };
 

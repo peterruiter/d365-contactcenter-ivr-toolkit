@@ -49,8 +49,11 @@ output to the caller, so they hear "WaitingNow 14" instead of a wait band, and t
 branching in `RecommendedAction` never happens. Both are rules this toolkit exists to
 enforce.
 
-Add these five and nothing else. Each block is the tool name, what it takes, and the
-description to paste. The description is not documentation, it is the only thing the
+Add these nine and nothing else. The first five are blocks below, one each, because they
+carry the conversation and you will paste their descriptions. The other four are the rest
+of the callback lifecycle plus hours, and they fit in one table.
+
+Each block is the tool name, what it takes, and the description to paste. The description is not documentation, it is the only thing the
 model sees when it decides what to call, so paste it as written. See
 [14 Tool descriptions](14-tool-descriptions.md) before you reword one.
 
@@ -127,14 +130,23 @@ a fix that is not coming.
 
 > Records what the agent did so containment and deflection can be reported. Call once at the end of every conversation.
 
-### Add these only when a scenario asks for them
+### The rest of the callback lifecycle, and hours
 
-| Tool | Fill using | Add it when | Description |
-|---|---|---|---|
-| `pwrp_GetCallbackStatus` | `Reference` and `PhoneNumber` by AI, whichever the caller offers. `CallbackId` custom `-`, a caller never has one | Callers ask where their callback is | Looks up a callback by reference, phone number or id. |
-| `pwrp_CancelCallback` | `CallbackId` by AI, from the booking earlier in the call | Callers can cancel | Cancels an open callback request. |
-| `pwrp_RescheduleCallback` | All three by AI. `NewStartUtc` must be a slot `pwrp_GetCallbackSlots` returned | Callers can move a slot | Moves a scheduled callback to a different available slot. |
-| `pwrp_GetQueueHours` | `Queue` by AI. `Days` custom `7`. `FromDate` custom `0001-01-01T00:00:00Z`, which the plugin reads as today | Someone asks about a week, not about now | Opening hours for a queue across a date range, holiday exceptions included. |
+Add these four as well. Booking a callback and then being unable to say where it is,
+move it or cancel it is half a feature: the caller rings back, gets an agent that cannot
+answer, and asks for a person. Hours is here because "when are you open" is the second
+thing callers ask after "put me through".
+
+| Tool | Fill using | Description |
+|---|---|---|
+| `pwrp_GetCallbackStatus` | `Reference` and `PhoneNumber` by AI, whichever the caller offers. `CallbackId` custom `-`, a caller never has one | Looks up a callback by reference, phone number or id. |
+| `pwrp_CancelCallback` | `CallbackId` by AI, from the booking earlier in the call or from `pwrp_GetCallbackStatus` | Cancels an open callback request. |
+| `pwrp_RescheduleCallback` | All three by AI. `NewStartUtc` must be a slot `pwrp_GetCallbackSlots` returned | Moves a scheduled callback to a different available slot. |
+| `pwrp_GetQueueHours` | `Queue` by AI. `Days` custom `7`. `FromDate` custom `0001-01-01T00:00:00Z`, which the plugin reads as today | Opening hours for a queue across a date range, holiday exceptions included. |
+
+Nine is the budget, not a starting point. An agent given nineteen tools picks badly, and
+on a voice call every wrong pick is silence. Adding a tenth means arguing one of these
+out first.
 
 Leave the rest out. `pwrp_ResolveQueue`, `pwrp_IsQueueOpen`, `pwrp_GetNextOpenTime`,
 `pwrp_GetQueueMetrics`, `pwrp_CheckCallbackEligibility` and `pwrp_GetBroadcastMessage` all
@@ -166,15 +178,17 @@ the agent. It deliberately breaks the two rules the toolkit exists to enforce, r
 numbers of waiting callers and seconds of waiting out loud. A caller who hears "fourteen
 people ahead of you" hangs up, which is the whole reason `WaitBand` exists.
 
-It needs tools the five core ones do not cover:
+The nine core tools already cover the callback lifecycle and hours, so a diagnostics
+agent can exercise all of it as shipped. Two more are worth adding to this agent only:
 
 | Tool | Fill using | For |
 |---|---|---|
 | `pwrp_GetQueueMetrics` | `Queue` by AI | The seconds and counts behind the band |
-| `pwrp_GetCallbackStatus` | `Reference` and `PhoneNumber` by AI | Checking a booking |
-| `pwrp_CancelCallback` | `CallbackId` by AI | Undoing a test booking |
-| `pwrp_GetQueueHours` | `Queue` by AI, `Days` custom `7` | Checking a calendar |
 | `pwrp_HealthCheck` | no inputs | Validating an install by voice |
+
+Adding them to the agent callers reach would be a mistake. `pwrp_GetQueueMetrics` returns
+the raw seconds and counts that `WaitBand` exists to keep out of a caller's ear, and
+`pwrp_HealthCheck` reports on the install rather than on anything a caller asked about.
 
 Leave `pwrp_LogIvrOutcome` off this agent entirely. Told plainly not to log a diagnostics
 call, a model logged one anyway, and the row sits in the containment reporting as though a

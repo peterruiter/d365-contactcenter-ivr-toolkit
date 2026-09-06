@@ -27,6 +27,16 @@ Semantic versioning. The Custom API contract is stable within a major version.
 
 ### Changed
 
+- The whole callback lifecycle is set up by default: `pwrp_GetCallbackStatus`,
+  `pwrp_CancelCallback` and `pwrp_RescheduleCallback` join it, along with
+  `pwrp_GetQueueHours`. Booking a callback and then being unable to say where it is, move
+  it or cancel it is half a feature. The caller rings back, gets an agent that cannot
+  answer, and asks for a person, which is the outcome the toolkit exists to avoid
+- Both routes into the toolkit now expose the same nine tools. The MCP server and the
+  Copilot Studio instructions disagreed about what an agent needs, which is a bug in a
+  product that ships both. `pwrp_RescheduleCallback` replaced `pwrp_GetNextOpenTime` in
+  the MCP default list rather than joining it: nine is a budget, and GetNextOpenTime
+  answers what `pwrp_GetQueueContext` already returned in `OpenState`
 - `pwrp_GetCallbackSlots` is one of the tools to set up by default, not an extra to add
   when a scenario asks for it. Scheduled callback is a headline feature of the toolkit and
   the Copilot Studio route had it filed under optional, which is why an agent built by

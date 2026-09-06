@@ -36,15 +36,23 @@ surface cannot drift from the contract.
 Nine by default:
 
 ```
-pwrp_GetQueueContext        pwrp_GetCallbackSlots
-pwrp_GetQueueHours          pwrp_CreateCallback
-pwrp_GetNextOpenTime        pwrp_GetCallbackStatus
+pwrp_GetQueueContext        pwrp_CreateCallback
+pwrp_GetQueueHours          pwrp_GetCallbackStatus
 pwrp_ValidatePhoneNumber    pwrp_CancelCallback
+pwrp_GetCallbackSlots       pwrp_RescheduleCallback
                             pwrp_LogIvrOutcome
 ```
 
+The same nine that [06 Copilot Studio](06-copilot-studio.md) sets up over the Dataverse
+connector. Two routes to the same toolkit that disagree about what an agent needs is a
+bug in the product, and it was one.
+
 The rest exist but stay hidden. An agent given nineteen tools picks badly, and every
 extra tool is another thing the orchestrator can get wrong.
+
+`pwrp_GetNextOpenTime` used to be here. It answers what `pwrp_GetQueueContext` already
+returned in `OpenState`, so it was the one seat to give up when the callback lifecycle
+needed one.
 
 Override with `Mcp__ExposedTools` as a comma separated list. Private APIs are never
 exposed regardless.

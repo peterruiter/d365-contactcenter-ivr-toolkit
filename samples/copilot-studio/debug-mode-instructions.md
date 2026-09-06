@@ -90,7 +90,18 @@ number becomes a Singaporean one.
 - "status of" a reference or number calls `pwrp_GetCallbackStatus` and reads `Status` and
   `Attempts`
 - "cancel" a callback id calls `pwrp_CancelCallback` and reads the new `Status`
+- "move it" or "reschedule" calls `pwrp_RescheduleCallback` with a `NewStartUtc` that
+  `pwrp_GetCallbackSlots` returned, and reads `Status` plus the `ScheduledStartUtc` inside
+  the `Callback` payload, which is where the new time comes back.
+  Try a time that is not one of the slots as well: it should be refused, and a refusal
+  that does not arrive is worth knowing about before a caller finds it
 - "hours for" a queue calls `pwrp_GetQueueHours` and reads each day and its windows
+- "metrics for" a queue calls `pwrp_GetQueueMetrics` and reads the raw seconds and counts
+
+The whole callback lifecycle is testable without adding anything: book it, read its
+status, move it, cancel it, then read the status again and confirm it went to Cancelled.
+That sequence is the one worth running after every deployment, because each step writes
+and the failures only show up in the step after.
 
 ### Offering a callback regardless of the recommendation
 
