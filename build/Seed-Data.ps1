@@ -24,9 +24,9 @@ $ErrorActionPreference = "Stop"
 Connect-Dataverse -EnvironmentUrl $EnvironmentUrl
 
 function Send-Record {
-    param([string]$Path, $Body)
+    param([string]$Path, $Body, [string]$Method = "POST")
     # Seeding is idempotent by intent, not by constraint, so a duplicate is not fatal.
-    try { Invoke-Dataverse -Method POST -Path $Path -Body $Body | Out-Null }
+    try { Invoke-Dataverse -Method $Method -Path $Path -Body $Body | Out-Null }
     catch { Write-Host "  = $($_.Exception.Message)" -ForegroundColor DarkGray }
 }
 
@@ -76,11 +76,35 @@ if (-not $SkipHolidays) {
                 $date = $date.AddDays(-1)
             }
 
-            Send-Record -Path "/api/data/v9.2/pwrp_holidays" -Body @{
-                pwrp_name = "$($holiday.Name) $year"
-                pwrp_date = $date.ToString("yyyy-MM-dd")
+            # The name is read to callers from 3.7.0, so it holds the holiday and not the
+            # year. "Gesloten in verband met Eerste Kerstdag 2026" says the year out loud.
+            # The date column carries the year, and that is where a reader looks anyway.
+            #
+            # Matched on date rather than name so a reseed is idempotent, and so rows
+            # seeded before 3.7.0 have their year suffix taken off rather than being
+            # duplicated alongside a clean one.
+            $iso = $date.ToString("yyyy-MM-dd")
+            $existing = (Invoke-Dataverse -Method GET -Path ("/api/data/v9.2/pwrp_holidays" +
+                "?`$select=pwrp_holidayid,pwrp_name" +
+                "&`$filter=pwrp_date eq $iso and _pwrp_queueid_value eq null")).value
+
+            if ($existing.Count -gt 0) {
+                if ($existing[0].pwrp_name -ne $holiday.Name) {
+                    Send-Record -Method PATCH -Path "/api/data/v9.2/pwrp_holidays($($existing[0].pwrp_holidayid))" `
+                        -Body @{ pwrp_name = $holiday.Name }
+                    Write-Host "  ~ $($holiday.Name)  $($date.ToString('ddd dd MMM yyyy')), renamed" -ForegroundColor Yellow
+                }
+                else {
+                    Write-Host "  = $($holiday.Name)  $($date.ToString('ddd dd MMM yyyy'))" -ForegroundColor DarkGray
+                }
+                continue
             }
-            Write-Host "  + $($holiday.Name) $year  $($date.ToString('ddd dd MMM'))" -ForegroundColor DarkGray
+
+            Send-Record -Path "/api/data/v9.2/pwrp_holidays" -Body @{
+                pwrp_name = $holiday.Name
+                pwrp_date = $iso
+            }
+            Write-Host "  + $($holiday.Name)  $($date.ToString('ddd dd MMM yyyy'))" -ForegroundColor DarkGray
         }
     }
 
@@ -89,6 +113,8 @@ if (-not $SkipHolidays) {
   Loaded as closed-all-day, organisation wide.
   Adjust any the client actually works, and add Oudjaarsdag as a short day if they
   close early on 31 December. That one catches people out every year.
+
+  The name is read to callers, so write it the way it should be heard.
 "@ -ForegroundColor Yellow
 }
 
@@ -106,6 +132,7 @@ if (-not $SkipTemplates) {
         @{ Key = "closed_next";       Locale = "nl-NL"; Text = "We zijn nu gesloten. We zijn weer open {next}." }
         @{ Key = "closed_indefinite"; Locale = "nl-NL"; Text = "We zijn nu gesloten." }
         @{ Key = "holiday";           Locale = "nl-NL"; Text = "We zijn vandaag gesloten in verband met een feestdag." }
+        @{ Key = "holiday_named";     Locale = "nl-NL"; Text = "We zijn vandaag gesloten in verband met {holiday}." }
         @{ Key = "day_open";          Locale = "nl-NL"; Text = "{day} van {windows}" }
         @{ Key = "day_closed";        Locale = "nl-NL"; Text = "{day} gesloten" }
         @{ Key = "wait_short";        Locale = "nl-NL"; Text = "U wordt zo geholpen." }
@@ -123,6 +150,7 @@ if (-not $SkipTemplates) {
         @{ Key = "closed_next";       Locale = "en-GB"; Text = "We are closed right now. We open again {next}." }
         @{ Key = "closed_indefinite"; Locale = "en-GB"; Text = "We are closed right now." }
         @{ Key = "holiday";           Locale = "en-GB"; Text = "We are closed today for a public holiday." }
+        @{ Key = "holiday_named";     Locale = "en-GB"; Text = "We are closed today for {holiday}." }
         @{ Key = "day_open";          Locale = "en-GB"; Text = "{day} from {windows}" }
         @{ Key = "day_closed";        Locale = "en-GB"; Text = "{day} closed" }
         @{ Key = "wait_short";        Locale = "en-GB"; Text = "You will be connected shortly." }

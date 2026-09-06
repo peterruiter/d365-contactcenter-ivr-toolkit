@@ -12,6 +12,29 @@ Semantic versioning. The Custom API contract is stable within a major version.
 Versions here are `MAJOR.MINOR.PATCH`. The fourth part in `VERSION` is a build number that
 `build.ps1` raises on every run, and a build is not a release, so it never appears below.
 
+## [3.7.0]
+
+### Fixed
+
+- A holiday that closes the whole day is now reported as `Reason = Holiday`. The flag lived
+  only on opening windows and a full closure has none, so the test could only ever be true
+  for a holiday that was a short day. Christmas Day reported `OutsideHours`, and the holiday
+  wording was never reached on the days it most obviously applied to
+
+### Added
+
+- The holiday's name is spoken. `holiday_named` takes `{holiday}`, so a caller hears "closed
+  today for Koningsdag" rather than "closed today for a public holiday". `holiday` remains
+  for a holiday with no name and for native operating hours, which cannot name one
+- `IsHoliday` and `HolidayName` on each day of the `Hours` output, so a full closure carries
+  the holiday rather than losing it with its windows
+
+### Changed
+
+- Seeded Dutch holidays are named without the year, because the name is now read aloud and
+  "Eerste Kerstdag 2026" says the year to the caller. Reseeding matches on date rather than
+  name, so it renames rows seeded earlier instead of duplicating them, and is idempotent
+
 ## [3.6.0]
 
 ### Added

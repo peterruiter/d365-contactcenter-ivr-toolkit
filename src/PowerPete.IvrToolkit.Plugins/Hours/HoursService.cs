@@ -57,7 +57,11 @@ namespace PowerPete.IvrToolkit.Hours
             else
             {
                 state.IsOpen = false;
-                state.Reason = today != null && today.Windows.Any(w => w.IsHoliday) ? "Holiday"
+                state.HolidayName = today == null ? null : today.HolidayName;
+                // today.IsHoliday, not today.Windows.Any(...). A day closed outright has no
+                // windows, so the old test could only ever be true for a holiday that was a
+                // short day. Christmas Day reported OutsideHours.
+                state.Reason = today != null && today.IsHoliday ? "Holiday"
                     : today == null || today.Windows.Count == 0 ? "Closed"
                     : "OutsideHours";
 

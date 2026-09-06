@@ -34,6 +34,8 @@ namespace PowerPete.IvrToolkit.Hours
 
                 if (holidays.TryGetValue(date, out var holiday))
                 {
+                    day.IsHoliday = true;
+                    day.HolidayName = holiday.Name;
                     day.Windows = holiday.Windows.Select(w => new OpeningWindow
                     {
                         StartLocal = date.Add(w.Item1),

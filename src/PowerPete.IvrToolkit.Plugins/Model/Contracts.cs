@@ -39,6 +39,14 @@ namespace PowerPete.IvrToolkit.Model
         public DateTime Date { get; set; }
         public string DayOfWeek { get; set; }
         public bool IsOpen { get; set; }
+
+        /// <summary>
+        /// On the day, not only on its windows. A full closure has no windows, so a flag
+        /// that lived only there was invisible on exactly the days that matter most.
+        /// </summary>
+        public bool IsHoliday { get; set; }
+
+        public string HolidayName { get; set; }
         public List<OpeningWindow> Windows { get; set; } = new List<OpeningWindow>();
         public string Speakable { get; set; }
     }
@@ -48,6 +56,9 @@ namespace PowerPete.IvrToolkit.Model
         public bool IsOpen { get; set; }
         /// <summary>Open, Closed, Holiday, OutsideHours, NotConfigured.</summary>
         public string Reason { get; set; }
+
+        /// <summary>The holiday's name when Reason is Holiday and the source knows one.</summary>
+        public string HolidayName { get; set; }
         public DateTime? NextOpenUtc { get; set; }
         public DateTime? NextCloseUtc { get; set; }
         public string Speakable { get; set; }

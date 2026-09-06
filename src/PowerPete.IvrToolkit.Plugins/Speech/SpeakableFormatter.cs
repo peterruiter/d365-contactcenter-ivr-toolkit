@@ -29,6 +29,7 @@ namespace PowerPete.IvrToolkit.Speech
                 ["closed_next"] = "We zijn nu gesloten. We zijn weer open {next}.",
                 ["closed_indefinite"] = "We zijn nu gesloten.",
                 ["holiday"] = "We zijn vandaag gesloten in verband met een feestdag.",
+                ["holiday_named"] = "We zijn vandaag gesloten in verband met {holiday}.",
                 ["day_open"] = "{day} van {windows}",
                 ["day_closed"] = "{day} gesloten",
                 ["wait_short"] = "U wordt zo geholpen.",
@@ -49,6 +50,7 @@ namespace PowerPete.IvrToolkit.Speech
                 ["closed_next"] = "We are closed right now. We open again {next}.",
                 ["closed_indefinite"] = "We are closed right now.",
                 ["holiday"] = "We are closed today for a public holiday.",
+                ["holiday_named"] = "We are closed today for {holiday}.",
                 ["day_open"] = "{day} from {windows}",
                 ["day_closed"] = "{day} closed",
                 ["wait_short"] = "You will be connected shortly.",
@@ -155,7 +157,12 @@ namespace PowerPete.IvrToolkit.Speech
 
             if (state.Reason == "Holiday")
             {
-                return S(locale, "holiday");
+                // The unnamed line stays for the source that cannot name a holiday. Native
+                // operating hours do not distinguish one, and a name is optional on a
+                // config row, so "closed for a public holiday" has to remain sayable.
+                return string.IsNullOrWhiteSpace(state.HolidayName)
+                    ? S(locale, "holiday")
+                    : S(locale, "holiday_named").Replace("{holiday}", state.HolidayName);
             }
 
             if (!state.NextOpenUtc.HasValue)

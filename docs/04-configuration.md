@@ -197,16 +197,14 @@ A queue specific row beats an organisation wide one for the same date. Organisat
 rows are loaded first and the queue row overwrites, so you can close everything for
 Christmas and still give one queue a skeleton shift.
 
-What a holiday changes for the caller is the reason, not the wording. `pwrp_IsQueueOpen`
-and `pwrp_GetNextOpenTime` return `Reason = Holiday` instead of `OutsideHours`, which lets
-an agent say something better than "we are closed". The spoken line comes from the
-`holiday` message template and does not name the day: the template takes no tokens, so
-every holiday reads the same.
+`pwrp_IsQueueOpen` and `pwrp_GetNextOpenTime` return `Reason = Holiday` instead of
+`OutsideHours`, and the **Name is read to the caller**: "We zijn vandaag gesloten in
+verband met Koningsdag" rather than "in verband met een feestdag". So write the name the
+way it should be heard, in the queue's language, with no year or code in it.
 
-The **Name** is therefore mostly for whoever maintains the table. It does reach
-`pwrp_GetQueueHours` inside the `Hours` JSON, but only on a holiday with times, because a
-full closure has no windows to carry it. Do not write wording a caller is meant to hear
-into it and expect it to be read out.
+Leave the name empty and the wording falls back to the unnamed `holiday` template. Native
+operating hours cannot name a holiday at all, so a queue on that source always gets the
+unnamed line.
 
 Load the national holidays for the next two years at install. Nobody remembers to do
 it in December.
@@ -281,7 +279,8 @@ A placeholder only works in the key that defines it. `{number}` in `open_now` st
 | `open_now` | `{close}` | The queue is open. `{close}` is the closing time |
 | `closed_next` | `{next}` | Closed, and the next opening is known. `{next}` is a relative day and time |
 | `closed_indefinite` | none | Closed with no next opening within the fortnight ahead |
-| `holiday` | none | Closed for a holiday |
+| `holiday` | none | Closed for a holiday the source cannot name |
+| `holiday_named` | `{holiday}` | Closed for a named holiday. `{holiday}` is the Name on the `pwrp_holiday` row |
 | `day_open` | `{day}`, `{windows}` | One line of a multi day answer. `{windows}` is the times, joined by `and` |
 | `day_closed` | `{day}` | One line of a multi day answer, for a closed day |
 | `wait_short` | none | Wait is inside the first threshold |
