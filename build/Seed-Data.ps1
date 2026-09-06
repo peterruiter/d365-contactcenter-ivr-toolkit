@@ -127,6 +127,8 @@ if (-not $SkipHolidays) {
     Write-Host @"
 
   Loaded as closed-all-day, organisation wide.
+  They do nothing until a queue profile uses Toolkit config tables for its hours.
+  A profile on native operating hours never reads this table.
   Adjust any the client actually works, and add Oudjaarsdag as a short day if they
   close early on 31 December. That one catches people out every year.
 

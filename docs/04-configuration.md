@@ -181,11 +181,18 @@ this table, so closures for those queues belong in the native calendar. This is 
 thing here to get wrong, because adding a holiday row appears to work and simply has no
 effect.
 
+`pwrp_hourssource` defaults to native, so on a fresh environment **every seeded holiday is
+inert** until a queue profile is switched to config tables. `Seed-Data.ps1` loads them
+anyway, because loading two years of dates is the tedious part and deciding which queues
+use them is not.
+
 A row for a date replaces that day's weekly windows outright rather than trimming them. So
 a short day is one row with both times, not a row per remaining window, and a row with
 either time empty closes the day completely.
 
-Leave the queue empty to apply organisation wide.
+Leave the queue empty to apply organisation wide, which means every queue that reads this
+table, not a default that a queue can opt out of. The only way to exempt one queue from an
+organisation wide closure is a queue specific row for the same date.
 
 | Name | Date | Queue | Start | End | Effect |
 |---|---|---|---|---|---|
