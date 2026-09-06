@@ -132,8 +132,13 @@ Scheduled callback is proven through to a placed call as of 3.5.0: booked from t
 promoted by the recurrence flow, dispatched to proactive engagement in preview dial mode,
 and answered.
 
-Not yet proven: metrics against a queue with callers actually waiting, and cancel and
-reschedule. See `CHANGELOG.md`.
+The MCP route is proven too, running locally against the same environment:
+`tools/list` matches the contract, a `tools/call` reaches a Custom API, and an expected
+failure keeps `isError` false. Run `build/Test-Mcp.ps1` to repeat it.
+
+Not yet proven: metrics against a queue with callers actually waiting, cancel and
+reschedule, and the MCP server deployed to Container Apps on a managed identity rather than
+run locally. See `CHANGELOG.md`.
 
 ## Versioning and support
 
