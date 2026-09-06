@@ -39,8 +39,23 @@ Versions here are `MAJOR.MINOR.PATCH`. The fourth part in `VERSION` is a build n
 - The callback reference, queue, locale, requested time and context are passed as
   `InputAttributes`, so the representative sees why they are ringing
 
+### Fixed
+
+- `deploy.ps1` now uploads and publishes the Settings page. It is source, in
+  `src/webresources/`, but not part of the packed solution, so it was only ever deployed by
+  `New-ModelDrivenApp.ps1`, an install time script. Every deploy since shipped a plugin
+  update and left the page as it was on day one. A stale page is worse than a missing one
+  because it works: the workstream dropdown kept reporting a query fault that had been
+  fixed in source two releases earlier. `build/Update-WebResources.ps1` does the upload and
+  the publish, and both scripts call it
+
 ### Changed
 
+- `pwrp_ProactiveEngagementConfigId` sits after `pwrp_OutboundWorkstreamId` on the Settings
+  page, since the engagement is found through the workstream
+- A dropdown that falls back to a text box now says the page may be out of date and names
+  the script that fixes it, because the error underneath describes a fault source control
+  says was corrected
 - A dispatch that fails leaves the record at `Requested` with a failure reason rather than
   marking it `Queued`. The next run retries it, so a transient outage does not fail a whole
   backlog, and `ExpireStale` still gives up after 24 hours

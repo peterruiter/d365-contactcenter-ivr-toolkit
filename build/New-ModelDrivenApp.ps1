@@ -126,48 +126,15 @@ Write-Host "`nApp icon" -ForegroundColor Cyan
 # resource has to be published before anything can reference it, but publishing each one
 # as it is uploaded means several publishes seconds apart, and the second of those came
 # back "An unexpected error occurred" on an environment with other work in flight.
-function Set-WebResource {
-    param(
-        [string]$Name,
-        [string]$DisplayName,
-        [string]$Description,
-        [int]$Type,
-        [string]$Path
-    )
 
-    if (-not (Test-Path $Path)) { throw "Web resource source not found at $Path." }
-
-    $body = @{
-        name            = $Name
-        displayname     = $DisplayName
-        description     = $Description
-        webresourcetype = $Type
-        content         = [Convert]::ToBase64String([IO.File]::ReadAllBytes($Path))
-    }
-
-    $existing = (Invoke-Dataverse -Method GET `
-        -Path "/api/data/v9.2/webresourceset?`$select=webresourceid&`$filter=name eq '$Name'").value
-
-    if ($existing.Count -gt 0) {
-        $id = $existing[0].webresourceid
-        Invoke-Dataverse -Method PATCH -Path "/api/data/v9.2/webresourceset($id)" `
-            -SolutionName $SolutionName -Body $body | Out-Null
-        Write-Host "  = $Name" -ForegroundColor DarkGray
-    }
-    else {
-        $id = (Invoke-Dataverse -Method POST -Path "/api/data/v9.2/webresourceset" `
-            -SolutionName $SolutionName -Body $body).webresourceid
-        Write-Host "  + $Name" -ForegroundColor DarkGray
-    }
-
-    return $id
-}
+# Uploaded and published by Update-WebResources.ps1, which deploy.ps1 also runs, so the
+# page cannot drift from source between installs. Both resources have to exist before the
+# app can bind to them, hence the call here rather than only in deploy.
+& "$PSScriptRoot/Update-WebResources.ps1" -EnvironmentUrl $EnvironmentUrl -SolutionName $SolutionName -SkipConnect
 
 $iconName = "pwrp_/icons/ivrtoolkit.svg"
-$iconId = Set-WebResource -Name $iconName -Type 11 `
-    -DisplayName "Contact Center IVR Toolkit icon" `
-    -Description "App tile icon. Source of truth is build/assets/app-icon.svg." `
-    -Path (Join-Path $PSScriptRoot "assets/app-icon.svg")
+$iconId = (Invoke-Dataverse -Method GET `
+    -Path "/api/data/v9.2/webresourceset?`$select=webresourceid&`$filter=name eq '$iconName'").value[0].webresourceid
 
 # The icon is a lookup, so it is set by binding rather than by writing the column, and
 # the binding needs the navigation property name rather than the attribute name. The two
@@ -197,10 +164,8 @@ catch {
 Write-Host "`nSettings page" -ForegroundColor Cyan
 
 $settingsWebResource = "pwrp_settings"
-$settingsId = Set-WebResource -Name $settingsWebResource -Type 1 `
-    -DisplayName "Contact Center IVR Toolkit settings" `
-    -Description "Reads and writes the pwrp_ environment variables. Source is src/webresources/pwrp_settings.html." `
-    -Path (Join-Path $PSScriptRoot "../src/webresources/pwrp_settings.html")
+$settingsId = (Invoke-Dataverse -Method GET `
+    -Path "/api/data/v9.2/webresourceset?`$select=webresourceid&`$filter=name eq '$settingsWebResource'").value[0].webresourceid
 
 # A subarea can point at a web resource the app does not list as a component, and it
 # renders as an empty pane rather than an error. Adding it explicitly is what stops that.

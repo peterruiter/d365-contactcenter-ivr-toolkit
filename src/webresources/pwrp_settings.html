@@ -88,7 +88,7 @@ const GROUPS = [
     vars: ["pwrp_WaitBandThresholds"] },
   { title: "Callbacks",
     blurb: "Direct callback needs only the queue profile flag. Scheduled callback needs the master switch here as well, which is why turning it on for a single queue appears to do nothing. Proactive engagement places the calls, and the toolkit finds it on the outbound workstream, so leave the engagement empty unless that workstream runs more than one.",
-    vars: ["pwrp_EnableScheduledCallback", "pwrp_ProactiveEngagementConfigId", "pwrp_OutboundWorkstreamId",
+    vars: ["pwrp_EnableScheduledCallback", "pwrp_OutboundWorkstreamId", "pwrp_ProactiveEngagementConfigId",
            "pwrp_CallbackSlotMinutes", "pwrp_MaxCallbackAttempts", "pwrp_CallbackRetryMinutes"] },
   { title: "Performance",
     blurb: "Caching. Raise these on a busy environment. Lower them while you are editing wording or hours and want to hear the change.",
@@ -264,8 +264,13 @@ function lookupHint(def) {
   const lookup = lookups[def.schemaname];
   if (!lookup) return "";
   if (lookup.failed) {
+    // Naming the likely cause matters more here than the error does. A query that was
+    // wrong when this page was uploaded stays wrong until the page is uploaded again, and
+    // the message underneath describes a fault that source control says was fixed.
     return '<div class="hint bad">The list could not be read, so this is a free text box: ' +
-      escapeHtml(lookup.reason) + "</div>";
+      escapeHtml(lookup.reason) +
+      '<br>If the source says otherwise, this page is out of date. Run ' +
+      '<code>build/Update-WebResources.ps1</code>, then reload with Ctrl+Shift+R.</div>';
   }
   if (!lookup.items.length) return '<div class="hint bad">' + escapeHtml(lookup.empty) + "</div>";
   return "";

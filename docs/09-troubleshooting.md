@@ -199,6 +199,27 @@ reference at it, and reopen the flow.
 
 Nothing in the flow itself needs changing in any of these cases.
 
+### The Settings page shows an error the source says was fixed
+
+A dropdown falling back to a free text box, most often:
+
+```
+The list could not be read, so this is a free text box: Could not find a property
+named 'msdyn_liveworkstreamId' on type 'Microsoft.Dynamics.CRM.msdyn_liveworkstream'.
+```
+
+The page in the environment is older than the page in the repository. It is source but not
+part of the packed solution, so before 3.5.0 importing the solution did not touch it and
+only `New-ModelDrivenApp.ps1` ever uploaded it, which you run once at install.
+
+```powershell
+pwsh build/Update-WebResources.ps1 -EnvironmentUrl https://yourorg.crm4.dynamics.com
+```
+
+Then reload with Ctrl+Shift+R. An uploaded web resource is not the served one until it is
+published, and the browser caches it after that, which together look exactly like the
+upload not having worked. `deploy.ps1` runs this every time from 3.5.0.
+
 ### The promotion flow shows errors the moment you open it
 
 Two banners, both expected on a flow that has just been created:
