@@ -42,6 +42,7 @@ namespace PowerPete.IvrToolkit.Callback
             public int Retried;
             public int Failed;
             public int Expired;
+            public int Reconciled;
             public List<string> References = new List<string>();
         }
 
@@ -107,6 +108,10 @@ namespace PowerPete.IvrToolkit.Callback
                 _tracing.Trace("[pwrp] promoted callback {0}", reference);
             }
 
+            // Before the retry policy, because reconciliation is what produces the NoAnswer
+            // records the retry policy acts on. The other order would always work a cycle
+            // behind.
+            Reconcile(dispatcher, result);
             ApplyRetryPolicy(now, result);
             ExpireStale(now, result);
 
@@ -140,6 +145,73 @@ namespace PowerPete.IvrToolkit.Callback
             };
 
             return _service.RetrieveMultiple(query).Entities;
+        }
+
+        /// <summary>
+        /// Asks proactive engagement what became of the callbacks it was handed, and moves
+        /// them on.
+        /// </summary>
+        /// <remarks>
+        /// Queued means handed over, and nothing was closing the loop: a callback that was
+        /// placed and answered stayed at Queued for ever, ExpireStale eventually marked it
+        /// failed 24 hours later, and the record then said a call that happened had not.
+        /// The retry policy was dead for the same reason, because nothing ever set NoAnswer.
+        ///
+        /// Done here rather than in a second flow triggered on the delivery table. This
+        /// timer already runs every five minutes, the delivery id gives an exact join, and
+        /// a component that has to be installed and have a connection bound is a component
+        /// that gets skipped. RecordOutcome stays for anything that wants to report an
+        /// outcome directly and sooner.
+        /// </remarks>
+        private void Reconcile(ProactiveDispatcher dispatcher, PromotionResult result)
+        {
+            var query = new QueryExpression("pwrp_callbackrequest")
+            {
+                ColumnSet = new ColumnSet("pwrp_name", "pwrp_deliveryid"),
+                Criteria =
+                {
+                    Conditions =
+                    {
+                        new ConditionExpression("pwrp_status", ConditionOperator.In, StatusQueued, StatusDialling),
+                        new ConditionExpression("pwrp_deliveryid", ConditionOperator.NotNull)
+                    }
+                },
+                TopCount = 200
+            };
+
+            var waiting = _service.RetrieveMultiple(query).Entities;
+            if (waiting.Count == 0) { return; }
+
+            var byDelivery = new Dictionary<string, Entity>();
+            foreach (var record in waiting)
+            {
+                var id = record.GetAttributeValue<string>("pwrp_deliveryid");
+                if (!string.IsNullOrWhiteSpace(id)) { byDelivery[id] = record; }
+            }
+
+            Dictionary<string, ProactiveDispatcher.DeliveryOutcome> outcomes;
+            try
+            {
+                outcomes = dispatcher.ReadOutcomes(byDelivery.Keys);
+            }
+            catch (Exception ex)
+            {
+                // The delivery table is theirs and carries no API guarantee, so a schema
+                // change here must not stop callbacks being promoted. Same rule as the
+                // metrics reader: reporting degrades, dispatch does not.
+                _tracing.Trace("[pwrp] could not read deliveries, skipping reconciliation: {0}", ex.Message);
+                return;
+            }
+
+            foreach (var pair in outcomes)
+            {
+                var record = byDelivery[pair.Key];
+                var reference = record.GetAttributeValue<string>("pwrp_name");
+
+                RecordOutcome(record.Id, pair.Value.Outcome, pair.Value.Detail);
+                result.Reconciled++;
+                _tracing.Trace("[pwrp] callback {0} is {1}", reference, pair.Value.Outcome);
+            }
         }
 
         /// <summary>
@@ -197,7 +269,7 @@ namespace PowerPete.IvrToolkit.Callback
         {
             var query = new QueryExpression("pwrp_callbackrequest")
             {
-                ColumnSet = new ColumnSet("pwrp_name"),
+                ColumnSet = new ColumnSet("pwrp_name", "pwrp_status"),
                 Criteria =
                 {
                     Conditions =
@@ -211,10 +283,19 @@ namespace PowerPete.IvrToolkit.Callback
 
             foreach (var record in _service.RetrieveMultiple(query).Entities)
             {
+                // Two different failures, and saying the wrong one sends whoever reads the
+                // record to the wrong place. Still Requested means nothing dispatched it.
+                // Queued means it was handed over and proactive engagement never reported
+                // back, which is a question for the engagement, not for promotion.
+                var wasQueued = record.GetAttributeValue<OptionSetValue>("pwrp_status") != null &&
+                                record.GetAttributeValue<OptionSetValue>("pwrp_status").Value == StatusQueued;
+
                 _service.Update(new Entity("pwrp_callbackrequest", record.Id)
                 {
                     ["pwrp_status"] = new OptionSetValue(StatusFailed),
-                    ["pwrp_failurereason"] = "Expired. Not dispatched within 24 hours of the requested time."
+                    ["pwrp_failurereason"] = wasQueued
+                        ? "Expired. Dispatched, but proactive engagement reported no outcome within 24 hours."
+                        : "Expired. Not dispatched within 24 hours of the requested time."
                 });
                 result.Expired++;
             }

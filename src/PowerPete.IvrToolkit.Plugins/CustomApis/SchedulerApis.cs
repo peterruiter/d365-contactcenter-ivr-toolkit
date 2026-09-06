@@ -20,6 +20,7 @@ namespace PowerPete.IvrToolkit.CustomApis
             request.SetOutput("Retried", result.Retried);
             request.SetOutput("Failed", result.Failed);
             request.SetOutput("Expired", result.Expired);
+            request.SetOutput("Reconciled", result.Reconciled);
             request.SetOutput("References", JsonConvert.SerializeObject(result.References));
         }
     }

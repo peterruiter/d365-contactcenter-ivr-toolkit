@@ -742,6 +742,11 @@
           "type": "Integer"
         },
         {
+          "name": "Reconciled",
+          "type": "Integer",
+          "description": "Callbacks whose proactive engagement delivery reported an outcome this run."
+        },
+        {
           "name": "References",
           "type": "String"
         }

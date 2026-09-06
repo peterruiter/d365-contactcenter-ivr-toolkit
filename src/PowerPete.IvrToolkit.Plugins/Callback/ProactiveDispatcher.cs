@@ -53,6 +53,96 @@ namespace PowerPete.IvrToolkit.Callback
         }
 
         /// <summary>
+        /// What proactive engagement made of a delivery, in this toolkit's vocabulary.
+        /// </summary>
+        public class DeliveryOutcome
+        {
+            /// <summary>Connected, NoAnswer, Cancelled, Failed, Dialling, or null while it waits.</summary>
+            public string Outcome;
+            public string Detail;
+        }
+
+        /// <summary>
+        /// Reads the deliveries behind a set of callbacks and says what became of each.
+        /// </summary>
+        /// <remarks>
+        /// The result vocabulary is theirs and the mapping belongs here with every other
+        /// CCaaS detail. A delivery still Pending or InProcess returns Dialling or nothing,
+        /// because a call that has not finished is not an outcome.
+        ///
+        /// CallFailed covers no answer, busy and a failed dial without distinguishing them,
+        /// so it maps to NoAnswer rather than Failed. That is the retryable side of the
+        /// choice, and ringing someone once more who asked to be rung is a smaller mistake
+        /// than abandoning them because the first attempt hit a busy line.
+        /// </remarks>
+        public Dictionary<string, DeliveryOutcome> ReadOutcomes(ICollection<string> deliveryIds)
+        {
+            var outcomes = new Dictionary<string, DeliveryOutcome>();
+            if (deliveryIds == null || deliveryIds.Count == 0) { return outcomes; }
+
+            var query = new QueryExpression("msdyn_proactive_delivery")
+            {
+                ColumnSet = new ColumnSet("msdyn_delivery_id", "msdyn_status", "msdyn_result",
+                    "msdyn_disposition_codes"),
+                Criteria =
+                {
+                    Conditions =
+                    {
+                        new ConditionExpression("msdyn_delivery_id", ConditionOperator.In,
+                            deliveryIds.Cast<object>().ToArray())
+                    }
+                }
+            };
+
+            foreach (var delivery in _service.RetrieveMultiple(query).Entities)
+            {
+                var id = delivery.GetAttributeValue<string>("msdyn_delivery_id");
+                if (string.IsNullOrWhiteSpace(id)) { continue; }
+
+                var status = (delivery.GetAttributeValue<string>("msdyn_status") ?? string.Empty).Trim();
+                var callResult = (delivery.GetAttributeValue<string>("msdyn_result") ?? string.Empty).Trim();
+                var codes = delivery.GetAttributeValue<string>("msdyn_disposition_codes");
+
+                string outcome = null;
+
+                if (status.Equals("InProcess", StringComparison.OrdinalIgnoreCase))
+                {
+                    outcome = "Dialling";
+                }
+                else if (callResult.Equals("CallEnded", StringComparison.OrdinalIgnoreCase))
+                {
+                    outcome = "Connected";
+                }
+                else if (callResult.Equals("CallFailed", StringComparison.OrdinalIgnoreCase) ||
+                         callResult.Equals("BotFailed", StringComparison.OrdinalIgnoreCase))
+                {
+                    outcome = "NoAnswer";
+                }
+                else if (callResult.Equals("Cancelled", StringComparison.OrdinalIgnoreCase) ||
+                         status.Equals("Cancelled", StringComparison.OrdinalIgnoreCase))
+                {
+                    outcome = "Cancelled";
+                }
+                else if (callResult.Equals("Expired", StringComparison.OrdinalIgnoreCase) ||
+                         callResult.Equals("Error", StringComparison.OrdinalIgnoreCase) ||
+                         status.Equals("Expired", StringComparison.OrdinalIgnoreCase) ||
+                         status.Equals("Error", StringComparison.OrdinalIgnoreCase))
+                {
+                    outcome = "Failed";
+                }
+
+                if (outcome == null) { continue; }
+
+                var detail = string.IsNullOrWhiteSpace(callResult) ? status : callResult;
+                if (!string.IsNullOrWhiteSpace(codes)) { detail = detail + " (" + codes + ")"; }
+
+                outcomes[id] = new DeliveryOutcome { Outcome = outcome, Detail = detail };
+            }
+
+            return outcomes;
+        }
+
+        /// <summary>
         /// The proactive engagement configuration that will place the calls.
         /// </summary>
         /// <remarks>

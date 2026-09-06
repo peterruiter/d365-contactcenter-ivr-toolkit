@@ -39,7 +39,11 @@ not build a dialer.
   Proactive engagement, in whatever dial mode  ->  status Queued
     |
     v
-  Representative accepts  ->  call placed  ->  status Completed
+  Representative accepts  ->  call placed
+    |
+    |  the same flow, next run, reads the delivery back
+    v
+  status Completed, or NoAnswer and retried
 ```
 
 The API call is the part people assume is implicit and is not. Proactive engagement takes
@@ -49,6 +53,13 @@ says ready and is never read. Before 3.5.0 that was exactly what promotion did.
 
 `Queued` means handed over, not dialled. Proactive engagement decides when the call goes
 out inside the window it was given.
+
+The last step is the one that is easy to forget to build. Proactive engagement does not
+tell the toolkit what happened, so promotion reads the delivery back on its next run and
+moves the record on. Without it a callback that was placed and answered stays at `Queued`
+for ever, is marked failed 24 hours later, and the retry policy never fires because
+nothing ever sets `NoAnswer`. It is the same five minute timer, joined on the delivery id,
+so there is no second flow to install.
 
 Owning the dialer would mean rebuilding capacity handling, presence awareness and
 compliance. Proactive engagement already does all of that.

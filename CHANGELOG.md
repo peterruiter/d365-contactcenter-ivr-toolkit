@@ -12,6 +12,34 @@ Semantic versioning. The Custom API contract is stable within a major version.
 Versions here are `MAJOR.MINOR.PATCH`. The fourth part in `VERSION` is a build number that
 `build.ps1` raises on every run, and a build is not a release, so it never appears below.
 
+## [3.6.0]
+
+### Added
+
+- Promotion reads its deliveries back and moves the callback on: `Completed` when the call
+  connected, `NoAnswer` when it did not, `Cancelled` or `Failed` otherwise. Nothing closed
+  this loop before. A callback that was placed and answered sat at `Queued` for ever, was
+  marked failed 24 hours later by `ExpireStale` so the record said a call that happened had
+  not, and the retry policy was dead because nothing ever set `NoAnswer`, which made
+  `pwrp_MaxCallbackAttempts` and `pwrp_CallbackRetryMinutes` do nothing at all
+- `Reconciled` on `pwrp_PromoteDueCallbacks`, the count of callbacks whose delivery
+  reported an outcome this run
+
+### Changed
+
+- Reconciliation runs on the existing five minute timer, joined on `pwrp_deliveryid`,
+  rather than in a second flow triggered on the delivery table. A component that has to be
+  installed and have a connection bound is a component that gets skipped, and nobody is
+  watching a record that is waiting. `pwrp_RecordCallbackOutcome` is unchanged and stays
+  for anything that wants to report an outcome directly and sooner
+- A delivery result of `CallFailed` maps to `NoAnswer`, not `Failed`. It covers no answer,
+  busy and a failed dial without distinguishing them, and ringing once more someone who
+  asked to be rung is a smaller mistake than abandoning them after a busy line
+- An expired callback says which of the two things went wrong: never dispatched, or
+  dispatched and never reported on. The old wording claimed the first in both cases
+- Reading the delivery table cannot stop promotion. A schema change there degrades
+  reporting and leaves dispatch working, the same rule the metrics reader follows
+
 ## [3.5.0]
 
 ### Added
