@@ -21,9 +21,13 @@ jobs:
 
       - name: Build and test
         shell: pwsh
+        # -NoVersionBump because a CI build is not a build anyone installs. Raising the
+        # number here would write a VERSION the runner then throws away, so the counter
+        # would drift ahead of what was ever produced. This builds what the commit says.
+        #
         # A throwaway signing key. It is never released, so it does not matter that it
         # differs per run. Releases use the stored key, see release.yml.
-        run: ./build/build.ps1 -Version 1.0.0
+        run: ./build/build.ps1 -NoVersionBump
 
       - name: Check the connector swagger is not stale
         shell: pwsh

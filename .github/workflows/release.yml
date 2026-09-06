@@ -32,8 +32,21 @@ jobs:
           if ($version -notmatch '^\d+\.\d+\.\d+$') {
             throw "Version '$version' is not major.minor.patch."
           }
+
+          # The tag names the release. VERSION carries the build number that goes with it,
+          # and the two have to agree, because the artefacts are named from VERSION while
+          # the release is named from the tag. Tagging a commit whose VERSION was never
+          # moved to that release would otherwise publish a zip whose name contradicts the
+          # release it hangs under.
+          . ./build/Version.ps1
+          $v = Get-ToolkitVersion -Root .
+          if ($v.Release -ne $version) {
+            throw "Tag v$version does not match VERSION $($v.Full). Set VERSION to $version.<build> and commit before tagging."
+          }
+
           "value=$version" >> $env:GITHUB_OUTPUT
-          Write-Host "Building $version"
+          "full=$($v.Full)" >> $env:GITHUB_OUTPUT
+          Write-Host "Building $version as solution $($v.Solution), assembly $($v.Assembly)"
 
       - name: Restore the signing key
         shell: pwsh
@@ -66,7 +79,9 @@ jobs:
 
       - name: Build, test and pack
         shell: pwsh
-        run: ./build/build.ps1 -Version ${{ steps.version.outputs.value }}
+        # -NoVersionBump: the version was settled and checked above, and a release must
+        # build exactly the commit that was tagged.
+        run: ./build/build.ps1 -NoVersionBump
 
       - name: Confirm the assembly is signed
         shell: pwsh
@@ -83,15 +98,15 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            out/PowerPeteIvrToolkitCore_${{ steps.version.outputs.value }}_Managed.zip
-            out/PowerPeteIvrToolkitCore_${{ steps.version.outputs.value }}_Unmanaged.zip
+            out/PowerPeteIvrToolkitCore_${{ steps.version.outputs.full }}_Managed.zip
+            out/PowerPeteIvrToolkitCore_${{ steps.version.outputs.full }}_Unmanaged.zip
           generate_release_notes: true
           body: |
             Install the **managed** solution in anything that is not a development
             environment. Unmanaged is for a development environment you intend to edit.
 
             ```powershell
-            pac solution import --path PowerPeteIvrToolkitCore_${{ steps.version.outputs.value }}_Managed.zip --activate-plugins --publish-changes
+            pac solution import --path PowerPeteIvrToolkitCore_${{ steps.version.outputs.full }}_Managed.zip --activate-plugins --publish-changes
             ./build/Register-CustomApis.ps1 -EnvironmentUrl https://yourorg.crm4.dynamics.com
             ./build/New-ApplicationUser.ps1 -EnvironmentUrl https://yourorg.crm4.dynamics.com
             ```

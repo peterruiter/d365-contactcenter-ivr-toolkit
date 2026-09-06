@@ -51,6 +51,18 @@ VERSION 3.4.0.9  ->  solution 3.4.0.9,  assembly 1.0.9.0
 The build number is therefore the only thing tying an assembly to its release. An assembly
 at 1.0.9.0 came from build 9, and the solution version says build 9 was 3.4.0.
 
+### Cutting a release
+
+1. Set the release parts of `VERSION` and add the `CHANGELOG.md` entry.
+2. Build once, so the build number moves and the stamped files are committed with it.
+3. Commit, then tag that commit `v3.4.0`.
+
+`release.yml` refuses a tag whose release does not match `VERSION`, because the release is
+named from the tag while the artefacts are named from `VERSION`, and a mismatch publishes a
+zip whose name contradicts the release it hangs under. Both pipelines build with
+`-NoVersionBump`: a release builds the commit that was tagged, and CI builds the commit that
+was pushed. Neither invents a number that no artefact was ever cut with.
+
 
 ## Build once, promote
 
