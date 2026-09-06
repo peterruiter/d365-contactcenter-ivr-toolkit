@@ -35,6 +35,11 @@ Native operating hours if the client already maintains them there. Toolkit confi
 tables if they do not, or if you want insulation from platform schema changes. It is
 a per queue setting, so you can mix.
 
+**Do config hours override the native calendar?**
+No. They replace it. A queue reads one source and ignores the other entirely, so
+`pwrp_queuehours` and `pwrp_holiday` do nothing on a queue set to native hours, and the
+calendar does nothing on a queue set to config. See [configuration](04-configuration.md).
+
 **Do I have to build scheduled callback?**
 No. Direct callback is native and covers most requirements. Only build scheduled
 callback if the client specifically needs the caller to pick a time.

@@ -117,7 +117,22 @@ you should have configured.
 
 ## Hours
 
-Pick a source per queue.
+Pick a source per queue. One or the other, never both.
+
+`pwrp_queueprofile.pwrp_hourssource` chooses, and the source not chosen is not read at all.
+There is no layering and no precedence: config hours do not override the native calendar,
+they replace it. A queue on native hours ignores every row in `pwrp_queuehours` and
+`pwrp_holiday`, and a queue on config hours never looks at the calendar.
+
+That is deliberate. Two sources that each partly apply is the kind of thing nobody can
+unpick at four in the afternoon when a queue insists it is shut.
+
+The choice is per queue, so most queues can stay on the native calendar while one awkward
+one gets its own table.
+
+If a queue is switched to config hours and has no `pwrp_queuehours` rows, the endpoints
+return `HOURS_NOT_CONFIGURED` rather than assuming nine to five. An IVR that invents
+opening hours tells callers to ring back at a time nobody is there.
 
 **Native operating hours** (`pwrp_hourssource = 1`) reads the calendar already maintained
 in the admin centre. Right answer when hours are already there. Reads internal platform
@@ -161,7 +176,16 @@ One row per weekday window. Two rows for a lunch break.
 
 ### `pwrp_holiday`
 
-Date overrides. Leave the queue empty to apply organisation wide.
+Date overrides, and **config hours only**. A queue on native operating hours never reads
+this table, so closures for those queues belong in the native calendar. This is the easiest
+thing here to get wrong, because adding a holiday row appears to work and simply has no
+effect.
+
+A row for a date replaces that day's weekly windows outright rather than trimming them. So
+a short day is one row with both times, not a row per remaining window, and a row with
+either time empty closes the day completely.
+
+Leave the queue empty to apply organisation wide.
 
 | Name | Date | Queue | Start | End | Effect |
 |---|---|---|---|---|---|
