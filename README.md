@@ -121,12 +121,16 @@ Change the contract, run the generators, commit.
 
 ## State
 
-Built, deployed and exercised against a live Dynamics 365 Contact Center environment.
-Every read endpoint, direct callback and outcome logging return correct answers for a real
-voice queue, as the application user rather than as an administrator.
+Built, deployed and exercised against a live Dynamics 365 Contact Center environment,
+including a Copilot Studio voice agent calling it on a real call.
 
-Not yet proven: metrics against a queue with callers waiting, scheduled callback and its
-promotion flow, and a Copilot Studio agent calling any of it. See `CHANGELOG.md`.
+Proven end to end: queue context, callback slots, phone validation, direct and scheduled
+callback booking, and outcome logging. The agent also handled a misrecognised queue name by
+asking rather than guessing, which is the behaviour the resolver exists for.
+
+Not yet proven: metrics against a queue with callers actually waiting, promotion through to
+a dialled call, and cancel and reschedule. The promotion flow exists as of 3.4.0 and has
+not run in anger. See `CHANGELOG.md`.
 
 ## Versioning and support
 

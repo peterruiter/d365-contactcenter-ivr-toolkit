@@ -45,10 +45,13 @@ pac solution import --path ./out/PowerPeteIvrToolkitCore_1.0.0_Managed.zip --act
 # 4. Create queue profiles
 ./build/New-QueueProfiles.ps1 -EnvironmentUrl https://yourorg.crm4.dynamics.com
 
-# 5. The application user an agent authenticates as
+# 5. The promotion flow, only if you will offer scheduled callback
+./build/New-PromotionFlow.ps1 -EnvironmentUrl https://yourorg.crm4.dynamics.com
+
+# 6. The application user an agent authenticates as
 ./build/New-ApplicationUser.ps1 -EnvironmentUrl https://yourorg.crm4.dynamics.com
 
-# 6. Validate, as yourself and then as the application
+# 7. Validate, as yourself and then as the application
 ./build/Test-Installation.ps1 -EnvironmentUrl https://yourorg.crm4.dynamics.com
 ./build/Test-Endpoints.ps1 -EnvironmentUrl https://yourorg.crm4.dynamics.com `
     -TenantId <tenant> -ClientId <app> -ClientSecret <secret>

@@ -33,6 +33,12 @@ nine tool budget holds.
 
 ### Fixed
 
+- Documentation scanned end to end against the code. `README.md` claimed no Copilot Studio
+  agent had called any of this, which a real voice call disproved; the manual install in
+  `docs/03` had no step for the promotion flow, so a pipeline following it produced an
+  environment where scheduled callback silently did nothing; `docs/05` did not say what
+  `pwrp_HealthCheck` checks; and `docs/09` gained entries for overdue callbacks, duplicated
+  response properties and an `E164` with a dash in it, all of which were hit in testing
 - `Register-CustomApis.ps1` reconciles response properties and request parameters on their
   name rather than on the two uniquename spellings it happened to use before. Rows written
   under any other convention, the `ccit_` prefixed ones from before the rebrand among them,

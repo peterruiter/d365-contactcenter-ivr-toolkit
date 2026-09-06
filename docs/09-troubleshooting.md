@@ -125,16 +125,36 @@ too low for the volume.
 
 ### Scheduled callbacks never get dialled
 
+Run `pwrp_HealthCheck` first. **Callback promotion** failing means records are going
+overdue, which narrows this to steps 1 to 4.
+
 Work through in order:
 
-1. `pwrp_EnableScheduledCallback` is true
-2. `pwrp_OutboundWorkstreamId` points at a real outbound workstream
-3. The promotion flow is turned on and running
-4. Records are moving from `Requested` to `Queued`
-5. Proactive engagement is configured in preview dial mode
-6. Representatives are in the outbound capacity profile
+1. The promotion flow exists. Before 3.4.0 it was documented but never shipped, so an
+   environment installed before then has nothing promoting anything. Run
+   `build/New-PromotionFlow.ps1`
+2. Its connection reference is bound to a connection, and the flow is switched on. It is
+   created switched off on purpose
+3. `pwrp_EnableScheduledCallback` is true
+4. `pwrp_OutboundWorkstreamId` points at a real outbound workstream. The flow throws
+   `pwrp_OutboundWorkstreamId is not set` rather than promoting
+5. Records are moving from `Requested` to `Queued`
+6. Proactive engagement is configured in preview dial mode
+7. Representatives are in the outbound capacity profile
 
-Step 6 is the usual one.
+If records reach `Queued` and still nobody is called, it is 6 or 7, and 7 is the usual one.
+
+### A response property is listed two or more times
+
+Re-run `build/Register-CustomApis.ps1`. It prints a yellow `- removed duplicate` line for
+each one it deletes.
+
+Before 3.4.0 the registration matched existing children on the two uniquename spellings
+that script had used. A row written under any other convention was invisible to it, so it
+survived every run while a new one was created alongside. The `ccit_` prefixed rows from
+before the rebrand are the common source. They share a `name` with the row that is wanted,
+so the maker portal lists the property twice, or four times, and the API returns whichever
+row Dataverse picks.
 
 ### Phone numbers rejected that look fine
 
@@ -144,6 +164,16 @@ Step 6 is the usual one.
   `pwrp_DefaultCountryCode` correctly
 - Non-Dutch number where only a length check applies. Valid but typed `Unknown`
 - Speech gave nine digits instead of ten. Ask again rather than guessing
+
+### `E164` comes back with a dash or other rubbish in it, like `+-653740141`
+
+The plugin assembly is older than 3.4.0. A `CountryCode` that cannot be one, the `-`
+placeholder the tool tables tell you to type among them, was concatenated onto the number
+and the result passed the length check. Deploy the current assembly.
+
+`IsValid` came back true for those numbers, so nothing downstream caught it. If callbacks
+were booked while it was happening, check `pwrp_callbackrequest` for numbers that are not
+in the queue's country.
 
 ## Latency
 

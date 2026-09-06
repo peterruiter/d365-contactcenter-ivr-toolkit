@@ -295,5 +295,20 @@ cannot answer the only question the client asks after go live.
 
 No inputs. Returns `Checks` (JSON), `Passed`, `FailureCount`.
 
+| Check | Fails when |
+|---|---|
+| Queues discovered | No active queues |
+| Queue profiles | A voice queue has no `pwrp_queueprofile` row. Non voice queues are ignored |
+| Metrics schema | `msdyn_queueextension` is unreadable, usually after a wave update |
+| Presence schema | `msdyn_agentstatushistory` is unreadable |
+| Scheduled callback config | Scheduled callback is on and `pwrp_OutboundWorkstreamId` is not set |
+| Callback promotion | Scheduled callbacks are over fifteen minutes late and still `Requested` |
+| Default locale | `pwrp_DefaultLocale` is not set |
+
+Callback promotion is the only check that reads what happened rather than what is
+configured. Everything else can be right while nothing runs, which is exactly how
+scheduled callback fails: the promotion flow is a separate component and the usual
+fault is that nobody built it.
+
 Run after install, after every solution upgrade, and after every Contact Center
 release wave update.
