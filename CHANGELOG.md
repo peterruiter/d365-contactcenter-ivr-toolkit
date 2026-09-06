@@ -14,19 +14,21 @@ Versions here are `MAJOR.MINOR.PATCH`. The fourth part in `VERSION` is a build n
 
 ## [3.4.2]
 
-### Fixed
-
-- `Register-CustomApis.ps1` reactivates the `sdkmessage` row behind each API. Clearing
-  `isprivate` on the custom API in 3.4.1 was not enough: creating an API generates a
-  message row holding its own copy of `isprivate` plus an `isactive` flag, that row is
-  what connectors read, and neither field follows the API when it changes. An API first
-  registered as private left a permanently inactive message, so `pwrp_PromoteDueCallbacks`
-  stayed invisible to the Dataverse connector even after the API said it was public
-
 ### Added
 
-- `build/Get-ApiRegistration.ps1` reports what the platform holds for each API, the
-  custom API row and the generated message row side by side. Read only
+- `Register-CustomApis.ps1 -Recreate <name>` deletes the named APIs before registering, so
+  each gets a new `sdkmessage`. Creating a custom API generates a message row, that row is
+  what connectors read, it holds its own copy of `isprivate`, and it cannot be repaired:
+  Dataverse refuses `Update` on the `sdkmessage` table. Replacing the API is the only way
+  to be rid of a message that was born private
+- `build/Get-ApiRegistration.ps1` reports what the platform holds for each API, the custom
+  API row and the generated message row side by side. Read only
+
+### Fixed
+
+- Registration no longer tries to patch the generated `sdkmessage`, which fails with
+  `The 'Update' method does not support entities of type 'sdkmessage'` and aborted the
+  whole run on the first API. It reports a still-private message and names the fix instead
 
 ## [3.4.1]
 

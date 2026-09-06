@@ -68,7 +68,9 @@ foreach ($api in $wanted) {
     $faults = @()
     if ($row.isprivate) { $faults += "customapi.isprivate is true" }
     if ($row.SdkMessageId -and $row.SdkMessageId.isprivate) { $faults += "sdkmessage.isprivate is true" }
-    if ($row.SdkMessageId -and -not $row.SdkMessageId.isactive) { $faults += "sdkmessage is inactive" }
+    # isactive is deliberately not checked. It reads false on the generated message of every
+    # custom API here, working ones included, so it says nothing about whether a message can
+    # be called or seen. It looked like the answer once and cost a round trip.
     if ($row.bindingtype -ne 0) { $faults += "bindingtype is $($row.bindingtype), not Global" }
     if ($row.isfunction -ne [bool]$api.isFunction) { $faults += "isfunction is $($row.isfunction), contract says $([bool]$api.isFunction)" }
     if ($row.executeprivilegename) { $faults += "executeprivilegename is $($row.executeprivilegename)" }
@@ -90,9 +92,9 @@ if ($problems -eq 0) {
     Write-Host "Recreate the connection behind the connection reference to clear it."
 }
 else {
-    Write-Host "$problems need attention. Register-CustomApis.ps1 corrects everything above," -ForegroundColor Yellow
-    Write-Host "including an inactive or private sdk message, except a wrong isfunction or" -ForegroundColor Yellow
-    Write-Host "bindingtype. Those cannot be changed after the API is created and mean" -ForegroundColor Yellow
-    Write-Host "deleting and re-registering it, which Register-CustomApis does for you when" -ForegroundColor Yellow
-    Write-Host "the contract changes isfunction." -ForegroundColor Yellow
+    Write-Host "$problems need attention." -ForegroundColor Yellow
+    Write-Host "  customapi.isprivate    Register-CustomApis.ps1 clears it."
+    Write-Host "  sdkmessage.isprivate   The message is not editable. Replace the API:"
+    Write-Host "                         Register-CustomApis.ps1 -Recreate <name>"
+    Write-Host "  isfunction, bindingtype  Fixed at creation. Same -Recreate."
 }

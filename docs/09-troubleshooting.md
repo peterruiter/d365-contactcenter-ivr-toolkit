@@ -159,11 +159,13 @@ message is deliberately hidden from the metadata connectors read, so the Dataver
 connector cannot describe it and cannot call it either. The flow was calling something it
 was not allowed to see.
 
-There are two rows to correct, which is why clearing the flag once was not enough.
-Creating a custom API generates an `sdkmessage` row, and that row is what the connector
-actually reads. It holds its own copy of `isprivate` and an `isactive` flag, and neither
-follows the API when you change it. An API first registered as private leaves an inactive
-message behind permanently. 3.4.2 repairs the message during registration.
+There are two rows, which is why clearing the flag once may not be enough. Creating a
+custom API generates an `sdkmessage` row, and that row is what the connector reads. It
+holds its own copy of `isprivate` and it cannot be edited: Dataverse refuses `Update` on
+the `sdkmessage` table. Replacing the API is the only way to get a new message.
+
+Ignore `isactive` on these messages. It reads false on every custom API here, working ones
+included.
 
 Re-register against the current contract, then check what the platform now says:
 
@@ -175,6 +177,12 @@ pwsh build/Get-ApiRegistration.ps1 -EnvironmentUrl https://yourorg.crm4.dynamics
 `Get-ApiRegistration.ps1` is read only. It reports the `customapi` row and the
 `sdkmessage` row that was generated from it, because the connector reads the message and
 the two hold separate copies of `isprivate`.
+
+If it reports `sdkmessage.isprivate is true`, replace the API so it gets a new message:
+
+```powershell
+pwsh build/Register-CustomApis.ps1 -EnvironmentUrl https://yourorg.crm4.dynamics.com -Recreate pwrp_PromoteDueCallbacks
+```
 
 If it reports every API visible and the action is still missing from the designer's
 picklist, the remaining explanation is the connector's own cache. It caches the message
