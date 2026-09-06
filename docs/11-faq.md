@@ -40,17 +40,18 @@ No. Direct callback is native and covers most requirements. Only build scheduled
 callback if the client specifically needs the caller to pick a time.
 
 **Does customer-first direct callback make this redundant?**
-No, and where it fits you should use it: it rings the customer before reserving a
-representative, which is better than anything the toolkit would build. It is an overflow
-action, so the caller is already in a queue and the request keeps its place until it
-reaches the front. The caller never chooses a time and cannot reschedule or cancel.
-Scheduled callback here starts wherever the agent decides, including out of hours, offers
-slots, and can be moved or cancelled by reference. Different question, so run both. See
-the [overview](01-overview.md).
+No, and the difference is not the one people assume. Customer-first rings the customer
+before reserving a representative, and so does this in Copilot, progressive or predictive
+dial mode: that is an engagement setting, not a feature difference. What differs is that
+customer-first is an overflow action, so the caller has to be in an overflowing queue, the
+request keeps its place until it reaches the front, and the caller never chooses a time or
+changes it afterwards. Scheduled callback here starts wherever the agent decides, works
+out of hours, offers slots and can be moved or cancelled by reference. Run both. See the
+[overview](01-overview.md).
 
 **Does the toolkit place calls?**
-No. Proactive engagement in preview dial mode does. The toolkit writes the request
-and a flow hands it over.
+No. Proactive engagement does. The toolkit writes the request, and promotion hands it
+over as a delivery. The dial mode is the engagement's.
 
 **What happens if the metrics read fails during a call?**
 `pwrp_GetQueueContext` still returns, with the wait band defaulted to Moderate. The

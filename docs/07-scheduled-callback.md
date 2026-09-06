@@ -36,7 +36,7 @@ not build a dialer.
   CCaaS_CreateSimpleProactiveDelivery   one delivery per record
     |
     v
-  Proactive engagement, preview dial mode  ->  status Queued
+  Proactive engagement, in whatever dial mode  ->  status Queued
     |
     v
   Representative accepts  ->  call placed  ->  status Completed
@@ -68,9 +68,16 @@ lists every active outbound workstream by name and writes the id for you.
 
 ### 3. Proactive engagement
 
-Configure preview dial mode against that workstream. Preview, not progressive or
-predictive. The representative sees the caller's context before the dial, which is
-the whole point of a scheduled callback.
+Configure a proactive engagement against that workstream. Any dial mode works; the
+toolkit dispatches a delivery and the engagement decides how it is placed.
+
+Preview is a good default for a scheduled callback, because the representative sees the
+caller's context before the dial and a caller who booked a time expects the person to know
+why they are ringing. It is a default, not a requirement. Copilot mode reaches the
+customer first and hands them to an AI agent, which suits a callback that mostly needs
+information rather than a person, and progressive and predictive also dial the customer
+before a representative is added. The trade is representative idle time against how well
+briefed the representative is when the customer answers.
 
 ### 4. Toolkit configuration
 

@@ -146,7 +146,7 @@ Work through in order:
    stuck at `Requested` with a **Failure reason** is a dispatch that failed and will be
    retried on the next run
 5. Records are moving from `Requested` to `Queued`
-6. Proactive engagement is configured in preview dial mode
+6. Proactive engagement is configured on that workstream, in any dial mode
 7. Representatives are in the outbound capacity profile
 
 If records reach `Queued` and still nobody is called, it is 6 or 7, and 7 is the usual one.

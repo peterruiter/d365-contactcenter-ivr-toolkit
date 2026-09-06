@@ -104,7 +104,7 @@ namespace PowerPete.IvrToolkit.Callback
             {
                 throw new ToolkitException(ErrorCodes.ConfigurationError,
                     "No active proactive engagement is configured on the outbound workstream. " +
-                    "Create one in preview dial mode, or set pwrp_ProactiveEngagementConfigId.");
+                    "Create one, or set pwrp_ProactiveEngagementConfigId.");
             }
 
             if (found.Count > 1)

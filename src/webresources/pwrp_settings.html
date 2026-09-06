@@ -123,7 +123,7 @@ const LOOKUPS = {
       if (STREAMSOURCES[w.msdyn_streamsource]) parts.push(STREAMSOURCES[w.msdyn_streamsource]);
       return { value: w.msdyn_liveworkstreamid, label: w.msdyn_name + "  (" + parts.join(", ") + ")" };
     },
-    empty: "No active outbound workstream in this environment. Create one, with preview dial mode, before turning scheduled callback on."
+    empty: "No active outbound workstream in this environment. Create one, with a proactive engagement on it, before turning scheduled callback on."
   },
   pwrp_ProactiveEngagementConfigId: {
     // Usually left empty. The toolkit finds the engagement on the outbound workstream by
@@ -141,7 +141,7 @@ const LOOKUPS = {
         label: e.msdyn_name + "  (" + workstream + ")"
       };
     },
-    empty: "No active proactive engagement in this environment. Create one on the outbound workstream, in preview dial mode."
+    empty: "No active proactive engagement in this environment. Create one on the outbound workstream, in whichever dial mode suits."
   }
 };
 
