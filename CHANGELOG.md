@@ -35,6 +35,11 @@ Versions here are `MAJOR.MINOR.PATCH`. The fourth part in `VERSION` is a build n
 
 ### Added
 
+- `build/Test-Mcp.ps1` exercises the MCP server over JSON-RPC: health, `tools/list` against
+  the contract, a `tools/call` that reaches a Custom API, and that an expected failure keeps
+  `isError` false. The last one is a behaviour agents depend on and nothing tested it. Runs
+  against a local `dotnet run` with no client secret, because the server falls back to
+  `DefaultAzureCredential` and an `az login` is enough
 - The holiday's name is spoken. `holiday_named` takes `{holiday}`, so a caller hears "closed
   today for Koningsdag" rather than "closed today for a public holiday". `holiday` remains
   for a holiday with no name and for native operating hours, which cannot name one

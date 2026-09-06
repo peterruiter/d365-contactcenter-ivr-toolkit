@@ -57,6 +57,41 @@ needed one.
 Override with `Mcp__ExposedTools` as a comma separated list. APIs marked `internal` in
 the contract are never exposed regardless.
 
+## Try it locally first
+
+No Azure, no container, no client secret.
+
+```powershell
+$env:ASPNETCORE_URLS = "http://localhost:5000"
+$env:Dataverse__EnvironmentUrl = "https://yourorg.crm4.dynamics.com"
+az login
+cd src/PowerPete.IvrToolkit.Mcp
+dotnet run
+```
+
+With no `Dataverse:ClientSecret` configured the server falls back to
+`DefaultAzureCredential`, which picks up your `az login`. So it runs as you rather than as
+the application user. That is the right trade for a first look: it keeps a real client
+secret out of your shell history, and it separates "does the server work" from "does the
+minimal security role suffice", which is what `Test-Endpoints.ps1 -ClientId` answers.
+
+In another terminal:
+
+```powershell
+pwsh build/Test-Mcp.ps1
+```
+
+It checks the three things that actually break: the server is up and its credentials work,
+`tools/list` matches the contract and leaks nothing marked `internal`, and `tools/call`
+reaches a Custom API and comes back shaped like one. It also asserts that an expected
+failure keeps `isError` false, because that is a behaviour an agent depends on and nothing
+else tests.
+
+Add `-Queue "HR"` to exercise `pwrp_GetQueueContext` against a real queue, and
+`-Url` plus `-ApiKey` to point it at a deployed server.
+
+Nothing it does writes.
+
 ## Deploy
 
 ```bash
